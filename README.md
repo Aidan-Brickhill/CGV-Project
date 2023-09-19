@@ -1,4 +1,4 @@
-# CGV-Project (Discord Kittens)
+# CGV-Project
 
 ## Members:
 Aidan Brickhill <br>
