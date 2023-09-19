@@ -1,1 +1,9 @@
 node_modules/
+node_modules/.vite/deps/three_addons_controls_OrbitControls__js.js.map
+node_modules/.vite/deps/three_addons_controls_OrbitControls__js.js
+node_modules/.vite/deps/three_addons_capabilities_WebGL__js.js.map
+node_modules/.vite/deps/three_addons_capabilities_WebGL__js.js
+node_modules/.vite/deps/three.js.map
+node_modules/.vite/deps/three.js
+node_modules/.vite/deps/package.json
+node_modules/.vite/deps/_metadata.json
