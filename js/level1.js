@@ -1,5 +1,7 @@
 import * as THREE from 'three';
-import {Box} from '../main.js';
+import {Box} from './aircraft.js';
+import {Ring} from './ring.js';
+
 
 //setup and move the camera
 const gameCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -62,4 +64,4 @@ gameScene.add(light);
 
 gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
 
-export {gameScene, gameCamera}
+export {gameScene, gameCamera, aircraft, ground}
