@@ -29,11 +29,6 @@ export function BoxCollision({
     return xCollision && yCollision && zCollision
 }
 
-
-
-
-
-
 // renderer setup
 const renderer = new THREE.WebGLRenderer({
     alpha: true,
@@ -60,24 +55,25 @@ const keys = {
     s: {
         pressed: false
     },
-    space: {
-        pressed: false
-    }
 }
 
 
 import {menuScene, menuCamera} from "./js/mainMenu.js";
-import {gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody}from "./js/level1.js";
+import {gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody} from "./js/level1.js";
+
 const cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
     // color: 0xff0000,
   });
 const controls = new OrbitControls(gameCamera, renderer.domElement)
 
    
-
-let frames = 0;
-let spawnRate = 200;
-
+const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+let thirdPerson = false;
+let offset = {
+    x:0,
+    y:0, 
+    z:0
+};
 function animate() {
 
 
@@ -85,19 +81,6 @@ function animate() {
         renderer.render(menuScene, menuCamera); //This line loads the Main Menu as the active scene at first, active scene gets updated on click
 
     } else {
-       
-
-        renderer.render(gameScene, gameCamera);
-        physicsWorld.fixedStep();
-        cannonDebugger.update();
-        aircraft.position.copy(aircraftBody.position);
-        aircraft.quaternion.copy(aircraftBody.quaternion);
-        ground.position.copy(groundBody.position);
-        // ground.quaternion = (0,0,0);
-
-        animationId = requestAnimationFrame(animate);
-        console.log(animationId)
-
 
         //depeinding on keys presses, chnage the velocity
         //limit frame rate so game is constabnt on all screens 
@@ -106,53 +89,51 @@ function animate() {
         // aircraft.velocity.x = 0;
         // aircraft.velocity.z = 0;
         // aircraft.velocity.y += aircraft.gravity;
-        // if (keys.a.pressed)
-        //     aircraft.velocity.x = -0.05;
-        // if (keys.d.pressed)
-        //     aircraft.velocity.x = 0.05;
-        // if (keys.w.pressed)
-        //     aircraft.velocity.z = -0.05;
-        // if (keys.s.pressed)
-        //     aircraft.velocity.z = 0.05;
-        // if (keys.space.pressed) {
-        //     aircraft.velocity.y = 0.05;
-        // }
-        // aircraft.update(ground);
-        // //first person
-        // // camera.position.set( aircraft.position.x, aircraft.position.y, aircraft.position.z + aircraft.depth/2);  
 
-        // Rings.forEach((ring) => {
-        //     ring.update();
-        //     /*CHECK COLLSION between aircraft and ring
-        //     if collsion call
-        //     cancelAnimationFrame(animationID)
-        //     */
-        // })
+        let speed = 80;
+        const force = new CANNON.Vec3(0, 0, 0);
+        aircraftBody.velocity.z = -5;
+        const mass = 5;
+        let vxf = aircraftBody.velocity.x
+        let vyf = aircraftBody.velocity.y;
+        let vxi = aircraftBody.velocity.x;
+        let vyi = aircraftBody.velocity.y;
+        // // Update the physics world
+        // aircraftBody.velocity.x=0;
+        // aircraftBody.velocity.y=0;
+        if (keys.a.pressed)
+            vxf = -speed;
+            vyf = 0;
+            // aircraftBody.velocity.x = -speed; // Adjust the force strength as needed
+        if (keys.d.pressed)
+            vxf = speed;
+            vyf = 0;
+            // aircraftBody.velocity.x = speed; // Adjust the force strength as needed
+        if (keys.w.pressed)
+            vxf = 0;
+            vyf = speed;
+            // aircraftBody.velocity.y = speed; // Adjust the force strength as needed
+        if (keys.s.pressed)
+            vxf = 0;
+            vyf = -speed;
+            // aircraftBody.velocity.y = -speed; // Adjust the force strength as needed
 
-        // if (frames % spawnRate == 0) {
-        //     const ring = new Ring({
-        //         ringRadius: 2,
-        //         tubeRadius: 0.125,
-        //         hexColour: 0xFFD700,
-        //         position: {
-        //             x: (Math.random() - 0.5) * 7,
-        //             y: (Math.random() - 0.5) * 7,
-        //             z: -10
-        //         },
-        //         velocity: {
-        //             x: 0,
-        //             y: 0,
-        //             z: 0.05
-        //         }
-        //     });
-        //     ring.castShadow = true;
-        //     gameScene.add(ring);
-        //     Rings.push(ring);
-        // }
+        force.x = (vxf - vxi)/mass;
+        force.y = (vyf - vyi)/mass + 16;
+        console.log(force.x, force.y);
+        physicsWorld.step(1 / 60); 
 
-        // frames += 1;
-        // //find camer postion
-        // console.log(camera.position);S
+        aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
+        physicsWorld.fixedStep();
+        // cannonDebugger.update();
+        aircraft.position.copy(aircraftBody.position);
+        aircraft.quaternion.copy(aircraftBody.quaternion);
+        ground.position.copy(groundBody.position);
+        // ground.quaternion = (0,0,0);
+        perspectiveCamera.position.set( aircraft.position.x, aircraft.position.y + offset.y, aircraft.position.z + aircraft.depth/2 + offset.z);  
+        renderer.render(gameScene, perspectiveCamera);
+        animationId = requestAnimationFrame(animate);
+
     }
     //find camer postion
     // console.log(camera.position);
@@ -179,18 +160,19 @@ window.addEventListener('keydown', (event) => {
         case 'KeyS':
             keys.s.pressed = true;
             break;
-        //jump
-        case 'Space':
-            // if(MainMenu == true){
-            //     cancelAnimationFrame(animationId);
-            //     MainMenu = false;
-            //     requestAnimationFrame(animate);
-            // } else {
-                keys.space.pressed = true;
-            // }
-
-            break;
-
+        case 'KeyP':
+            if (!thirdPerson){
+                thirdPerson=true;
+                offset.x = 0;
+                offset.y = 5;
+                offset.z = 10;
+            } else {
+                thirdPerson=false;
+                offset.x = 0;
+                offset.y = 0;
+                offset.z = 0;
+            }
+        break;
         case 'Escape':
             if (MainMenu){
                 cancelAnimationFrame(animationId);
@@ -212,10 +194,12 @@ window.addEventListener('keyup', (event) => {
         //left
         case 'KeyA':
             keys.a.pressed = false;
+
             break;
         //right
         case 'KeyD':
             keys.d.pressed = false;
+
             break;
         //forward
         case 'KeyW':
@@ -224,10 +208,6 @@ window.addEventListener('keyup', (event) => {
         //backward
         case 'KeyS':
             keys.s.pressed = false;
-            break;
-        //jump
-        case 'Space':
-            keys.space.pressed = false;
             break;
     }
 })
