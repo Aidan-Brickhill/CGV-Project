@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import WebGL from 'three/addons/capabilities/WebGL.js';
+// import { Project, Scene3D, PhysicsLoader } from 'enable3d'
 
 //for dev purposes (allows you to navigate the 3D space)
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -13,6 +13,10 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 
 let MainMenu = true;
+let animationId;
+//array of all rings
+const Rings = [];
+
 
 //ring class
 class Ring extends THREE.Mesh {
@@ -51,7 +55,7 @@ class Ring extends THREE.Mesh {
         //updates the z direction (aka. comes towards you)
         this.position.z += this.velocity.z;
 
-        this.velocity.z += 0.0003;
+        this.velocity.z += 0.00003;
     }
 }
 
@@ -161,33 +165,46 @@ function BoxCollision({
     return xCollision && yCollision && zCollision
 }
 
-
-//setup and move the camera
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(7.99, 3.89, 17.28);
-
 //renderer setup
 const renderer = new THREE.WebGLRenderer({
     alpha: true,
     antialias: true
 });
 
-
-//setting the scene
-const gameScene = new THREE.Scene();
-
-
 //enable shadows
 renderer.shadowMap.enabled = true;
+renderer.setPixelRatio(1);
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 //for dev purposes
-const controls = new OrbitControls(camera, renderer.domElement)
 
-export { renderer, camera, gameScene };
-//array of all rings
-const Rings = [];
+//setting the scene
+
+//struct to track key inputs
+const keys = {
+    a: {
+        pressed: false
+    },
+    d: {
+        pressed: false
+    },
+    w: {
+        pressed: false
+    },
+    s: {
+        pressed: false
+    },
+    space: {
+        pressed: false
+    }
+}
+
+// ----------TEMP------------//
+const gameCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+gameCamera.position.set(7.99, 3.89, 17.28);
+
+const gameScene = new THREE.Scene();
 
 //aircraft
 const aircraft = new Box({
@@ -208,6 +225,17 @@ const aircraft = new Box({
 });
 aircraft.castShadow = true;
 gameScene.add(aircraft)
+
+
+// const aircraft2 = new Box({
+//     width: 1,
+//     height: 1,
+//     depth: 1,
+//     hexColour: 0xCD7fff,
+// });
+// aircraft2.castShadow = true
+// physics.add.exisisting(aircraft2);
+// gameScene.add(aircraft2)
 
 //ground
 const ground = new Box({
@@ -233,134 +261,24 @@ gameScene.add(light);
 
 gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
 
-//struct to track key inputs
-const keys = {
-    a: {
-        pressed: false
-    },
-    d: {
-        pressed: false
-    },
-    w: {
-        pressed: false
-    },
-    s: {
-        pressed: false
-    },
-    space: {
-        pressed: false
-    }
-}
+import {menuScene, menuCamera} from "./js/mainMenu.js";
+// import {gameScene, gameCamera} from "./js/level1.js";
 
-//onpress of a key
-window.addEventListener('keydown', (event) => {
-    switch (event.code) {
-        //left
-        case 'KeyA':
-            keys.a.pressed = true;
-            break;
-        //right
-        case 'KeyD':
-            keys.d.pressed = true;
-            break;
-        //forward
-        case 'KeyW':
-            keys.w.pressed = true;
-            break;
-        //backward
-        case 'KeyS':
-            keys.s.pressed = true;
-            break;
-        //jump
-        case 'Space':
-            keys.space.pressed = true;
-            if(MainMenu == true){
-                renderer.clear();
-            }
-            MainMenu = false;
+const controls = new OrbitControls(gameCamera, renderer.domElement)
 
-            break;
 
-        case 'Escape':
-            keys.space.pressed = true;
-            renderer.clear();
-            MainMenu = true;
-            break;
-    }
-})
-
-//realeas of a key
-window.addEventListener('keyup', (event) => {
-    switch (event.code) {
-        //left
-        case 'KeyA':
-            keys.a.pressed = false;
-            break;
-        //right
-        case 'KeyD':
-            keys.d.pressed = false;
-            break;
-        //forward
-        case 'KeyW':
-            keys.w.pressed = false;
-            break;
-        //backward
-        case 'KeyS':
-            keys.s.pressed = false;
-            break;
-        //jump
-        case 'Space':
-            keys.space.pressed = false;
-            break;
-    }
-})
-
+// ----------TEMP------------//
 let frames = 0;
 let spawnRate = 200;
-
-// ----------TEMP------------//
-
-// Define main menu logic here
-// This function can return the menu scene and menu-related code
-const menuScene = new THREE.Scene();
-
-const menuBackgroundGeometry = new THREE.PlaneGeometry(10, 6); // You can adjust the dimensions
-const menuBackgroundMaterial = new THREE.MeshBasicMaterial({ color: 0x222222 }); // Adjust the color as needed
-// Create and add menu element to the scene
-const menuBackground = new THREE.Mesh(menuBackgroundGeometry, menuBackgroundMaterial);
-menuBackground.position.set(0, 0, -5); // Position Menu background in the scene
-menuScene.add(menuBackground);
-
-// Defining the startbutton dimensions and colour
-const startButtonGeometry = new THREE.PlaneGeometry(2, 1);
-const startButtonMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-
-// Creating the start button
-const startButton = new THREE.Mesh(startButtonGeometry, startButtonMaterial);
-startButton.position.set(0, -1, -4); // Position Start button background in the scene
-menuScene.add(startButton); // Add start button to scene
-
-startButton.addEventListener('click', () => {
-    // Transition to the game scene when the start button is clicked
-    // Remove the menu scene from the renderer and activate the game scene
-    alert("start Button Clicked");
-    renderer.clear();
-    MainMenu = false;
-});
-
-
-// ----------TEMP------------//
-
-
 function animate() {
 
-    const animationId = requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
 
     if (MainMenu) {
-        renderer.render(menuScene, camera); //This line loads the Main Menu as the active scene at first, active scene gets updated on click
+        renderer.render(menuScene, menuCamera); //This line loads the Main Menu as the active scene at first, active scene gets updated on click
 
     } else {
-        renderer.render(gameScene, camera);
+        renderer.render(gameScene, gameCamera);
 
         //depeinding on keys presses, chnage the velocity
         //limit frame rate so game is constabnt on all screens 
@@ -415,74 +333,83 @@ function animate() {
 
         frames += 1;
         //find camer postion
-        // console.log(camera.position);
+        // console.log(camera.position);S
     }
-
-    // renderer.render(gameScene, camera);
-
-    //depeinding on keys presses, chnage the velocity
-    //limit frame rate so game is constabnt on all screens 
-    // use link 
-    // https://chriscourses.com/blog/standardize-your-javascript-games-framerate-for-different-monitors
-    aircraft.velocity.x = 0;
-    aircraft.velocity.z = 0;
-    aircraft.velocity.y += aircraft.gravity;
-    if (keys.a.pressed)
-        aircraft.velocity.x = -0.05;
-    if (keys.d.pressed)
-        aircraft.velocity.x = 0.05;
-    if (keys.w.pressed)
-        aircraft.velocity.z = -0.05;
-    if (keys.s.pressed)
-        aircraft.velocity.z = 0.05;
-    if (keys.space.pressed) {
-        aircraft.velocity.y = 0.05;
-    }
-    aircraft.update(ground);
-    //first person
-    // camera.position.set( aircraft.position.x, aircraft.position.y, aircraft.position.z + aircraft.depth/2);  
-
-    Rings.forEach((ring) => {
-        ring.update();
-        /*CHECK COLLSION between aircraft and ring
-        if collsion call
-        cancelAnimationFrame(animationID)
-        */
-    })
-
-    if (frames % spawnRate == 0) {
-        const ring = new Ring({
-            ringRadius: 2,
-            tubeRadius: 0.125,
-            hexColour: 0xFFD700,
-            position: {
-                x: (Math.random() - 0.5) * 7,
-                y: (Math.random() - 0.5) * 7,
-                z: -10
-            },
-            velocity: {
-                x: 0,
-                y: 0,
-                z: 0.05
-            }
-        });
-        ring.castShadow = true;
-        gameScene.add(ring);
-        Rings.push(ring);
-    }
-
-    frames += 1;
     //find camer postion
     // console.log(camera.position);
 }
-
 animate();
 
-function switchScene(newScene) {
-    activeScene = newScene;
-    renderer.clear();
-    renderer.render(activeScene, camera);
-}
+//Event listeners
+//onpress of a key
+window.addEventListener('keydown', (event) => {
+    switch (event.code) {
+        //left
+        case 'KeyA':
+            keys.a.pressed = true;
+            break;
+        //right
+        case 'KeyD':
+            keys.d.pressed = true;
+            break;
+        //forward
+        case 'KeyW':
+            keys.w.pressed = true;
+            break;
+        //backward
+        case 'KeyS':
+            keys.s.pressed = true;
+            break;
+        //jump
+        case 'Space':
+            if(MainMenu == true){
+                cancelAnimationFrame(animationId);
+                MainMenu = false;
+                requestAnimationFrame(animate);
 
+            } else {
+                keys.space.pressed = true;
+            }
 
+            break;
 
+        case 'Escape':
+            if (MainMenu){
+                cancelAnimationFrame(animationId);
+            MainMenu = false;
+            requestAnimationFrame(animate);
+            } else {
+                cancelAnimationFrame(animationId);
+            MainMenu = true;
+            requestAnimationFrame(animate);
+            }
+            
+            break;
+    }
+})
+
+//realeas of a key
+window.addEventListener('keyup', (event) => {
+    switch (event.code) {
+        //left
+        case 'KeyA':
+            keys.a.pressed = false;
+            break;
+        //right
+        case 'KeyD':
+            keys.d.pressed = false;
+            break;
+        //forward
+        case 'KeyW':
+            keys.w.pressed = false;
+            break;
+        //backward
+        case 'KeyS':
+            keys.s.pressed = false;
+            break;
+        //jump
+        case 'Space':
+            keys.space.pressed = false;
+            break;
+    }
+})
