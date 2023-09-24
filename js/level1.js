@@ -60,9 +60,9 @@ import('./aircraft.js').then(({ Box }) => {
 
 
     ground = new Box({
-        width: 50,
+        width: 150,
         height: 0.25,
-        depth: 5000,
+        depth: 1000,
         hexColour: 0xCDE17D,
         position: {
             x: 0,

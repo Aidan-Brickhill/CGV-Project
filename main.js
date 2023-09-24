@@ -90,42 +90,42 @@ function animate() {
         // aircraft.velocity.z = 0;
         // aircraft.velocity.y += aircraft.gravity;
 
-        let speed = 80;
-        const force = new CANNON.Vec3(0, 0, 0);
+        let speed = 20;
+        // const force = new CANNON.Vec3(0, 0, 0);
         aircraftBody.velocity.z = -5;
-        const mass = 5;
-        let vxf = aircraftBody.velocity.x
-        let vyf = aircraftBody.velocity.y;
-        let vxi = aircraftBody.velocity.x;
-        let vyi = aircraftBody.velocity.y;
-        // // Update the physics world
-        // aircraftBody.velocity.x=0;
-        // aircraftBody.velocity.y=0;
+        // const mass = 5;
+        // let vxf = aircraftBody.velocity.x
+        // let vyf = aircraftBody.velocity.y;
+        // let vxi = aircraftBody.velocity.x;
+        // let vyi = aircraftBody.velocity.y;
+        // // Update the physics worlds
+        aircraftBody.velocity.x=0;
+        aircraftBody.velocity.y=0;
         if (keys.a.pressed)
-            vxf = -speed;
-            vyf = 0;
-            // aircraftBody.velocity.x = -speed; // Adjust the force strength as needed
+            // vxf = -speed;
+            // vyf = 0;
+            aircraftBody.velocity.x = -speed; // Adjust the force strength as needed
         if (keys.d.pressed)
-            vxf = speed;
-            vyf = 0;
-            // aircraftBody.velocity.x = speed; // Adjust the force strength as needed
+            // vxf = speed;
+            // vyf = 0;
+            aircraftBody.velocity.x = speed; // Adjust the force strength as needed
         if (keys.w.pressed)
-            vxf = 0;
-            vyf = speed;
-            // aircraftBody.velocity.y = speed; // Adjust the force strength as needed
+            // vxf = 0;
+            // vyf = speed;
+            aircraftBody.velocity.y = speed; // Adjust the force strength as needed
         if (keys.s.pressed)
-            vxf = 0;
-            vyf = -speed;
-            // aircraftBody.velocity.y = -speed; // Adjust the force strength as needed
+            // vxf = 0;
+            // vyf = -speed;
+            aircraftBody.velocity.y = -speed; // Adjust the force strength as needed
 
-        force.x = (vxf - vxi)/mass;
-        force.y = (vyf - vyi)/mass + 16;
-        console.log(force.x, force.y);
+        // force.x = (vxf - vxi)/mass;
+        // force.y = (vyf - vyi)/mass + 16;
+        // console.log(force.x, force.y);
         physicsWorld.step(1 / 60); 
 
-        aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
+        // aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
         physicsWorld.fixedStep();
-        // cannonDebugger.update();
+        cannonDebugger.update();
         aircraft.position.copy(aircraftBody.position);
         aircraft.quaternion.copy(aircraftBody.quaternion);
         ground.position.copy(groundBody.position);
