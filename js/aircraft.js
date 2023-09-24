@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { BoxCollision } from '../main';
 //box class (to be aircraft eventually)
 export class Box extends THREE.Mesh {
     constructor({
@@ -61,32 +60,5 @@ export class Box extends THREE.Mesh {
     }
 
 
-    applyGravity(ground) {
-        this.velocity.y += this.gravity;
-
-        //calls function to check for collison between aircraft and ground
-        if (BoxCollision({
-            box1: this,
-            box2: ground
-        })) {
-            //friction (bounces become smaller after each one)
-            this.velocity.y *= 0.8;
-            this.velocity.y = -this.velocity.y;
-        } else {
-            // to remove flappy bird mechanics maybe check if velocity is o
-            this.position.y += this.velocity.y;
-        }
-    }
-
-    updateSides() {
-        //update left,right,top and bottom as they move
-        this.right = this.position.x + this.width / 2
-        this.left = this.position.x - this.width / 2
-
-        this.bottom = this.position.y - this.height / 2
-        this.top = this.position.y + this.height / 2
-
-        this.front = this.position.z + this.depth / 2
-        this.back = this.position.z - this.depth / 2
-    }
+   
 }

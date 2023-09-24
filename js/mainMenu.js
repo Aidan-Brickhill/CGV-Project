@@ -12,22 +12,32 @@ const menuBackground = new THREE.Mesh(menuBackgroundGeometry, menuBackgroundMate
 menuBackground.position.set(0, 0, -5); // Position Menu background in the scene
 menuScene.add(menuBackground);
 
-// Defining the startbutton dimensions and colour
-const startButtonGeometry = new THREE.PlaneGeometry(2, 1);
-const startButtonMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+// Defining the level1Button dimensions and colour
+// Existing code to create the start button background
+const level1ButtonGeometry = new THREE.PlaneGeometry(2, 1);
+const level1ButtonMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+const level1Button = new THREE.Mesh(level1ButtonGeometry, level1ButtonMaterial);
+level1Button.position.set(0, 2, -4); // Position Start button background in the scene
+menuScene.add(level1Button); // Add start button to scene
+level1Button.name="level1";
 
-// Creating the start button
-const startButton = new THREE.Mesh(startButtonGeometry, startButtonMaterial);
-startButton.position.set(0, -1, -4); // Position Start button background in the scene
-menuScene.add(startButton); // Add start button to scene
+const level2ButtonGeometry = new THREE.PlaneGeometry(2, 1);
+const level2ButtonMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const level2Button = new THREE.Mesh(level2ButtonGeometry, level2ButtonMaterial);
+level2Button.position.set(0, 0, -4); // Position Start button background in the scene
+menuScene.add(level2Button); // Add start button to scene
+level2Button.name="level2";
+
+
+const level3ButtonGeometry = new THREE.PlaneGeometry(2, 1);
+const level3ButtonMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const level3Button = new THREE.Mesh(level3ButtonGeometry, level3ButtonMaterial);
+level3Button.position.set(0, -2, -4); // Position Start button background in the scene
+menuScene.add(level3Button); // Add start button to scene
+level3Button.name="level3";
 
 
 export {menuScene, menuCamera}
-// startButton.addEventListener('click', () => {
-//     // Transition to the game scene when the start button is clicked
-//     // Remove the menu scene from the renderer and activate the game scene
-//     alert("start Button Clicked");
-//     renderer.clear();
-//     MainMenu = false;
-// });
+
+
 

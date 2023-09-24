@@ -4,98 +4,98 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 
 //camera
-const level1Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-level1Camera.position.set(0, 0, 30);
+const level2Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+level2Camera.position.set(0, 0, 30);
 
 //scene-graphics
-const level1Scene = new THREE.Scene();
+const level2Scene = new THREE.Scene();
 
 //CANNON physics world
-const level1PhysicsWorld = new CANNON.World({
+const level2PhysicsWorld = new CANNON.World({
     gravity: new CANNON.Vec3(0, 0, 0),
 });
 
 
 
-let level1AircraftBody;
-let level1AircraftVehicle;
-let level1GroundBody;
-let level1Ground;
+let level2AircraftBody;
+let level2AircraftVehicle;
+let level2GroundBody;
+let level2Ground;
 
 
 
-//level1Aircraft
-level1AircraftBody = new CANNON.Body({
+//level2Aircraft
+level2AircraftBody = new CANNON.Body({
     mass: 5,
     shape: new CANNON.Box(new CANNON.Vec3(0.75, 0.85, 3)),
 });
-level1AircraftBody.addShape(new CANNON.Box(
+level2AircraftBody.addShape(new CANNON.Box(
     new CANNON.Vec3(3.15, 0.9, 0.8)),
     new CANNON.Vec3(0, 0, -0.2)
     );
-level1AircraftBody.position.set(0, 0, 30);
+level2AircraftBody.position.set(0, 0, 30);
 
-level1AircraftVehicle = new CANNON.RigidVehicle({
-    chassisBody: level1AircraftBody,
+level2AircraftVehicle = new CANNON.RigidVehicle({
+    chassisBody: level2AircraftBody,
 })
 
-level1AircraftVehicle.addToWorld(level1PhysicsWorld);
+level2AircraftVehicle.addToWorld(level2PhysicsWorld);
 
-let level1Aircraft;
-let level1Mixer;
+let level2Aircraft;
+let level2Mixer;
 const glftLoader = new GLTFLoader();
 glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
-    level1Aircraft = gltfScene.scene;
-    level1Scene.add(level1Aircraft);
-    level1Aircraft.scale.set(5, 5, 5);
-    level1Aircraft.rotation.y = Math.PI;
-    level1Aircraft.traverse(function(node) {
+    level2Aircraft = gltfScene.scene;
+    level2Scene.add(level2Aircraft);
+    level2Aircraft.scale.set(5, 5, 5);
+    level2Aircraft.rotation.y = Math.PI;
+    level2Aircraft.traverse(function(node) {
         if (node.isMesh){
             node.castShadow = true;
         }
     });
 
     const clips = gltfScene.animations;
-    level1Mixer = new THREE.AnimationMixer(level1Aircraft);
+    level2Mixer = new THREE.AnimationMixer(level2Aircraft);
 
     clips.forEach(function(clip) {
-        const action = level1Mixer.clipAction(clip);
+        const action = level2Mixer.clipAction(clip);
         action.play();
     });
     
 });
 
 
-// import to use level1Aircraft.js
+// import to use level2Aircraft.js
 import('./aircraft.js').then(({ Box }) => {
 
-    // create a level1Ground body with a static plane
-    level1Ground = new Box({
+    // create a level2Ground body with a static plane
+    level2Ground = new Box({
         width: 150,
         height: 0.25,
         depth: 1000,
-        hexColour: 0xCDE17D,
+        hexColour: 0x7DCDE1,
         position: {
             x: 0,
             y: -11,
             z: 0
         }
     });
-    level1Ground.receiveShadow = true;
-    level1Scene.add(level1Ground);
+    level2Ground.receiveShadow = true;
+    level2Scene.add(level2Ground);
 
 }).catch(error => {
     console.log('Error loading Box class:', error);
 });
 
-//level1Ground
-level1GroundBody = new CANNON.Body({
+//level2Ground
+level2GroundBody = new CANNON.Body({
     type: CANNON.Body.STATIC,
     shape: new CANNON.Plane(),
 });
-level1GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-level1GroundBody.position.set(0, -10, 0);
-level1PhysicsWorld.addBody(level1GroundBody);
+level2GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+level2GroundBody.position.set(0, -10, 0);
+level2PhysicsWorld.addBody(level2GroundBody);
 
 
 //plotting rings along the map
@@ -141,7 +141,7 @@ for (let z = 0; z < 20; z++) {
     }
 
     // Add the torusBody to the Cannon.js world
-    level1PhysicsWorld.addBody(torusBody);
+    level2PhysicsWorld.addBody(torusBody);
     await import('./ring.js').then(({ Ring }) => {
 
         const ring = new Ring({
@@ -155,11 +155,11 @@ for (let z = 0; z < 20; z++) {
             },
         });
         ring.castShadow = true;
-        level1Scene.add(ring);
+        level2Scene.add(ring);
 
     }).catch(error => {
         console.log('Error loading Ring class:', error);
     });
 }
 
-export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1Mixer }
+export { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2Mixer }

@@ -1,72 +1,37 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es'
 import CannonDebugger from 'cannon-es-debugger';
-
 import {Box} from './js/aircraft.js';
 import {Ring} from './js/ring.js';
+
 
 //for dev purposes (allows you to navigate the 3D space)
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-
 let MainMenu = true;
 let animationId;
-// //array of all rings
-const Rings = [];
 
-// //check the collison between two boxes (returns true if they are touching)
-// //need to create one between aircraft and gorund (once aircraft is no longer a box)
-// //need one to create one between aircraft and rings to complete the purpose of the game
-export function BoxCollision({
-    box1,
-    box2
-}) {
-    // collison detection along all axis
-    const xCollision = box1.right >= box2.left && box1.left <= box2.right
-    const yCollision =
-        box1.bottom + box1.velocity.y <= box2.top && box1.top >= box2.bottom
-    const zCollision = box1.front >= box2.back && box1.back <= box2.front
-    return xCollision && yCollision && zCollision
-}
 
 // renderer setup
 const renderer = new THREE.WebGLRenderer({
     alpha: true,
     antialias: true
 });
- //enable shadows
 renderer.shadowMap.enabled = true;
 renderer.setPixelRatio(1);
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-
-//struct to track key inputs
-const keys = {
-    a: {
-        pressed: false
-    },
-    d: {
-        pressed: false
-    },
-    w: {
-        pressed: false
-    },
-    s: {
-        pressed: false
-    },
-}
-
-
+//imports from other levels
 import {menuScene, menuCamera} from "./js/mainMenu.js";
-import {gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody} from "./js/level1.js";
+import {level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1Mixer} from "./js/level1.js";
+import {level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2Mixer} from "./js/level2.js";
+import {level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3Mixer} from "./js/level3.js";
 
-const cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
-    // color: 0xff0000,
-  });
-const controls = new OrbitControls(gameCamera, renderer.domElement)
+let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody, mixer;
+let light, cannonDebugger;
 
-   
+//3rd/fp camera
 const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let thirdPerson = false;
 let offset = {
@@ -74,25 +39,27 @@ let offset = {
     y:0, 
     z:0
 };
+ 
+ const clock = new THREE.Clock(); 
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2(); 
 function animate() {
 
 
     if (MainMenu) {
+        raycaster.setFromCamera(mouse, menuCamera);
         renderer.render(menuScene, menuCamera); //This line loads the Main Menu as the active scene at first, active scene gets updated on click
-
     } else {
 
-        //depeinding on keys presses, chnage the velocity
-        //limit frame rate so game is constabnt on all screens 
-        // use link 
-        // https://chriscourses.com/blog/standardize-your-javascript-games-framerate-for-different-monitors
         // aircraft.velocity.x = 0;
         // aircraft.velocity.z = 0;
         // aircraft.velocity.y += aircraft.gravity;
-
+        if (mixer){
+            mixer.update(clock.getDelta());
+        }
         let speed = 20;
         // const force = new CANNON.Vec3(0, 0, 0);
-        aircraftBody.velocity.z = -5;
+        aircraftBody.velocity.z = -8;
         // const mass = 5;
         // let vxf = aircraftBody.velocity.x
         // let vyf = aircraftBody.velocity.y;
@@ -126,21 +93,92 @@ function animate() {
         // aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
         physicsWorld.fixedStep();
         cannonDebugger.update();
-        aircraft.position.copy(aircraftBody.position);
-        aircraft.quaternion.copy(aircraftBody.quaternion);
+        aircraft.position.x= aircraftBody.position.x;
+        aircraft.position.y= aircraftBody.position.y-1;
+        aircraft.position.z= aircraftBody.position.z;
+        // aircraft.quaternion.x= aircraftBody.quaternion.x;
+        // console.log(aircraftBody.quaternion)
+        // aircraft.quaternion.y=  aircraftBody.quaternion.y;
+        aircraft.quaternion.setFromEuler(aircraftBody.quaternion.x,aircraftBody.quaternion.y+Math.PI/2,aircraftBody.quaternion.z);
         ground.position.copy(groundBody.position);
         // ground.quaternion = (0,0,0);
-        perspectiveCamera.position.set( aircraft.position.x, aircraft.position.y + offset.y, aircraft.position.z + aircraft.depth/2 + offset.z);  
+        perspectiveCamera.position.set( aircraft.position.x, aircraft.position.y+1 + offset.y, aircraft.position.z - 3 + offset.z);  
+        light.position.set(10, 100, aircraft.position.z + 20)
         renderer.render(gameScene, perspectiveCamera);
         animationId = requestAnimationFrame(animate);
 
     }
-    //find camer postion
-    // console.log(camera.position);
 }
 animate();
+// const controls = new OrbitControls(gameCamera, renderer.domElement)
+
 
 //Event listeners
+//checks which button is presssed in main menu
+window.addEventListener('mousedown', onMouseDown, false);
+
+function onMouseDown(event) {
+    // Calculate normalized mouse coordinates
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+    // Update the raycaster with the mouse position
+    raycaster.setFromCamera(mouse, menuCamera);
+
+    // Perform the raycasting
+    const intersects = raycaster.intersectObjects(menuScene.children, true);
+
+    // Check if any objects were intersected
+    if (intersects.length > 0) {
+        const selectedObject = intersects[0].object;
+
+        // You can now work with the selected object
+        console.log('Selected object:', selectedObject);
+
+        if (MainMenu){
+            if (selectedObject.name==="level1"){
+                
+                cancelAnimationFrame(animationId);
+                initializeLevel1Scene();
+                MainMenu = false;
+                requestAnimationFrame(animate);
+            }
+            if (selectedObject.name==="level2"){
+                
+                cancelAnimationFrame(animationId);
+                initializeLevel2Scene();
+                MainMenu = false;
+                requestAnimationFrame(animate);
+            }   
+            if (selectedObject.name==="level3"){
+                    
+                cancelAnimationFrame(animationId);
+                initializeLevel3Scene();
+                MainMenu = false;
+                requestAnimationFrame(animate);
+            }
+        }
+
+
+        // Perform any actions or handle the selection as needed
+    }
+}
+
+//struct to track key inputs
+const keys = {
+    a: {
+        pressed: false
+    },
+    d: {
+        pressed: false
+    },
+    w: {
+        pressed: false
+    },
+    s: {
+        pressed: false
+    },
+}
 //onpress of a key
 window.addEventListener('keydown', (event) => {
     switch (event.code) {
@@ -165,7 +203,7 @@ window.addEventListener('keydown', (event) => {
                 thirdPerson=true;
                 offset.x = 0;
                 offset.y = 5;
-                offset.z = 10;
+                offset.z = 15;
             } else {
                 thirdPerson=false;
                 offset.x = 0;
@@ -194,12 +232,10 @@ window.addEventListener('keyup', (event) => {
         //left
         case 'KeyA':
             keys.a.pressed = false;
-
             break;
         //right
         case 'KeyD':
             keys.d.pressed = false;
-
             break;
         //forward
         case 'KeyW':
@@ -212,6 +248,82 @@ window.addEventListener('keyup', (event) => {
     }
 })
 
+function initializeLevel1Scene(){
+    gameScene = level1Scene;
+    gameCamera = level1Camera;
+    physicsWorld = level1PhysicsWorld;
+    aircraft = level1Aircraft;
+    aircraftBody = level1AircraftBody;
+    ground = level1Ground;
+    groundBody = level1GroundBody;
+    mixer = level1Mixer;
 
+    light = new THREE.DirectionalLight(0xffffff, 1)
+    light.castShadow = true;
+    gameScene.add(light);
+
+    gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
+
+    cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
+        // color: 0xff0000,
+    });
+    
+    //collsion on aircraft
+    aircraftBody.addEventListener("collide", function (e) {
+        physicsWorld.gravity.set(0, -175, 0);
+    });
+}
+
+function initializeLevel2Scene(){
+    gameScene = level2Scene;
+    gameCamera = level2Camera;
+    physicsWorld = level2PhysicsWorld;
+    aircraft = level2Aircraft;
+    aircraftBody = level2AircraftBody;
+    ground = level2Ground;
+    groundBody = level2GroundBody;
+    mixer = level2Mixer;
+
+    light = new THREE.DirectionalLight(0xffffff, 1)
+    light.castShadow = true;
+    gameScene.add(light);
+
+    gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
+
+    cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
+        // color: 0xff0000,
+    });
+    
+    //collsion on aircraft
+    aircraftBody.addEventListener("collide", function (e) {
+        physicsWorld.gravity.set(0, -175, 0);
+    });
+}
+
+function initializeLevel3Scene(){
+    gameScene = level3Scene;
+    gameCamera = level3Camera;
+    physicsWorld = level3PhysicsWorld;
+    aircraft = level3Aircraft;
+    aircraftBody = level3AircraftBody;
+    ground = level3Ground;
+    groundBody = level3GroundBody;
+    mixer = level3Mixer;
+
+    light = new THREE.DirectionalLight(0xffffff, 1)
+    light.castShadow = true;
+    gameScene.add(light);
+
+    gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
+
+    cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
+        // color: 0xff0000,
+    });
+    
+    //collsion on aircraft
+    aircraftBody.addEventListener("collide", function (e) {
+        physicsWorld.gravity.set(0, -175, 0);
+    });
+}
 
 

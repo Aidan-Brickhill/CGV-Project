@@ -3,6 +3,7 @@
     "ammo.js": "github:kripken/ammo.js",
     "cannon": "^0.6.2",
     "cannon-es-debugger": "^1.0.0",
+    "cannon-utils": "^0.1.4",
     "enable3d": "^0.25.3",
     "three": "^0.156.1"
   },
