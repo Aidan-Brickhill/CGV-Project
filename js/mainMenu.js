@@ -1,6 +1,4 @@
 import * as THREE from 'three';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 
 const menuCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 menuCamera.position.set(0, 0, 2);
