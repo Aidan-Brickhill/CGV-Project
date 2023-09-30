@@ -82,7 +82,6 @@ function animate() {
 
         force.x = (vxf - vxi)/mass;
         force.y = (vyf - vyi)/mass;
-        console.log(force.x, force.y);
         aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
         
         physicsWorld.step(1 / 60); 
