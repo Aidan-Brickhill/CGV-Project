@@ -5,7 +5,7 @@ import * as CANNON from 'cannon-es';
 
 //camera
 const level1Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-level1Camera.position.set(0, 0, 30);
+level1Camera.position.set(0, 0, 0);
 
 //scene-graphics
 const level1Scene = new THREE.Scene();
@@ -42,13 +42,14 @@ level1AircraftVehicle = new CANNON.RigidVehicle({
 level1AircraftVehicle.addToWorld(level1PhysicsWorld);
 
 let level1Aircraft;
-let level1Mixer;
-const glftLoader = new GLTFLoader();
+let level1MixerAircraft;
+let glftLoader = new GLTFLoader();
 glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     level1Aircraft = gltfScene.scene;
     level1Scene.add(level1Aircraft);
     level1Aircraft.scale.set(5, 5, 5);
     level1Aircraft.rotation.y = Math.PI;
+    
     level1Aircraft.traverse(function(node) {
         if (node.isMesh){
             node.castShadow = true;
@@ -56,10 +57,10 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     });
 
     const clips = gltfScene.animations;
-    level1Mixer = new THREE.AnimationMixer(level1Aircraft);
+    level1MixerAircraft = new THREE.AnimationMixer(level1Aircraft);
 
     clips.forEach(function(clip) {
-        const action = level1Mixer.clipAction(clip);
+        const action = level1MixerAircraft.clipAction(clip);
         action.play();
     });
     
@@ -87,6 +88,29 @@ import('./aircraft.js').then(({ Box }) => {
 }).catch(error => {
     console.log('Error loading Box class:', error);
 });
+// let level1MixerOcean;
+// glftLoader = new GLTFLoader();
+// glftLoader.load('./Assets/animated_ocean_scene_tutorial_example_1/scene.gltf', (gltfScene) => {
+//     level1Aircraft = gltfScene.scene;
+//     level1Scene.add(level1Aircraft);
+//     level1Aircraft.scale.set(5, 5, 5);
+//     level1Aircraft.rotation.y = Math.PI;
+    
+//     level1Aircraft.traverse(function(node) {
+//         if (node.isMesh){
+//             node.castShadow = true;
+//         }
+//     });
+
+//     const clips = gltfScene.animations;
+//     level1MixerOcean = new THREE.AnimationMixer(level1Aircraft);
+
+//     clips.forEach(function(clip) {
+//         const action = level1MixerOcean.clipAction(clip);
+//         action.play();
+//     });
+    
+// });
 
 //level1Ground
 level1GroundBody = new CANNON.Body({
@@ -162,4 +186,4 @@ for (let z = 0; z < 20; z++) {
     });
 }
 
-export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1Mixer }
+export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft }

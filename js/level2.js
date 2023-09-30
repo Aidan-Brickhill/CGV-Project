@@ -15,20 +15,17 @@ const level2PhysicsWorld = new CANNON.World({
     gravity: new CANNON.Vec3(0, 0, 0),
 });
 
-
-
 let level2AircraftBody;
 let level2AircraftVehicle;
 let level2GroundBody;
 let level2Ground;
-
-
 
 //level2Aircraft
 level2AircraftBody = new CANNON.Body({
     mass: 5,
     shape: new CANNON.Box(new CANNON.Vec3(0.75, 0.85, 3)),
 });
+
 level2AircraftBody.addShape(new CANNON.Box(
     new CANNON.Vec3(3.15, 0.9, 0.8)),
     new CANNON.Vec3(0, 0, -0.2)
@@ -96,7 +93,6 @@ level2GroundBody = new CANNON.Body({
 level2GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 level2GroundBody.position.set(0, -10, 0);
 level2PhysicsWorld.addBody(level2GroundBody);
-
 
 //plotting rings along the map
 let x;
