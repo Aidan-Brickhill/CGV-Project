@@ -4,28 +4,38 @@ import CannonDebugger from 'cannon-es-debugger';
 import {Box} from './js/aircraft.js';
 import {Ring} from './js/ring.js';
 
-
 //for dev purposes (allows you to navigate the 3D space)
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+
 
 let MainMenu = true;
 let animationId;
+let controls;
 let levelInitialize = [0,0,0];
 
 
 // renderer setup
-const renderer = new THREE.WebGLRenderer({
-    alpha: true,
-    antialias: true
-});
+let renderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputColorSpac = THREE.sRGBEncoding;
+renderer.useLegacyLights = true;
 renderer.shadowMap.enabled = true;
-renderer.setPixelRatio(1);
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
+
+let envmap;
+let pmrem = new THREE.PMREMGenerator(renderer);
+pmrem.compileEquirectangularShader();
+const envmapTexture = await new RGBELoader().setDataType(THREE.FloatType).loadAsync("./Assets/envmap.hdr");
+const rt = pmrem.fromEquirectangular(envmapTexture);
+envmap = rt.texture;
+
 
 //imports from other levels
 import {menuScene, menuCamera} from "./js/mainMenu.js";
-import {level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft, level1MixerOcean} from "./js/level1.js";
+import {level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft} from "./js/level1.js";
 import {level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2Mixer} from "./js/level2.js";
 import {level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3Mixer} from "./js/level3.js";
 
@@ -40,6 +50,16 @@ let offset = {
     y:0, 
     z:0
 };
+const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 12, 200 );
+
+// const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E"), 80, 200 );
+testlight.position.set(10, 20, 10);
+
+testlight.castShadow = true; 
+testlight.shadow.mapSize.width = 512; 
+testlight.shadow.mapSize.height = 512; 
+testlight.shadow.camera.near = 0.5; 
+testlight.shadow.camera.far = 500; 
  
 const clock = new THREE.Clock(); 
 const raycaster = new THREE.Raycaster();
@@ -54,9 +74,9 @@ function animate() {
         if (mixer){
             mixer.update(clock.getDelta());
         }
-        if (floorMixer){
-            floorMixer.update(clock.getDelta());
-        }
+        // if (floorMixer){
+        //     floorMixer.update(clock.getDelta());
+        // }
         // const force = new CANNON.Vec3(0, 0, 0);
         let speed = 100;
         let force = new CANNON.Vec3(0, 0, 0);
@@ -101,11 +121,12 @@ function animate() {
         // ground.position.copy(groundBody.position);
         // ground.quaternion = (0,0,0);
         perspectiveCamera.position.set( aircraft.position.x, aircraft.position.y+1 + offset.y, aircraft.position.z - 3 + offset.z);  
+        
         light.target = aircraft;
         light.position.set(aircraft.position.x, aircraft.position.y+100, aircraft.position.z +200);
 
         
-
+        controls.update();
         renderer.render(gameScene, perspectiveCamera);
         animationId = requestAnimationFrame(animate);
     }
@@ -254,32 +275,41 @@ function initializeLevel1Scene(){
     physicsWorld = level1PhysicsWorld;
     aircraft = level1Aircraft;
     aircraftBody = level1AircraftBody;
+    console.log(aircraft)
+    console.log(aircraftBody)
+    // aircraftBody.applyLocalForce(0, new CANNON.Vec3(0, 0, 0));
+    aircraftBody.position.set(0,30, 200);
     ground = level1Ground;
     groundBody = level1GroundBody;
     mixer = level1MixerAircraft;
-    floorMixer = level1MixerOcean;
+    // floorMixer = level1MixerOcean;
 
     if (levelInitialize[0]===0){
         light = new THREE.DirectionalLight(0xffffff, 5)
         // light.position.set(0, 100,  30)
 
         light.castShadow = true;
+        gameScene.add( testlight );
+
         // light.left = -20;
         // light.right = 20;
         // light.top = 20;
         // light.bottom = -20;
 
-        gameScene.add(light);
+        // gameScene.add(light);
 
 
-        const helper = new THREE.DirectionalLightHelper( light, 5 );
-        gameScene.add( helper );
+        // const helper = new THREE.DirectionalLightHelper( light, 5 );
+        // gameScene.add( helper );
 
         gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
 
         levelInitialize[0]=1;
 
-        const controls = new OrbitControls(gameCamera, renderer.domElement)
+        controls = new OrbitControls(gameCamera, renderer.domElement);
+        controls.target.set(0,0,0);
+        controls.dampingFactor = 0.05;
+        controls.enableDamping = true;
     }
     
 
@@ -290,7 +320,7 @@ function initializeLevel1Scene(){
      //collsion on aircraft
     aircraftBody.addEventListener("collide", function (e) {
         console.log("collison occured");
-        physicsWorld.gravity.set(0, -1000, 0);
+        physicsWorld.gravity.set(0, -9.8, 0);
     });
     
 
