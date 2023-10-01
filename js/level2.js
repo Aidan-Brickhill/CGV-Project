@@ -70,10 +70,10 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 let textures = {
     dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt.png"),
     dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
-    grass: await new THREE.TextureLoader().loadAsync("./Assets/grass2.png"),
+    grass: await new THREE.TextureLoader().loadAsync("./Assets/grass.jpg"),
     sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
     water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
-    stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.png"),
+    stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
 };
 
 

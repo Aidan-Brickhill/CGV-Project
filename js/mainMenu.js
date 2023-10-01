@@ -10,17 +10,23 @@ const menuCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.in
 menuCamera.position.set(0, 10, 2);
 // menuCamera.rotateY(Math.PI / 2);
 
-const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 12, 300 );
-testlight.position.set(0, 100, 0);
+const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
 testlight.castShadow = true; 
 testlight.shadow.mapSize.width = 512; 
 testlight.shadow.mapSize.height = 512; 
 testlight.shadow.camera.near = 0.5; 
 testlight.shadow.camera.far = 500; 
 
+
 const menuScene = new THREE.Scene();
 menuScene.add(testlight);
+testlight.position.set(40, 30, 40);
+
+
+const helper = new THREE.PointLightHelper( testlight, 1 );
+        menuScene.add( helper );
 menuScene.background = new THREE.Color("#FFEECC");
+menuScene.add(new THREE.AmbientLight(0xffffff, 0.2))
 
 const buttonScene = new THREE.Scene();
 // buttonScene.background;
@@ -237,6 +243,6 @@ menuGroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 menuGroundBody.position.set(0, 0, 0);
 
 
-menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
+menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 50 );
 
 export {menuScene, menuCamera, buttonScene}
