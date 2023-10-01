@@ -34,7 +34,7 @@ envmap = rt.texture;
 
 
 //imports from other levels
-import {menuScene, menuCamera} from "./js/mainMenu.js";
+import {menuScene, menuCamera, buttonScene} from "./js/mainMenu.js";
 import {level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft} from "./js/level1.js";
 import {level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2MixerAircraft} from "./js/level2.js";
 import {level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3Mixer} from "./js/level3.js";
@@ -64,12 +64,26 @@ testlight.shadow.camera.far = 500;
 const clock = new THREE.Clock(); 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2(); 
+
+// Angle for rotating camera
+let cameraRotationCounter = 2 * Math.PI / 750;
 function animate() {
 
 
     if (MainMenu) {
         raycaster.setFromCamera(mouse, menuCamera);
-        renderer.render(menuScene, menuCamera); //This line loads the Main Menu as the active scene at first, active scene gets updated on click
+        menuScene.rotateY(cameraRotationCounter);
+
+        renderer.autoClear = false;
+        renderer.clear();
+
+        //This line loads the Main Menu as the active scene at first, active scene gets updated on click
+        renderer.render(menuScene, menuCamera);
+        renderer.clearDepth();
+        renderer.render(buttonScene, menuCamera);
+
+        animationId = requestAnimationFrame(animate);
+
     } else {
         if (mixer){
             mixer.update(clock.getDelta());
@@ -147,7 +161,7 @@ function onMouseDown(event) {
     raycaster.setFromCamera(mouse, menuCamera);
 
     // Perform the raycasting
-    const intersects = raycaster.intersectObjects(menuScene.children, true);
+    const intersects = raycaster.intersectObjects(buttonScene.children, true);
 
     // Check if any objects were intersected
     if (intersects.length > 0) {
