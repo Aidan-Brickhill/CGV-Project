@@ -22,12 +22,10 @@ const level1PhysicsWorld = new CANNON.World({
 });
 
 
-
 let level1AircraftBody;
 let level1AircraftVehicle;
 let level1GroundBody;
 let level1Ground;
-
 
 
 //level1Aircraft
@@ -92,15 +90,15 @@ let treeGeo = new BoxGeometry(0,0,0);
 
 
 const simplex = new SimplexNoise();
-const MAX_HEIGHT = 10;
+const MAX_HEIGHT = 20;
 const STONE_HEIGHT = MAX_HEIGHT * 0.8;
 const DIRT_HEIGHT = MAX_HEIGHT * 0.7;
 const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
-for(let i = -20; i <= 20; i++) { //horizontal - x
-    for(let j = -30; j <= 30; j++) { //forwards - z
+for(let i = -10; i <= 10; i++) { //horizontal - x
+    for(let j = -30; j <= 200; j++) { //forwards - z
         let position = tileToPosition(i,j)
 
         // if (position.length() >100) continue;
@@ -110,7 +108,7 @@ for(let i = -20; i <= 20; i++) { //horizontal - x
 
         makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
     } 
-  }
+}
 
 let seaMesh = new THREE.Mesh(
     new THREE.CylinderGeometry(300, 300, MAX_HEIGHT * 0.2, 50),
@@ -140,12 +138,14 @@ let seaMesh = new THREE.Mesh(
   let sandMesh  = hexMesh(sandGeo, textures.sand);
   let treeMesh  = hexMesh(treeGeo, textures.tree);
 
-//   stoneMesh.scale.set(10,10,10);
-//   grassMesh.scale.set(10,10,10);
-//   dirt2Mesh.scale.set(10,10,10);
-//   dirtMesh.scale.set(10,10,10);
-//   sandMesh.scale.set(10,10,10);
-//   seaMesh.scale.set(10,10,10);
+  let scalar = 2;
+
+  stoneMesh.scale.set(scalar, scalar, scalar);
+  grassMesh.scale.set(scalar, scalar, scalar);
+  dirt2Mesh.scale.set(scalar, scalar, scalar);
+  dirtMesh.scale.set(scalar, scalar, scalar);
+  sandMesh.scale.set(scalar, scalar, scalar);
+  seaMesh.scale.set(scalar, scalar, scalar);
 
   level1Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh, treeMesh);
   level1Scene.add(seaMesh);

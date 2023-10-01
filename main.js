@@ -50,7 +50,7 @@ let offset = {
     y:0, 
     z:0
 };
-const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 12, 200 );
+const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 12, 200);
 
 // const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E"), 80, 200 );
 testlight.position.set(30, 60, -50);
@@ -138,8 +138,8 @@ function animate() {
         
         light.target = aircraft;
         light.position.set(aircraft.position.x, aircraft.position.y+100, aircraft.position.z +200);
+        testlight.position.set(aircraft.position.x, 100, aircraft.position.z+10);
 
-        
         controls.update();
         renderer.render(gameScene, gameCamera);
         animationId = requestAnimationFrame(animate);
@@ -285,7 +285,7 @@ window.addEventListener('keyup', (event) => {
 
 function initializeLevel1Scene(){
     gameScene = level1Scene;
-    gameCamera = level1Camera;
+    gameCamera = perspectiveCamera;
     physicsWorld = level1PhysicsWorld;
     aircraft = level1Aircraft;
     aircraftBody = level1AircraftBody;
