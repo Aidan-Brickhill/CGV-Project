@@ -44,11 +44,11 @@ let light, cannonDebugger;
 
 //3rd/fp camera
 const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-let thirdPerson = false;
+let thirdPerson = true;
 let offset = {
     x:0,
-    y:0, 
-    z:0
+    y:5, 
+    z:15
 };
 const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 12, 200);
 
@@ -140,8 +140,8 @@ function animate() {
         light.position.set(aircraft.position.x, aircraft.position.y+100, aircraft.position.z +200);
         testlight.position.set(aircraft.position.x, 100, aircraft.position.z+10);
 
-        controls.update();
-        renderer.render(gameScene, gameCamera);
+        // controls.update();
+        renderer.render(gameScene, perspectiveCamera);
         animationId = requestAnimationFrame(animate);
     }
 }
@@ -234,13 +234,13 @@ window.addEventListener('keydown', (event) => {
             keys.s.pressed = true;
             break;
         case 'KeyP':
-            if (!thirdPerson){
-                thirdPerson=true;
+            if (thirdPerson){
+                thirdPerson=false;
                 offset.x = 0;
                 offset.y = 5;
                 offset.z = 15;
             } else {
-                thirdPerson=false;
+                thirdPerson=true;
                 offset.x = 0;
                 offset.y = 0;
                 offset.z = 0;
@@ -285,7 +285,7 @@ window.addEventListener('keyup', (event) => {
 
 function initializeLevel1Scene(){
     gameScene = level1Scene;
-    gameCamera = perspectiveCamera;
+    gameCamera = level1Camera;
     physicsWorld = level1PhysicsWorld;
     aircraft = level1Aircraft;
     aircraftBody = level1AircraftBody;
