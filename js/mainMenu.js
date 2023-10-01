@@ -37,9 +37,9 @@ const menuBackgroundMaterial = new THREE.MeshBasicMaterial({ color: 0x222222 });
 // menuScene.add(menuBackground);
 
 // Create buttons
-buttonScene.add(createButton("Level 1", "level1", "blue", "white", 0, 12, -4));
-buttonScene.add(createButton("Level 2", "level2", "green", "white", 0, 10, -4));
-buttonScene.add(createButton("Level 3", "level3", "red", "white", 0, 8, -4));
+buttonScene.add(createButton("Level 1", "level1", "#black", "#ffecd1", 0, 12, -4));
+buttonScene.add(createButton("Level 2", "level2", "#black", "#008080", 0, 10, -4));
+buttonScene.add(createButton("Level 3", "level3", "#black", "#c5832b", 0, 8, -4));
 
 // Define a function to create button materials
 function createButton(text, name, backgroundColor, textColour, x, y, z) {
@@ -50,9 +50,9 @@ function createButton(text, name, backgroundColor, textColour, x, y, z) {
     context.rect(0, 0, 200, 100);
     context.fillStyle = backgroundColor;
     context.fill();
-    context.font = 'Bold 36px Arial';
+    context.font = '30px Impact';
     context.fillStyle = textColour; // Text color
-    context.fillText(text, 40, 60); // Text content and position
+    context.fillText(text, 60, 60); // Text content and position
   
     const texture = new THREE.Texture(canvas);
     texture.needsUpdate = true;
