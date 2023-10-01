@@ -15,6 +15,8 @@ let controls;
 let levelInitialize = [0, 0, 0];
 
 
+let currentLevel = 0;
+
 // renderer setup
 let renderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
 renderer.setSize(innerWidth, innerHeight);
@@ -99,14 +101,22 @@ function animate() {
         //     floorMixer.update(clock.getDelta());
         // }
         // const force = new CANNON.Vec3(0, 0, 0);
-        let speed = 100;
+        let speed = 50;
         let force = new CANNON.Vec3(0, 0, 0);
+        const xresponseModulator = 1.5;
+        const yresponseModulator = 1.25;
         aircraftBody.velocity.z = -5;
         const mass = 1;
+
         let vxi = aircraftBody.velocity.x;
         let vyi = aircraftBody.velocity.y;
         let vxf = 0;
         let vyf = 0;
+
+        const ceiling1 = 20;
+        const ceiling2 = 0;
+        const ceiling3 = 0;
+
         // // Update the physics worlds
         if (keys.a.pressed) {
             vxf = -speed;
@@ -125,11 +135,27 @@ function animate() {
             vyf = -speed;
         }
 
+<<<<<<< Updated upstream
         force.x = (vxf - vxi) / mass;
         force.y = (vyf - vyi) / mass;
         aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
 
         physicsWorld.step(1 / 60);
+=======
+        force.x = xresponseModulator*(vxf - vxi)/mass;
+        force.y = yresponseModulator*(vyf - vyi)/mass;
+        aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
+        
+        // invisible ceiling
+        if (currentLevel == 1) {
+            if (aircraftBody.position.y > ceiling1) {
+                aircraftBody.position.y = ceiling1;
+                aircraftBody.velocity.y = 0;
+            }
+        }
+
+        physicsWorld.step(1 / 60); 
+>>>>>>> Stashed changes
         physicsWorld.fixedStep();
         cannonDebugger.update();
         aircraft.position.x = aircraftBody.position.x;
@@ -177,23 +203,40 @@ function onMouseDown(event) {
         // You can now work with the selected object
         console.log('Selected object:', selectedObject);
 
+<<<<<<< Updated upstream
         if (MainMenu) {
             if (selectedObject.name === "level1") {
 
+=======
+        if (MainMenu){
+            if (selectedObject.name==="level1"){
+                currentLevel = 1;
+>>>>>>> Stashed changes
                 cancelAnimationFrame(animationId);
                 initializeLevel1Scene();
                 MainMenu = false;
                 requestAnimationFrame(animate);
             }
+<<<<<<< Updated upstream
             if (selectedObject.name === "level2") {
 
+=======
+            if (selectedObject.name==="level2"){
+                currentLevel = 2;
+>>>>>>> Stashed changes
                 cancelAnimationFrame(animationId);
                 initializeLevel2Scene();
                 MainMenu = false;
                 requestAnimationFrame(animate);
+<<<<<<< Updated upstream
             }
             if (selectedObject.name === "level3") {
 
+=======
+            }   
+            if (selectedObject.name==="level3"){
+                currentLevel = 3;
+>>>>>>> Stashed changes
                 cancelAnimationFrame(animationId);
                 initializeLevel3Scene();
                 MainMenu = false;

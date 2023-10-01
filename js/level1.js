@@ -99,8 +99,13 @@ const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 const levelWidth=5;
 const levelLength=5;
 
+<<<<<<< Updated upstream
 for(let i = -levelWidth; i <= levelWidth; i++) { //horizontal - x
     for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
+=======
+for(let i = -10; i <= 10; i++) { //horizontal - x
+    for(let j = -30; j <= 100; j++) { //forwards - z
+>>>>>>> Stashed changes
         let position = tileToPosition(i,j)
 
         // if (position.length() >100) continue;
@@ -140,7 +145,7 @@ let seaMesh = new THREE.Mesh(
   let sandMesh  = hexMesh(sandGeo, textures.sand);
   let treeMesh  = hexMesh(treeGeo, textures.tree);
 
-  let scalar = 2;
+  let scalar = 1.5;
 
   stoneMesh.scale.set(scalar, scalar, scalar);
   grassMesh.scale.set(scalar, scalar, scalar);
@@ -148,6 +153,7 @@ let seaMesh = new THREE.Mesh(
   dirtMesh.scale.set(scalar, scalar, scalar);
   sandMesh.scale.set(scalar, scalar, scalar);
   seaMesh.scale.set(scalar, scalar, scalar);
+  treeMesh.scale.set(scalar, scalar, scalar);
 
   level1Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh, treeMesh);
   level1Scene.add(seaMesh);
@@ -308,68 +314,70 @@ level1GroundBody.position.set(0, 0, 0);
 level1PhysicsWorld.addBody(level1GroundBody);
 
 
-//plotting rings along the map
-let x;
-let y;
-let randz;
-let randy;
-let randx;
-let minDist = 30;
-let ringRadius = 3;
-const sphereRadius = 0.2;
-const numSegments = 64;
-// Create Cannon.js bodies for the spheres and cylinders and position them accordingly
-for (let z = 0; z < 15; z++) {
+// //plotting rings along the map
+// let x;
+// let y;
+// let randz;
+// let randy;
+// let randx;
+// let minDist = 30;
+// let ringRadius = 3;
+// const sphereRadius = 0.2;
+// const numSegments = 64;
+// // Create Cannon.js bodies for the spheres and cylinders and position them accordingly
+// for (let z = 0; z < 15; z++) {
 
 
-    const torusBody = new CANNON.Body({
-        mass: 1,
-        type: CANNON.Body.STATIC
-    });
+//     const torusBody = new CANNON.Body({
+//         mass: 1,
+//         type: CANNON.Body.STATIC
+//     });
 
-    // Generate random coords for position of rings
-    randz = Math.floor(Math.random() *21) -40;
-    randy =  Math.floor(Math.random() * 21) + 20;
-    randx =  Math.floor(Math.random() * 21) - 10;
+//     // Generate random coords for position of rings
+//     randz = Math.floor(Math.random() *21) -40;
+//     randy =  Math.floor(Math.random() * 21) + 20;
+//     randx =  Math.floor(Math.random() * 21) - 10;
 
-    for (let i = 0; i < numSegments; i++) {
-        const angle = (i / numSegments) * Math.PI * 2;
+//     for (let i = 0; i < numSegments; i++) {
+//         const angle = (i / numSegments) * Math.PI * 2;
 
-        x = Math.cos(angle) * ringRadius; // Adjust position to match the torus
-        y = Math.sin(angle) * ringRadius; // Adjust position to match the torus
+//         x = Math.cos(angle) * ringRadius; // Adjust position to match the torus
+//         y = Math.sin(angle) * ringRadius; // Adjust position to match the torus
 
-        // Create a sphere
-        const sphereShape = new CANNON.Sphere(sphereRadius);
-        const sphereBody = new CANNON.Body({ mass: 1 });
-        sphereBody.addShape(sphereShape);
-        sphereBody.position.set(x, y, 0);
+//         // Create a sphere
+//         const sphereShape = new CANNON.Sphere(sphereRadius);
+//         const sphereBody = new CANNON.Body({ mass: 1 });
+//         sphereBody.addShape(sphereShape);
+//         sphereBody.position.set(x, y, 0);
      
 
-        // Add both sphere and cylinder bodies to the torusBody
-        torusBody.addShape(sphereShape, new CANNON.Vec3(x + randx, y + randy, z * -randz - minDist));
+//         // Add both sphere and cylinder bodies to the torusBody
+//         torusBody.addShape(sphereShape, new CANNON.Vec3(x + randx, y + randy, z * -randz - minDist));
 
-    }
+//     }
 
-    // Add the torusBody to the Cannon.js world
-    level1PhysicsWorld.addBody(torusBody);
-    await import('./ring.js').then(({ Ring }) => {
+//     // Add the torusBody to the Cannon.js world
+//     level1PhysicsWorld.addBody(torusBody);
+//     await import('./ring.js').then(({ Ring }) => {
 
-        const ring = new Ring({
-            ringRadius: ringRadius,
-            tubeRadius: sphereRadius,
-            hexColour: 0xFFD700,
-            position: {
-                x: x + randx - ringRadius,
-                y: y + randy + sphereRadius,
-                z: z * -randz - minDist
-            },
-        });
-        ring.castShadow = true;
-        level1Scene.add(ring);
+//         const ring = new Ring({
+//             ringRadius: ringRadius,
+//             tubeRadius: sphereRadius,
+//             hexColour: 0xFFD700,
+//             position: {
+//                 x: x + randx - ringRadius,
+//                 y: y + randy + sphereRadius,
+//                 z: z * -randz - minDist
+//             },
+//         });
+//         ring.castShadow = true;
+//         level1Scene.add(ring);
 
-    }).catch(error => {
-        console.log('Error loading Ring class:', error);
-    });
-}
+//     }).catch(error => {
+//         console.log('Error loading Ring class:', error);
+//     });
+// }
+
 // level1Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
+
 export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft }
