@@ -69,29 +69,6 @@ function createButton(text, name, backgroundColor, textColour, x, y, z) {
 
 // Code for background
 
-// let glftLoader = new GLTFLoader();
-// glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
-//     level1Aircraft = gltfScene.scene;
-//     level1Scene.add(level1Aircraft);
-//     // level1Aircraft.scale.set(5, 5, 5);
-//     level1Aircraft.rotation.y = Math.PI;
-    
-//     level1Aircraft.traverse(function(node) {
-//         if (node.isMesh){
-//             node.castShadow = true;
-//         }
-//     });
-
-//     const clips = gltfScene.animations;
-//     level1MixerAircraft = new THREE.AnimationMixer(level1Aircraft);
-
-//     clips.forEach(function(clip) {
-//         const action = level1MixerAircraft.clipAction(clip);
-//         action.play();
-//     });
-    
-// });
-
 let textures = {
     dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt.png"),
     dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
@@ -120,7 +97,7 @@ const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
 for(let i = -20; i <= 20; i++) { //horizontal - x
-    for(let j = -30; j <= 30; j++) { //forwards - z
+    for(let j = -20; j <= 20; j++) { //forwards - z
         let position = tileToPosition(i,j)
 
         // if (position.length() >100) continue;
@@ -260,6 +237,6 @@ menuGroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 menuGroundBody.position.set(0, 0, 0);
 
 
-// menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
+menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
 
 export {menuScene, menuCamera, buttonScene}

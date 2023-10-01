@@ -98,7 +98,7 @@ const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
 for(let i = -10; i <= 10; i++) { //horizontal - x
-    for(let j = -30; j <= 200; j++) { //forwards - z
+    for(let j = -30; j <= 10; j++) { //forwards - z
         let position = tileToPosition(i,j)
 
         // if (position.length() >100) continue;

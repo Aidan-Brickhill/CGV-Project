@@ -291,6 +291,11 @@ function initializeLevel1Scene(){
     aircraftBody = level1AircraftBody;
     console.log(aircraft)
     console.log(aircraftBody)
+    aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
+    aircraftBody.angularVelocity.set(0, 0, 0);
+    aircraftBody.quaternion.setFromEuler(0, 0, 0);
+    physicsWorld.gravity.set(0, 0, 0);
+
     // aircraftBody.applyLocalForce(0, new CANNON.Vec3(0, 0, 0));
     aircraftBody.position.set(0,30, 200);
     ground = level1Ground;
