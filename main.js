@@ -36,7 +36,7 @@ envmap = rt.texture;
 //imports from other levels
 import {menuScene, menuCamera} from "./js/mainMenu.js";
 import {level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft} from "./js/level1.js";
-import {level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2Mixer} from "./js/level2.js";
+import {level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2MixerAircraft} from "./js/level2.js";
 import {level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3Mixer} from "./js/level3.js";
 
 let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody, mixer, floorMixer;
@@ -53,7 +53,7 @@ let offset = {
 const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 12, 200 );
 
 // const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E"), 80, 200 );
-testlight.position.set(10, 20, 10);
+testlight.position.set(30, 60, -50);
 
 testlight.castShadow = true; 
 testlight.shadow.mapSize.width = 512; 
@@ -80,7 +80,7 @@ function animate() {
         // const force = new CANNON.Vec3(0, 0, 0);
         let speed = 100;
         let force = new CANNON.Vec3(0, 0, 0);
-        aircraftBody.velocity.z = -8;
+        aircraftBody.velocity.z = -5;
         const mass = 1;
         let vxi = aircraftBody.velocity.x;
         let vyi = aircraftBody.velocity.y;
@@ -112,7 +112,7 @@ function animate() {
         physicsWorld.fixedStep();
         cannonDebugger.update();
         aircraft.position.x= aircraftBody.position.x;
-        aircraft.position.y= aircraftBody.position.y-1;
+        aircraft.position.y= aircraftBody.position.y-(1/5);
         aircraft.position.z= aircraftBody.position.z;
         // aircraft.quaternion.x= aircraftBody.quaternion.x;
         // console.log(aircraftBody.quaternion)
@@ -127,7 +127,7 @@ function animate() {
 
         
         controls.update();
-        renderer.render(gameScene, perspectiveCamera);
+        renderer.render(gameScene, gameCamera);
         animationId = requestAnimationFrame(animate);
     }
 }
@@ -299,8 +299,8 @@ function initializeLevel1Scene(){
         // gameScene.add(light);
 
 
-        // const helper = new THREE.DirectionalLightHelper( light, 5 );
-        // gameScene.add( helper );
+        const helper = new THREE.PointLightHelper( testlight, 1 );
+        gameScene.add( helper );
 
         gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
 
