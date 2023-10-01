@@ -25,11 +25,11 @@ document.body.appendChild(renderer.domElement);
 
 //imports from other levels
 import {menuScene, menuCamera} from "./js/mainMenu.js";
-import {level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft} from "./js/level1.js";
+import {level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft, level1MixerOcean} from "./js/level1.js";
 import {level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2Mixer} from "./js/level2.js";
 import {level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3Mixer} from "./js/level3.js";
 
-let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody, mixer;
+let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody, mixer, floorMixer;
 let light, cannonDebugger;
 
 //3rd/fp camera
@@ -57,6 +57,9 @@ function animate() {
         // aircraft.velocity.y += aircraft.gravity;
         if (mixer){
             mixer.update(clock.getDelta());
+        }
+        if (floorMixer){
+            floorMixer.update(clock.getDelta());
         }
         let speed = 20;
         // const force = new CANNON.Vec3(0, 0, 0);
@@ -260,6 +263,7 @@ function initializeLevel1Scene(){
     ground = level1Ground;
     groundBody = level1GroundBody;
     mixer = level1MixerAircraft;
+    floorMixer = level1MixerOcean;
 
     if (levelInitialize[0]===0){
         light = new THREE.DirectionalLight(0xffffff, 5)

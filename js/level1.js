@@ -67,50 +67,32 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 });
 
 
-// import to use level1Aircraft.js
-import('./aircraft.js').then(({ Box }) => {
+let level1MixerOcean;
+glftLoader = new GLTFLoader();
+glftLoader.load('./Assets/animated_ocean_scene_tutorial_example_1/scene.gltf', (gltfScene) => {
+    level1Ground = gltfScene.scene;
+    level1Scene.add(level1Ground);
+    level1Ground.position.set(0, -10, 0);
+    level1Ground.scale.set(100,1, 100);
 
-    // create a level1Ground body with a static plane
-    level1Ground = new Box({
-        width: 150,
-        height: 0.25,
-        depth: 1000,
-        hexColour: 0xCDE17D,
-        position: {
-            x: 0,
-            y: -11,
-            z: 0
+
+    
+    level1Ground.traverse(function(node) {
+        if (node.isMesh){
+            node.castShadow = true;
+            node.receiveShadow = true;
         }
     });
-    level1Ground.receiveShadow = true;
-    level1Scene.add(level1Ground);
 
-}).catch(error => {
-    console.log('Error loading Box class:', error);
+    const clips = gltfScene.animations;
+    level1MixerOcean = new THREE.AnimationMixer(level1Ground);
+
+    clips.forEach(function(clip) {
+        const action = level1MixerOcean.clipAction(clip);
+        action.play();
+    });
+    
 });
-// let level1MixerOcean;
-// glftLoader = new GLTFLoader();
-// glftLoader.load('./Assets/animated_ocean_scene_tutorial_example_1/scene.gltf', (gltfScene) => {
-//     level1Aircraft = gltfScene.scene;
-//     level1Scene.add(level1Aircraft);
-//     level1Aircraft.scale.set(5, 5, 5);
-//     level1Aircraft.rotation.y = Math.PI;
-    
-//     level1Aircraft.traverse(function(node) {
-//         if (node.isMesh){
-//             node.castShadow = true;
-//         }
-//     });
-
-//     const clips = gltfScene.animations;
-//     level1MixerOcean = new THREE.AnimationMixer(level1Aircraft);
-
-//     clips.forEach(function(clip) {
-//         const action = level1MixerOcean.clipAction(clip);
-//         action.play();
-//     });
-    
-// });
 
 //level1Ground
 level1GroundBody = new CANNON.Body({
@@ -186,4 +168,4 @@ for (let z = 0; z < 20; z++) {
     });
 }
 
-export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft }
+export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft, level1MixerOcean }
