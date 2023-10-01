@@ -73,7 +73,7 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 let textures = {
     dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt.png"),
     dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
-    grass: await new THREE.TextureLoader().loadAsync("./Assets/grass2.jpg"),
+    grass: await new THREE.TextureLoader().loadAsync("./Assets/grass.jpg"),
     sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
     water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
     stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
@@ -96,9 +96,11 @@ const DIRT_HEIGHT = MAX_HEIGHT * 0.7;
 const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
+const levelWidth=5;
+const levelLength=5;
 
-for(let i = -10; i <= 10; i++) { //horizontal - x
-    for(let j = -30; j <= 10; j++) { //forwards - z
+for(let i = -levelWidth; i <= levelWidth; i++) { //horizontal - x
+    for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
         let position = tileToPosition(i,j)
 
         // if (position.length() >100) continue;

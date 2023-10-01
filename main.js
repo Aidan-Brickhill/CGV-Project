@@ -41,7 +41,10 @@ import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3Ai
 
 let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody, mixer, floorMixer;
 let light, cannonDebugger;
-
+controls = new OrbitControls(menuCamera, renderer.domElement);
+controls.target.set(0,0,0);
+controls.dampingFactor = 0.05;
+controls.enableDamping = true;
 //3rd/fp camera
 const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let thirdPerson = true;
@@ -53,7 +56,7 @@ let offset = {
 const testlight = new THREE.PointLight(new THREE.Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 12, 200);
 
 // const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E"), 80, 200 );
-testlight.position.set(30, 60, -50);
+testlight.position.set(60, 40, -100);
 
 testlight.castShadow = true;
 testlight.shadow.mapSize.width = 512;
@@ -72,10 +75,14 @@ function animate() {
 
     if (MainMenu) {
         raycaster.setFromCamera(mouse, menuCamera);
-        menuScene.rotateY(cameraRotationCounter);
-
+        // menuScene.rotateY(cameraRotationCounter);
+        
         renderer.autoClear = false;
         renderer.clear();
+        
+        controls.update();
+        
+        
 
         //This line loads the Main Menu as the active scene at first, active scene gets updated on click
         renderer.render(menuScene, menuCamera);
@@ -192,6 +199,8 @@ function onMouseDown(event) {
                 MainMenu = false;
                 requestAnimationFrame(animate);
             }
+
+        
         }
 
 
@@ -321,7 +330,7 @@ function initializeLevel1Scene() {
         const helper = new THREE.PointLightHelper(testlight, 1);
         gameScene.add(helper);
 
-        gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
+        // gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
 
         levelInitialize[0] = 1;
 
