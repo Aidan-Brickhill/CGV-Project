@@ -135,13 +135,6 @@ function animate() {
             vyf = -speed;
         }
 
-<<<<<<< Updated upstream
-        force.x = (vxf - vxi) / mass;
-        force.y = (vyf - vyi) / mass;
-        aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
-
-        physicsWorld.step(1 / 60);
-=======
         force.x = xresponseModulator*(vxf - vxi)/mass;
         force.y = yresponseModulator*(vyf - vyi)/mass;
         aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
@@ -155,7 +148,6 @@ function animate() {
         }
 
         physicsWorld.step(1 / 60); 
->>>>>>> Stashed changes
         physicsWorld.fixedStep();
         cannonDebugger.update();
         aircraft.position.x = aircraftBody.position.x;
@@ -203,40 +195,23 @@ function onMouseDown(event) {
         // You can now work with the selected object
         console.log('Selected object:', selectedObject);
 
-<<<<<<< Updated upstream
-        if (MainMenu) {
-            if (selectedObject.name === "level1") {
-
-=======
         if (MainMenu){
             if (selectedObject.name==="level1"){
                 currentLevel = 1;
->>>>>>> Stashed changes
                 cancelAnimationFrame(animationId);
                 initializeLevel1Scene();
                 MainMenu = false;
                 requestAnimationFrame(animate);
             }
-<<<<<<< Updated upstream
-            if (selectedObject.name === "level2") {
-
-=======
             if (selectedObject.name==="level2"){
                 currentLevel = 2;
->>>>>>> Stashed changes
                 cancelAnimationFrame(animationId);
                 initializeLevel2Scene();
                 MainMenu = false;
                 requestAnimationFrame(animate);
-<<<<<<< Updated upstream
-            }
-            if (selectedObject.name === "level3") {
-
-=======
             }   
             if (selectedObject.name==="level3"){
                 currentLevel = 3;
->>>>>>> Stashed changes
                 cancelAnimationFrame(animationId);
                 initializeLevel3Scene();
                 MainMenu = false;

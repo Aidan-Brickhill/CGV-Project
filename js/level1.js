@@ -99,13 +99,8 @@ const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 const levelWidth=5;
 const levelLength=5;
 
-<<<<<<< Updated upstream
 for(let i = -levelWidth; i <= levelWidth; i++) { //horizontal - x
     for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
-=======
-for(let i = -10; i <= 10; i++) { //horizontal - x
-    for(let j = -30; j <= 100; j++) { //forwards - z
->>>>>>> Stashed changes
         let position = tileToPosition(i,j)
 
         // if (position.length() >100) continue;
