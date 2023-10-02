@@ -8,19 +8,24 @@ import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 const menuCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 menuCamera.position.set(0, 10, 2);
-// menuCamera.rotateY(Math.PI / 2);
 
-const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 12, 300 );
-testlight.position.set(0, 100, 0);
+const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
 testlight.castShadow = true; 
 testlight.shadow.mapSize.width = 512; 
 testlight.shadow.mapSize.height = 512; 
 testlight.shadow.camera.near = 0.5; 
 testlight.shadow.camera.far = 500; 
 
+
 const menuScene = new THREE.Scene();
 menuScene.add(testlight);
+testlight.position.set(40, 30, 40);
+
+
+const helper = new THREE.PointLightHelper( testlight, 1 );
+        menuScene.add( helper );
 menuScene.background = new THREE.Color("#FFEECC");
+menuScene.add(new THREE.AmbientLight(0xffffff, 0.2))
 
 const buttonScene = new THREE.Scene();
 // buttonScene.background;
@@ -69,37 +74,14 @@ function createButton(text, name, backgroundColor, textColour, x, y, z) {
 
 // Code for background
 
-// let glftLoader = new GLTFLoader();
-// glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
-//     level1Aircraft = gltfScene.scene;
-//     level1Scene.add(level1Aircraft);
-//     // level1Aircraft.scale.set(5, 5, 5);
-//     level1Aircraft.rotation.y = Math.PI;
-    
-//     level1Aircraft.traverse(function(node) {
-//         if (node.isMesh){
-//             node.castShadow = true;
-//         }
-//     });
-
-//     const clips = gltfScene.animations;
-//     level1MixerAircraft = new THREE.AnimationMixer(level1Aircraft);
-
-//     clips.forEach(function(clip) {
-//         const action = level1MixerAircraft.clipAction(clip);
-//         action.play();
-//     });
-    
-// });
-
 let textures = {
-    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt.png"),
+    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
     dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
     grass: await new THREE.TextureLoader().loadAsync("./Assets/grass2.jpg"),
     sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
     water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
     stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
-    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.png"),
+    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
 
 
@@ -120,7 +102,7 @@ const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
 for(let i = -20; i <= 20; i++) { //horizontal - x
-    for(let j = -30; j <= 30; j++) { //forwards - z
+    for(let j = -20; j <= 20; j++) { //forwards - z
         let position = tileToPosition(i,j)
 
         // if (position.length() >100) continue;
@@ -260,6 +242,6 @@ menuGroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 menuGroundBody.position.set(0, 0, 0);
 
 
-// menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
+menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 50 );
 
 export {menuScene, menuCamera, buttonScene}
