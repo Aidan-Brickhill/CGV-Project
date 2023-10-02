@@ -71,13 +71,13 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 });
 
 let textures = {
-    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt.png"),
+    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
     dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
     grass: await new THREE.TextureLoader().loadAsync("./Assets/grass.jpg"),
     sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
     water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
     stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
-    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.png"),
+    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
 
 

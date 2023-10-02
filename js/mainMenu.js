@@ -8,7 +8,6 @@ import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 const menuCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 menuCamera.position.set(0, 10, 2);
-// menuCamera.rotateY(Math.PI / 2);
 
 const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
 testlight.castShadow = true; 
@@ -76,13 +75,13 @@ function createButton(text, name, backgroundColor, textColour, x, y, z) {
 // Code for background
 
 let textures = {
-    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt.png"),
+    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
     dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
     grass: await new THREE.TextureLoader().loadAsync("./Assets/grass2.jpg"),
     sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
     water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
     stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
-    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.png"),
+    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
 
 
