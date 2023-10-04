@@ -80,7 +80,7 @@ let textures = {
     grass: await new THREE.TextureLoader().loadAsync("./Assets/grass2.jpg"),
     sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
     water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
-    stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
+    stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.JPG"),
     tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
 
