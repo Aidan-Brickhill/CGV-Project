@@ -369,5 +369,15 @@ for (let z = 0; z < 15; z++) {
         console.log('Error loading Ring class:', error);
     });
 }
+const levelCompletionThreshold = -140;
+
+function update(){
+    if(level3Aircraft.position.z < levelCompletionThreshold){
+        console.log("Level 3 completed");
+    }
+    requestAnimationFrame(update);
+}
+update();
+
 // level3Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
 export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3MixerAircraft }
