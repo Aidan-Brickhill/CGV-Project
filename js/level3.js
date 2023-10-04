@@ -8,15 +8,18 @@ import { BoxGeometry } from 'three';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+
+// variables to change for for map size
+const mapWidth = 50;
+const maplength = 50;
 //camera
-
-
 const level3Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-level3Camera.position.set(-17,31,33);
+level3Camera.position.set(-17, 31, 33);
+
 
 //scene-graphics
 const level3Scene = new THREE.Scene();
-level3Scene.background = new THREE.Color("#FFEECC");
+level3Scene.background = new THREE.Color("#333333");
 //CANNON physics world
 
 const level3PhysicsWorld = new CANNON.World({
@@ -33,12 +36,12 @@ let level3Ground;
 //level3Aircraft
 level3AircraftBody = new CANNON.Body({
     mass: 5,
-    shape: new CANNON.Box(new CANNON.Vec3(0.75/5, 0.85/5, 3/5)),
+    shape: new CANNON.Box(new CANNON.Vec3(0.75 / 5, 0.85 / 5, 3 / 5)),
 });
 level3AircraftBody.addShape(new CANNON.Box(
-    new CANNON.Vec3(3.15/5, 0.9/5, 0.8/5)),
-    new CANNON.Vec3(0, 0, -0.2/5)
-    );
+    new CANNON.Vec3(3.15 / 5, 0.9 / 5, 0.8 / 5)),
+    new CANNON.Vec3(0, 0, -0.2 / 5)
+);
 level3AircraftBody.position.set(0, 0, 30);
 
 level3AircraftVehicle = new CANNON.RigidVehicle({
@@ -55,9 +58,9 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     level3Scene.add(level3Aircraft);
     // level3Aircraft.scale.set(5, 5, 5);
     level3Aircraft.rotation.y = Math.PI;
-    
-    level3Aircraft.traverse(function(node) {
-        if (node.isMesh){
+
+    level3Aircraft.traverse(function (node) {
+        if (node.isMesh) {
             node.castShadow = true;
         }
     });
@@ -65,30 +68,30 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     const clips = gltfScene.animations;
     level3MixerAircraft = new THREE.AnimationMixer(level3Aircraft);
 
-    clips.forEach(function(clip) {
+    clips.forEach(function (clip) {
         const action = level3MixerAircraft.clipAction(clip);
         action.play();
     });
-    
+
 });
 
 let textures = {
-    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
-    dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
-    grass: await new THREE.TextureLoader().loadAsync("./Assets/grass2.jpg"),
-    sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
+    ashRock: await new THREE.TextureLoader().loadAsync("./Assets/ashRock.jpg"),
+    lavaRock: await new THREE.TextureLoader().loadAsync("./Assets/lavaRock.jpg"),
+    crackedGround: await new THREE.TextureLoader().loadAsync("./Assets/crackedGround.jpg"),
+    volcanicDirt: await new THREE.TextureLoader().loadAsync("./Assets/volcanicDirt.jpg"),
     lava: await new THREE.TextureLoader().loadAsync("./Assets/lava.jpg"),
     stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
     tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
 
 
-let stoneGeo = new BoxGeometry(0,0,0);
-let dirtGeo = new BoxGeometry(0,0,0);
-let dirt2Geo = new BoxGeometry(0,0,0);
-let sandGeo = new BoxGeometry(0,0,0);
-let grassGeo = new BoxGeometry(0,0,0);
-let treeGeo = new BoxGeometry(0,0,0);
+let stoneGeo = new BoxGeometry(0, 0, 0);
+let dirtGeo = new BoxGeometry(0, 0, 0);
+let dirt2Geo = new BoxGeometry(0, 0, 0);
+let sandGeo = new BoxGeometry(0, 0, 0);
+let grassGeo = new BoxGeometry(0, 0, 0);
+let treeGeo = new BoxGeometry(0, 0, 0);
 
 
 const simplex = new SimplexNoise();
@@ -99,17 +102,18 @@ const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
-for(let i = -10; i <= 10; i++) { //horizontal - x
-    for(let j = -50; j <= 50; j++) { //forwards - z
-        let position = tileToPosition(i,j)
+// Create the size of the map
+for (let i = Math.floor(-mapWidth / 2); i <= Math.floor(mapWidth / 2); i++) { //horizontal - x
+    for (let j = -maplength; j <= maplength; j++) { //forwards - z
+        let position = tileToPosition(i, j)
 
         // if (position.length() >100) continue;
 
         let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
         noise = Math.pow(noise, 1.5);
 
-        makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
-    } 
+        makeHex(noise * MAX_HEIGHT, tileToPosition(i, j))
+    }
 }
 
 let seaMesh = new THREE.Mesh(
@@ -127,62 +131,91 @@ let seaMesh = new THREE.Mesh(
     })
 );
 
-  seaMesh.receiveShadow = true;
-  seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
-  seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
+
+// Define the number of point lights and their spacing
+const numLightsX = 1; // Number of lights along the X-axis
+const numLightsZ = 25; // Number of lights along the Z-axis
+const spacingX = 10; // Spacing between lights along the X-axis
+const spacingZ = 5; // Spacing between lights along the Z-axis
+
+// Create an empty array to store the point lights
+const pointLights = [];
+
+// Loop to create and position the point lights
+for (let i = 0; i < numLightsX; i++) {
+    for (let j = 0; j < numLightsZ; j++) {
+        const pointLight = new THREE.PointLight(0xcf1020, 2, 30); // Color, intensity, and distance
+        const x = i * spacingX - (numLightsX / 2) * spacingX;
+        const z = j * spacingZ - (numLightsZ / 2) * spacingZ;
+
+        pointLight.position.set(x, 0, z); // Position each light
+        level3Scene.add(pointLight); // Add the light to the scene
+
+        pointLights.push(pointLight); // Add the light to the array for future manipulation
+    }
+}
+
+for (let i = 0; i < pointLights.length; i++) {
+    level3Scene.add(pointLights[i]);
+}
+
+
+seaMesh.receiveShadow = true;
+seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
+seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
 
 // hexagonMesh.scale.set(90,1,90)   
-  let stoneMesh = hexMesh(stoneGeo, textures.stone);
-  let grassMesh = hexMesh(grassGeo, textures.grass);
-  let dirt2Mesh = hexMesh(dirt2Geo, textures.dirt2);
-  let dirtMesh  = hexMesh(dirtGeo, textures.dirt);
-  let sandMesh  = hexMesh(sandGeo, textures.sand);
-  let treeMesh  = hexMesh(treeGeo, textures.tree);
+let stoneMesh = hexMesh(stoneGeo, textures.stone);
+let grassMesh = hexMesh(grassGeo, textures.crackedGround);
+let dirt2Mesh = hexMesh(dirt2Geo, textures.lavaRock);
+let dirtMesh = hexMesh(dirtGeo, textures.ashRock);
+let sandMesh = hexMesh(sandGeo, textures.volcanicDirt);
+let treeMesh = hexMesh(treeGeo, textures.tree);
 
-  let scalar = 2;
+let scalar = 2;
 
-  stoneMesh.scale.set(scalar, scalar, scalar);
-  grassMesh.scale.set(scalar, scalar, scalar);
-  dirt2Mesh.scale.set(scalar, scalar, scalar);
-  dirtMesh.scale.set(scalar, scalar, scalar);
-  sandMesh.scale.set(scalar, scalar, scalar);
-  seaMesh.scale.set(scalar, scalar, scalar);
+stoneMesh.scale.set(scalar, scalar, scalar);
+grassMesh.scale.set(scalar, scalar, scalar);
+dirt2Mesh.scale.set(scalar, scalar, scalar);
+dirtMesh.scale.set(scalar, scalar, scalar);
+sandMesh.scale.set(scalar, scalar, scalar);
+seaMesh.scale.set(scalar, scalar, scalar);
 
-  level3Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh, treeMesh);
-  level3Scene.add(seaMesh);
+level3Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh); //removed tree mesh for lava level
+level3Scene.add(seaMesh);
 
 function hexGeometry(height, position) {
-    let geo  = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
+    let geo = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
     geo.translate(position.x, height * 0.5, position.y);
 
     return geo;
 }
 
 function makeHex(height, position) {
-    let geo  = hexGeometry(height, position);
-    if(height > STONE_HEIGHT) {
+    let geo = hexGeometry(height, position);
+    if (height > STONE_HEIGHT) {
         stoneGeo = mergeBufferGeometries([geo, stoneGeo]);
 
-        if(Math.random() > 0.8) {
-        stoneGeo = mergeBufferGeometries([stoneGeo, stone(height, position)]);
+        if (Math.random() > 0.8) {
+            stoneGeo = mergeBufferGeometries([stoneGeo, stone(height, position)]);
         }
-    } else if(height > DIRT_HEIGHT) {
+    } else if (height > DIRT_HEIGHT) {
         dirtGeo = mergeBufferGeometries([geo, dirtGeo]);
 
-        if(Math.random() > 0.8) {
-        treeGeo = mergeBufferGeometries([treeGeo, tree(height, position)]);
+        if (Math.random() > 0.8) {
+            treeGeo = mergeBufferGeometries([treeGeo, tree(height, position)]);
         }
-    } else if(height > GRASS_HEIGHT) {
+    } else if (height > GRASS_HEIGHT) {
         grassGeo = mergeBufferGeometries([geo, grassGeo]);
-    } else if(height > SAND_HEIGHT) { 
+    } else if (height > SAND_HEIGHT) {
         sandGeo = mergeBufferGeometries([geo, sandGeo]);
 
-        if(Math.random() > 0.8 && stoneGeo) {
-        stoneGeo = mergeBufferGeometries([stoneGeo, stone(height, position)]);
+        if (Math.random() > 0.8 && stoneGeo) {
+            stoneGeo = mergeBufferGeometries([stoneGeo, stone(height, position)]);
         }
-    } else if(height > DIRT2_HEIGHT) {
+    } else if (height > DIRT2_HEIGHT) {
         dirt2Geo = mergeBufferGeometries([geo, dirt2Geo]);
-    }  
+    }
 }
 
 function tileToPosition(tileX, tileY) {
@@ -192,30 +225,30 @@ function tileToPosition(tileX, tileY) {
 }
 
 function hexMesh(geo, map) {
-    let mat = new THREE.MeshPhysicalMaterial({ 
-    //   envMap: envmap, 
-      envMapIntensity: 0.135, 
-      flatShading: true,
-      map
+    let mat = new THREE.MeshPhysicalMaterial({
+        //   envMap: envmap, 
+        envMapIntensity: 0.135,
+        flatShading: true,
+        map
     });
-  
+
     let mesh = new THREE.Mesh(geo, mat);
     mesh.castShadow = true; //default is false
     mesh.receiveShadow = true; //default
-  
+
     return mesh;
 }
 
 function stone(height, position) {
     const px = Math.random() * 0.4;
     const pz = Math.random() * 0.4;
-  
+
     const geo = new THREE.SphereGeometry(Math.random() * 0.3 + 0.1, 7, 7);
     geo.translate(position.x + px, height, position.y + pz);
-  
+
     return geo;
 }
-  
+
 // function clouds() {
 // let geo = new THREE.SphereGeometry(0, 0, 0); 
 // let count = Math.floor(Math.pow(Math.random(), 0.45) * 4);
@@ -224,7 +257,7 @@ function stone(height, position) {
 //     const puff1 = new THREE.SphereGeometry(1.2, 7, 7);
 //     const puff2 = new THREE.SphereGeometry(1.5, 7, 7);
 //     const puff3 = new THREE.SphereGeometry(0.9, 7, 7);
-    
+
 //     puff1.translate(-1.85, Math.random() * 0.3, 0);
 //     puff2.translate(0,     Math.random() * 0.3, 0);
 //     puff3.translate(1.85,  Math.random() * 0.3, 0);
@@ -249,7 +282,7 @@ function stone(height, position) {
 //         // opacity: 0.85,
 //         })
 //     );
-    
+
 //     3Scene.add(mesh);
 // }
 
@@ -257,20 +290,20 @@ function stone(height, position) {
 
 function tree(height, position) {
     const treeHeight = Math.random() * 1 + 1.25;
-    
+
     const geo = new THREE.CylinderGeometry(0, 1.5, treeHeight, 3);
     geo.translate(position.x, height + treeHeight * 0 + 1, position.y);
-    
+
     const geo2 = new THREE.CylinderGeometry(0, 1.15, treeHeight, 3);
     geo2.translate(position.x, height + treeHeight * 0.6 + 1, position.y);
-    
+
     const geo3 = new THREE.CylinderGeometry(0, 0.8, treeHeight, 3);
     geo3.translate(position.x, height + treeHeight * 1.25 + 1, position.y);
-    
+
     return mergeBufferGeometries([geo, geo2, geo3]);
 }
 
-    
+
 // let level1MixerOcean;
 // glftLoader = new GLTFLoader();
 // glftLoader.load('./Assets/animated_ocean_scene_tutorial_example_1/scene.gltf', (gltfScene) => {
@@ -280,7 +313,7 @@ function tree(height, position) {
 //     level1Ground.scale.set(100,1, 100);
 
 
-    
+
 //     level1Ground.traverse(function(node) {
 //         if (node.isMesh){
 //             node.castShadow = true;
@@ -295,7 +328,7 @@ function tree(height, position) {
 //         const action = level1MixerOcean.clipAction(clip);
 //         action.play();
 //     });
-    
+
 // });
 
 //level1Ground
@@ -328,9 +361,9 @@ for (let z = 0; z < 15; z++) {
     });
 
     // Generate random coords for position of rings
-    randz = Math.floor(Math.random() *21) -40;
-    randy =  Math.floor(Math.random() * 21) + 20;
-    randx =  Math.floor(Math.random() * 21) - 10;
+    randz = Math.floor(Math.random() * 21) - 40;
+    randy = Math.floor(Math.random() * 21) + 20;
+    randx = Math.floor(Math.random() * 21) - 10;
 
     for (let i = 0; i < numSegments; i++) {
         const angle = (i / numSegments) * Math.PI * 2;
@@ -343,7 +376,7 @@ for (let z = 0; z < 15; z++) {
         const sphereBody = new CANNON.Body({ mass: 1 });
         sphereBody.addShape(sphereShape);
         sphereBody.position.set(x, y, 0);
-     
+
 
         // Add both sphere and cylinder bodies to the torusBody
         torusBody.addShape(sphereShape, new CANNON.Vec3(x + randx, y + randy, z * -randz - minDist));
@@ -374,13 +407,13 @@ for (let z = 0; z < 15; z++) {
 const levelCompletionThreshold = -140;
 let animationId;
 
-function update(){
+function update() {
     animationId = requestAnimationFrame(update);
-    if(level3Aircraft.position.z < levelCompletionThreshold){
+    if (level3Aircraft.position.z < levelCompletionThreshold) {
         console.log("Level 3 completed");
         addCongratulationsText();
     }
-    
+
 }
 update();
 
@@ -403,5 +436,5 @@ function addCongratulationsText() {
 }
 
 
-// level3Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
+level3Scene.fog = new THREE.Fog(0x444444, 0.015, 150);
 export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3MixerAircraft }
