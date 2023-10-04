@@ -381,7 +381,7 @@ function initializeLevel2Scene() {
     aircraftBody = level2AircraftBody;
     ground = level2Ground;
     groundBody = level2GroundBody;
-    mixer = level2Mixer;
+    mixer = level2MixerAircraft;
 
     if (levelInitialize[1] === 0) {
         light = new THREE.DirectionalLight(0xffffff, 1)

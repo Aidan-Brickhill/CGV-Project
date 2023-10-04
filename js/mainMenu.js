@@ -46,6 +46,13 @@ buttonScene.add(createButton("Level 1", "level1", "#black", "#ffecd1", 0, 12, -4
 buttonScene.add(createButton("Level 2", "level2", "#black", "#008080", 0, 10, -4));
 buttonScene.add(createButton("Level 3", "level3", "#black", "#c5832b", 0, 8, -4));
 
+const level2Button = buttonScene.getObjectByName("level2");
+
+level2Button.addEventListener("click", () => {
+    // Logic to transition to Level 2
+    console.log("Level 2 button clicked");
+  });
+
 // Define a function to create button materials
 function createButton(text, name, backgroundColor, textColour, x, y, z) {
     const canvas = document.createElement('canvas');
@@ -80,7 +87,7 @@ let textures = {
     grass: await new THREE.TextureLoader().loadAsync("./Assets/grass2.jpg"),
     sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
     water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
-    stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.JPG"),
+    stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
     tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
 
