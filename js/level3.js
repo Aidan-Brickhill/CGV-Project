@@ -1,5 +1,7 @@
 //imports
 import * as THREE from 'three';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { BoxGeometry } from 'three';
@@ -370,14 +372,36 @@ for (let z = 0; z < 15; z++) {
     });
 }
 const levelCompletionThreshold = -140;
+let animationId;
 
 function update(){
+    animationId = requestAnimationFrame(update);
     if(level3Aircraft.position.z < levelCompletionThreshold){
         console.log("Level 3 completed");
+        addCongratulationsText();
     }
-    requestAnimationFrame(update);
+    
 }
 update();
+
+function addCongratulationsText() {
+    const fontLoader = new FontLoader();
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+        const textGeometry = new TextGeometry('Congratulations', {
+            font: font,
+            size: 5,
+            height: 0.5,
+        });
+
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const congratulationsText = new THREE.Mesh(textGeometry, textMaterial);
+
+        congratulationsText.position.set(-20, 30, -180);
+
+        level3Scene.add(congratulationsText);
+    });
+}
+
 
 // level3Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
 export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3MixerAircraft }
