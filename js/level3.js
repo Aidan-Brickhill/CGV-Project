@@ -267,6 +267,7 @@ function tree(height, position) {
     
     return mergeBufferGeometries([geo, geo2, geo3]);
 }
+
     
 // let level1MixerOcean;
 // glftLoader = new GLTFLoader();
