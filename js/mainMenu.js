@@ -158,6 +158,8 @@ function hexGeometry(height, position) {
     geo.translate(position.x, height * 0.5, position.y);
 
     return geo;
+
+    
 }
 
 function makeHex(height, position) {
