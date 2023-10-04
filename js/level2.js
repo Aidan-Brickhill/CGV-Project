@@ -91,8 +91,8 @@ const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
-for(let i = -20; i <= 20; i++) { //horizontal - x
-    for(let j = -30; j <= 30; j++) { //forwards - z
+for(let i = -10; i <= 10; i++) { //horizontal - x
+    for(let j = -50; j <= 50; j++) { //forwards - z
         let position = tileToPosition(i,j)
 
         // if (position.length() >100) continue;
@@ -135,12 +135,14 @@ let seaMesh = new THREE.Mesh(
   let yscalar = 10;
   let zscalar = 10;
 
-//   stoneMesh.scale.set(xscalar, yscalar, zscalar);
-//   grassMesh.scale.set(xscalar, yscalar, zscalar);
-//   dirt2Mesh.scale.set(xscalar, yscalar, zscalar);
-//   dirtMesh.scale.set(xscalar, yscalar, zscalar);
-//   sandMesh.scale.set(xscalar, yscalar, zscalar);
-//   seaMesh.scale.set(xscalar, yscalar, zscalar);
+  let scalar = 2;
+
+  stoneMesh.scale.set(scalar, scalar, scalar);
+  grassMesh.scale.set(scalar, scalar, scalar);
+  dirt2Mesh.scale.set(scalar, scalar, scalar);
+  dirtMesh.scale.set(scalar, scalar, scalar);
+  sandMesh.scale.set(scalar, scalar, scalar);
+  seaMesh.scale.set(scalar, scalar, scalar);
 
   level2Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh);
   level2Scene.add(seaMesh);
@@ -364,5 +366,15 @@ for (let z = 0; z < 15; z++) {
         console.log('Error loading Ring class:', error);
     });
 }
+//level logic
+const levelCompletionThreshold = -140;
+
+function update(){
+    if(level2Aircraft.position.z < levelCompletionThreshold){
+        console.log("Level 2 completed");
+    }
+    requestAnimationFrame(update);
+}
+update();
 // level2Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
 export { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2MixerAircraft }
