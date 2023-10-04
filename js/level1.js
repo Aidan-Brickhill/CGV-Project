@@ -80,14 +80,12 @@ let textures = {
     tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
 
-
 let stoneGeo = new BoxGeometry(0,0,0);
 let dirtGeo = new BoxGeometry(0,0,0);
 let dirt2Geo = new BoxGeometry(0,0,0);
 let sandGeo = new BoxGeometry(0,0,0);
 let grassGeo = new BoxGeometry(0,0,0);
 let treeGeo = new BoxGeometry(0,0,0);
-
 
 const simplex = new SimplexNoise();
 const MAX_HEIGHT = 20;
@@ -96,8 +94,9 @@ const DIRT_HEIGHT = MAX_HEIGHT * 0.7;
 const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
-const levelWidth=5;
-const levelLength=5;
+const levelWidth=7;
+const levelLength=7;
+let scalar = 1.5;
 
 for(let i = -levelWidth; i <= levelWidth; i++) { //horizontal - x
     for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
@@ -140,7 +139,6 @@ let seaMesh = new THREE.Mesh(
   let sandMesh  = hexMesh(sandGeo, textures.sand);
   let treeMesh  = hexMesh(treeGeo, textures.tree);
 
-  let scalar = 1.5;
 
   stoneMesh.scale.set(scalar, scalar, scalar);
   grassMesh.scale.set(scalar, scalar, scalar);
@@ -156,7 +154,7 @@ let seaMesh = new THREE.Mesh(
 function hexGeometry(height, position) {
     let geo  = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
     geo.translate(position.x, height * 0.5, position.y);
-
+    cannonHexGeometry(height, position)
     return geo;
 }
 
@@ -185,6 +183,59 @@ function makeHex(height, position) {
     } else if(height > DIRT2_HEIGHT) {
         dirt2Geo = mergeBufferGeometries([geo, dirt2Geo]);
     }  
+}
+
+function cannonHexGeometry(height, position){
+    const radius = scalar; // Radius of the hexagon (distance from the center to any corner)
+    const numSides = 6; // Number of sides in the hexagon
+    height = height * scalar;
+
+    // Calculate the vertices of the hexagonal prism
+    const vertices = [];
+    for (let i = numSides-1; i >= 0; i--) {
+        const angle = (Math.PI / 3) * i; // Angle between each side (360 degrees divided by 6 sides)
+        const x = radius * Math.cos(angle);
+        const y = radius * Math.sin(angle);
+        vertices.push(new CANNON.Vec3(x, y, 0)); // Z-coordinate is 0 for the base
+        vertices.push(new CANNON.Vec3(x, y, height)); // Z-coordinate is the height for the top
+    }
+
+    //   Create the faces (each face consists of 3 vertices)
+    const faces = [];
+    for (let i = numSides-1; i >= 0; i--) {
+        const v0 = i * 2;
+        const v1 = (i * 2 + 1) % (numSides * 2);
+        const v2 = ((i + 1) % numSides) * 2;
+        faces.push([v0, v1, v2]);
+        faces.push([v1, v2, v2 + 1]);
+    }
+
+    // Create a Cannon.js ConvexPolyhedron shape for the hexagonal prism
+    const hexagonalPrismShape = new CANNON.ConvexPolyhedron({ vertices, faces });
+
+    // Create a Cannon.js Body for the hexagonal prism
+    const hexagonalPrismBody = new CANNON.Body({ 
+        type: CANNON.Body.STATIC,
+        mass: 1 }); // Adjust mass as needed
+    hexagonalPrismBody.addShape(hexagonalPrismShape);
+    const combinedRotation = new CANNON.Quaternion();
+
+    const horizontalRotation = new CANNON.Quaternion();
+    horizontalRotation.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2); // Horizontal rotation
+    
+    const yRotationQuaternion = new CANNON.Quaternion();
+    yRotationQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), Math.PI / 6); // 30-degree rotation around the y-axis
+    
+    // Combine both rotations by multiplying the quaternions
+    combinedRotation.copy(horizontalRotation);
+    combinedRotation.mult(yRotationQuaternion, combinedRotation);
+    
+    hexagonalPrismBody.quaternion.copy(combinedRotation);
+
+    hexagonalPrismBody.position.set(position.x * scalar, 0, position.y * scalar);
+
+    level1PhysicsWorld.addBody(hexagonalPrismBody);
+
 }
 
 function tileToPosition(tileX, tileY) {
@@ -272,32 +323,6 @@ function tree(height, position) {
     return mergeBufferGeometries([geo, geo2, geo3]);
 }
     
-// let level1MixerOcean;
-// glftLoader = new GLTFLoader();
-// glftLoader.load('./Assets/animated_ocean_scene_tutorial_example_1/scene.gltf', (gltfScene) => {
-//     level1Ground = gltfScene.scene;
-//     level1Scene.add(level1Ground);
-//     level1Ground.position.set(0, -10, 0);
-//     level1Ground.scale.set(100,1, 100);
-
-
-    
-//     level1Ground.traverse(function(node) {
-//         if (node.isMesh){
-//             node.castShadow = true;
-//             node.receiveShadow = true;
-//         }
-//     });
-
-//     const clips = gltfScene.animations;
-//     level1MixerOcean = new THREE.AnimationMixer(level1Ground);
-
-//     clips.forEach(function(clip) {
-//         const action = level1MixerOcean.clipAction(clip);
-//         action.play();
-//     });
-    
-// });
 
 //level1Ground
 level1GroundBody = new CANNON.Body({
@@ -307,72 +332,5 @@ level1GroundBody = new CANNON.Body({
 level1GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 level1GroundBody.position.set(0, 0, 0);
 level1PhysicsWorld.addBody(level1GroundBody);
-
-
-// //plotting rings along the map
-// let x;
-// let y;
-// let randz;
-// let randy;
-// let randx;
-// let minDist = 30;
-// let ringRadius = 3;
-// const sphereRadius = 0.2;
-// const numSegments = 64;
-// // Create Cannon.js bodies for the spheres and cylinders and position them accordingly
-// for (let z = 0; z < 15; z++) {
-
-
-//     const torusBody = new CANNON.Body({
-//         mass: 1,
-//         type: CANNON.Body.STATIC
-//     });
-
-//     // Generate random coords for position of rings
-//     randz = Math.floor(Math.random() *21) -40;
-//     randy =  Math.floor(Math.random() * 21) + 20;
-//     randx =  Math.floor(Math.random() * 21) - 10;
-
-//     for (let i = 0; i < numSegments; i++) {
-//         const angle = (i / numSegments) * Math.PI * 2;
-
-//         x = Math.cos(angle) * ringRadius; // Adjust position to match the torus
-//         y = Math.sin(angle) * ringRadius; // Adjust position to match the torus
-
-//         // Create a sphere
-//         const sphereShape = new CANNON.Sphere(sphereRadius);
-//         const sphereBody = new CANNON.Body({ mass: 1 });
-//         sphereBody.addShape(sphereShape);
-//         sphereBody.position.set(x, y, 0);
-     
-
-//         // Add both sphere and cylinder bodies to the torusBody
-//         torusBody.addShape(sphereShape, new CANNON.Vec3(x + randx, y + randy, z * -randz - minDist));
-
-//     }
-
-//     // Add the torusBody to the Cannon.js world
-//     level1PhysicsWorld.addBody(torusBody);
-//     await import('./ring.js').then(({ Ring }) => {
-
-//         const ring = new Ring({
-//             ringRadius: ringRadius,
-//             tubeRadius: sphereRadius,
-//             hexColour: 0xFFD700,
-//             position: {
-//                 x: x + randx - ringRadius,
-//                 y: y + randy + sphereRadius,
-//                 z: z * -randz - minDist
-//             },
-//         });
-//         ring.castShadow = true;
-//         level1Scene.add(ring);
-
-//     }).catch(error => {
-//         console.log('Error loading Ring class:', error);
-//     });
-// }
-
-// level1Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
 
 export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft }

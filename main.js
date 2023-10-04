@@ -43,10 +43,10 @@ import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3Ai
 
 let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody, mixer, floorMixer;
 let light, cannonDebugger;
-controls = new OrbitControls(menuCamera, renderer.domElement);
-controls.target.set(0,0,0);
-controls.dampingFactor = 0.05;
-controls.enableDamping = true;
+// controls = new OrbitControls(menuCamera, renderer.domElement);
+// controls.target.set(0,0,0);
+// controls.dampingFactor = 0.05;
+// controls.enableDamping = true;
 //3rd/fp camera
 const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let thirdPerson = true;
@@ -55,10 +55,10 @@ let offset = {
     y: 5,
     z: 15
 };
-const testlight = new THREE.PointLight(new THREE.Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 12, 200);
+const testlight = new THREE.PointLight(new THREE.Color("#FFCB8E").convertSRGBToLinear(), 12, 200);
 
 // const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E"), 80, 200 );
-testlight.position.set(60, 40, -100);
+testlight.position.set(40, 30, 40);
 
 testlight.castShadow = true;
 testlight.shadow.mapSize.width = 512;
@@ -82,7 +82,7 @@ function animate() {
         renderer.autoClear = false;
         renderer.clear();
         
-        controls.update();
+        // controls.update();
         
         
 
@@ -157,16 +157,13 @@ function animate() {
         // console.log(aircraftBody.quaternion)
         // aircraft.quaternion.y=  aircraftBody.quaternion.y;
         // aircraft.quaternion.setFromEuler(aircraftBody.quaternion.x,aircraftBody.quaternion.y+Math.PI/2,aircraftBody.quaternion.z);
-        // ground.position.copy(groundBody.position);
-        // ground.quaternion = (0,0,0);
         perspectiveCamera.position.set(aircraft.position.x, aircraft.position.y + 1 + offset.y, aircraft.position.z - 3 + offset.z);
 
-        light.target = aircraft;
-        light.position.set(aircraft.position.x, aircraft.position.y + 100, aircraft.position.z + 200);
-        testlight.position.set(aircraft.position.x, 100, aircraft.position.z + 10);
+        // light.target = aircraft;
+        // light.position.set(aircraft.position.x, aircraft.position.y + 100, aircraft.position.z + 200);
 
-        // controls.update();
-        renderer.render(gameScene, perspectiveCamera);
+        controls.update();
+        renderer.render(gameScene, gameCamera);
         animationId = requestAnimationFrame(animate);
     }
 }
