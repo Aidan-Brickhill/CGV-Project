@@ -1,4 +1,4 @@
-//imports
+// IMPORTS
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
@@ -20,14 +20,15 @@ const level1PhysicsWorld = new CANNON.World({
 level1PhysicsWorld.broadphase = new CANNON.SAPBroadphase(level1PhysicsWorld); 
 level1PhysicsWorld.solver = new CANNON.GSSolver(); 
 
-
+// INITALIZE 
 let level1AircraftBody;
 let level1AircraftVehicle;
 let level1GroundBody;
 let level1Ground;
+let level1Aircraft;
+let level1MixerAircraft;
 
-
-//level1Aircraft
+// Creates Aircraft + Loads model ====================================================
 level1AircraftBody = new CANNON.Body({
     mass: 5,
     shape: new CANNON.Box(new CANNON.Vec3(0.75/5, 0.85/5, 3/5)),
@@ -37,15 +38,10 @@ level1AircraftBody.addShape(new CANNON.Box(
     new CANNON.Vec3(0, 0, -0.2/5)
     );
 level1AircraftBody.position.set(0, 0, 80);
-
 level1AircraftVehicle = new CANNON.RigidVehicle({
     chassisBody: level1AircraftBody,
-})
-
+});
 level1AircraftVehicle.addToWorld(level1PhysicsWorld);
-
-let level1Aircraft;
-let level1MixerAircraft;
 let glftLoader = new GLTFLoader();
 glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     level1Aircraft = gltfScene.scene;
@@ -68,7 +64,9 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     });
     
 });
+// ====================================================
 
+// 
 let textures = {
     dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
     dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
