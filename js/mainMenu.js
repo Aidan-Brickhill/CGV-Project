@@ -6,6 +6,10 @@ import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
+// variables that set the size of the map
+const mapWidth = 20;
+const maplength = 20;
+
 const menuCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 menuCamera.position.set(0, 10, 2);
 
@@ -108,8 +112,8 @@ const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
-for(let i = -20; i <= 20; i++) { //horizontal - x
-    for(let j = -20; j <= 20; j++) { //forwards - z
+for (let i = Math.floor(-mapWidth / 2); i <= Math.floor(mapWidth / 2); i++) { 
+    for (let j = -maplength; j <= maplength; j++) { 
         let position = tileToPosition(i,j)
 
         // if (position.length() >100) continue;
