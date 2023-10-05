@@ -76,13 +76,13 @@ function animate(){
     if (MainMenu){
         raycaster.setFromCamera(mouse, menuCamera);
         // menuScene.rotateY(cameraRotationCounter);
-        
+
         renderer.autoClear = false;
         renderer.clear();
-        
+
         // controls.update();
-        
-        
+
+
 
         //This line loads the Main Menu as the active scene at first, active scene gets updated on click
         renderer.render(menuScene, menuCamera);
@@ -133,10 +133,10 @@ function animate(){
             vyf = -speed;
         }
 
-        force.x = xresponseModulator*(vxf - vxi)/mass;
-        force.y = yresponseModulator*(vyf - vyi)/mass;
+        force.x = xresponseModulator * (vxf - vxi) / mass;
+        force.y = yresponseModulator * (vyf - vyi) / mass;
         aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
-        
+
         // invisible ceiling
         if (currentLevel == 1) {
             if (aircraftBody.position.y > ceiling1) {
@@ -145,7 +145,7 @@ function animate(){
             }
         }
 
-        physicsWorld.step(1 / 60); 
+        physicsWorld.step(1 / 60);
         physicsWorld.fixedStep();
         aircraft.position.x = aircraftBody.position.x;
         aircraft.position.y = aircraftBody.position.y - (1 / 5);
@@ -197,22 +197,22 @@ function onMouseDown(event) {
         // You can now work with the selected object
         console.log('Selected object:', selectedObject);
 
-        if (MainMenu){
-            if (selectedObject.name==="level1"){
+        if (MainMenu) {
+            if (selectedObject.name === "level1") {
                 currentLevel = 1;
                 cancelAnimationFrame(animationId);
                 initializeLevel1Scene();
                 MainMenu = false;
                 requestAnimationFrame(animate);
             }
-            if (selectedObject.name==="level2"){
+            if (selectedObject.name === "level2") {
                 currentLevel = 2;
                 cancelAnimationFrame(animationId);
                 initializeLevel2Scene();
                 MainMenu = false;
                 requestAnimationFrame(animate);
-            }   
-            if (selectedObject.name==="level3"){
+            }
+            if (selectedObject.name === "level3") {
                 currentLevel = 3;
                 cancelAnimationFrame(animationId);
                 initializeLevel3Scene();
@@ -220,7 +220,7 @@ function onMouseDown(event) {
                 requestAnimationFrame(animate);
             }
 
-        
+
         }
 
 
@@ -440,6 +440,17 @@ function initializeLevel3Scene() {
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     physicsWorld.gravity.set(0, 0, 0);
 
+    const levelThreeLighting = new THREE.PointLight(new THREE.Color("#0C1445").convertSRGBToLinear(), 12, 200); //Dark colour for lava map
+
+    // const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E"), 80, 200 );
+    levelThreeLighting.position.set(40, 30, 40);
+
+    levelThreeLighting.castShadow = true;
+    levelThreeLighting.shadow.mapSize.width = 512;
+    levelThreeLighting.shadow.mapSize.height = 512;
+    levelThreeLighting.shadow.camera.near = 0.5;
+    levelThreeLighting.shadow.camera.far = 500;
+
     // aircraftBody.applyLocalForce(0, new CANNON.Vec3(0, 0, 0));
     aircraftBody.position.set(0, 30, 200);
     ground = level3Ground;
@@ -448,11 +459,11 @@ function initializeLevel3Scene() {
     // floorMixer = level3MixerOcean;
 
     if (levelInitialize[0] === 0) {
-        light = new THREE.DirectionalLight(0xffffff, 1)
+        light = new THREE.DirectionalLight(0x0C090A, 1)
         // light.position.set(0, 100,  30)
 
         light.castShadow = true;
-        gameScene.add(testlight);
+        gameScene.add(levelThreeLighting);
 
         // light.left = -20;
         // light.right = 20;
@@ -462,10 +473,10 @@ function initializeLevel3Scene() {
         // gameScene.add(light);
 
 
-        const helper = new THREE.PointLightHelper(testlight, 1);
+        const helper = new THREE.PointLightHelper(levelThreeLighting, 1);
         gameScene.add(helper);
 
-        gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
+        gameScene.add(new THREE.AmbientLight(0xFFFFFF, 0.2))
 
         levelInitialize[0] = 1;
 
