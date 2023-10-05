@@ -6,20 +6,19 @@ import { BoxGeometry } from 'three';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-//camera
 
-
+// SCENE CAMERA, used for debugging only
 const level1Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 level1Camera.position.set(-17,31,33);
 
-//scene-graphics
+// SCENE + PHYSICS INITIALISATION
 const level1Scene = new THREE.Scene();
 level1Scene.background = new THREE.Color("#FFEECC");
-//CANNON physics world
-
 const level1PhysicsWorld = new CANNON.World({
     gravity: new CANNON.Vec3(0, 0, 0),
 });
+level1PhysicsWorld.broadphase = new CANNON.SAPBroadphase(level1PhysicsWorld); 
+level1PhysicsWorld.solver = new CANNON.GSSolver(); 
 
 
 let level1AircraftBody;
@@ -37,7 +36,7 @@ level1AircraftBody.addShape(new CANNON.Box(
     new CANNON.Vec3(3.15/5, 0.9/5, 0.8/5)),
     new CANNON.Vec3(0, 0, -0.2/5)
     );
-level1AircraftBody.position.set(0, 0, 30);
+level1AircraftBody.position.set(0, 0, 80);
 
 level1AircraftVehicle = new CANNON.RigidVehicle({
     chassisBody: level1AircraftBody,
@@ -94,8 +93,8 @@ const DIRT_HEIGHT = MAX_HEIGHT * 0.7;
 const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
-const levelWidth=7;
-const levelLength=7;
+const levelWidth=10;
+const levelLength=14;
 let scalar = 1.5;
 
 for(let i = -levelWidth; i <= levelWidth; i++) { //horizontal - x
@@ -185,55 +184,34 @@ function makeHex(height, position) {
     }  
 }
 
-function cannonHexGeometry(height, position){
-    const radius = scalar; // Radius of the hexagon (distance from the center to any corner)
+function cannonHexGeometry(height, position,) {
     const numSides = 6; // Number of sides in the hexagon
-    height = height * scalar;
-
-    // Calculate the vertices of the hexagonal prism
-    const vertices = [];
-    for (let i = numSides-1; i >= 0; i--) {
-        const angle = (Math.PI / 3) * i; // Angle between each side (360 degrees divided by 6 sides)
-        const x = radius * Math.cos(angle);
-        const y = radius * Math.sin(angle);
-        vertices.push(new CANNON.Vec3(x, y, 0)); // Z-coordinate is 0 for the base
-        vertices.push(new CANNON.Vec3(x, y, height)); // Z-coordinate is the height for the top
-    }
-
-    //   Create the faces (each face consists of 3 vertices)
-    const faces = [];
-    for (let i = numSides-1; i >= 0; i--) {
-        const v0 = i * 2;
-        const v1 = (i * 2 + 1) % (numSides * 2);
-        const v2 = ((i + 1) % numSides) * 2;
-        faces.push([v0, v1, v2]);
-        faces.push([v1, v2, v2 + 1]);
-    }
-
+    height = height * scalar * 2;
+    const radius = scalar;
     // Create a Cannon.js ConvexPolyhedron shape for the hexagonal prism
-    const hexagonalPrismShape = new CANNON.ConvexPolyhedron({ vertices, faces });
+    const hexagonalPrismShape = new CANNON.Cylinder(
+        radius,          // Radius at the top (0 for a hexagon)
+        radius,     // Radius at the bottom
+        height,     // Height of the prism
+        numSides    // Number of segments (sides)
+    );
 
     // Create a Cannon.js Body for the hexagonal prism
-    const hexagonalPrismBody = new CANNON.Body({ 
+    const hexagonalPrismBody = new CANNON.Body({
         type: CANNON.Body.STATIC,
-        mass: 1 }); // Adjust mass as needed
+        mass: 0 // Set mass to 0 for a static body
+    });
+
     hexagonalPrismBody.addShape(hexagonalPrismShape);
-    const combinedRotation = new CANNON.Quaternion();
 
-    const horizontalRotation = new CANNON.Quaternion();
-    horizontalRotation.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2); // Horizontal rotation
-    
-    const yRotationQuaternion = new CANNON.Quaternion();
-    yRotationQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), Math.PI / 6); // 30-degree rotation around the y-axis
-    
-    // Combine both rotations by multiplying the quaternions
-    combinedRotation.copy(horizontalRotation);
-    combinedRotation.mult(yRotationQuaternion, combinedRotation);
-    
-    hexagonalPrismBody.quaternion.copy(combinedRotation);
+    // Set the position of the hexagonal prism
+    hexagonalPrismBody.position.set(
+        position.x * scalar,
+        0,
+        position.y * scalar
+    );
 
-    hexagonalPrismBody.position.set(position.x * scalar, 0, position.y * scalar);
-
+    // Add the hexagonal prism to the Cannon.js world
     level1PhysicsWorld.addBody(hexagonalPrismBody);
 
 }
