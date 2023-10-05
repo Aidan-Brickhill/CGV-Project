@@ -41,9 +41,9 @@ let light, cannonDebugger;
 const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let thirdPerson = true;
 let offset = {
-    x: 0,
-    y: 5,
-    z: 15
+    x : 0,
+    y : 1,
+    z : 6,
 };
 
 const clock = new THREE.Clock();
@@ -240,8 +240,8 @@ window.addEventListener('keydown', (event) => {
             } else {
                 thirdPerson = true;
                 offset.x = 0;
-                offset.y = 5;
-                offset.z = 10;
+                offset.y = 1;
+                offset.z = 6;
             }
             break;
         case 'Escape':
