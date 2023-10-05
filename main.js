@@ -72,10 +72,8 @@ const mouse = new THREE.Vector2();
 
 // Angle for rotating camera
 let cameraRotationCounter = 2 * Math.PI / 750;
-function animate() {
-
-
-    if (MainMenu) {
+function animate(){
+    if (MainMenu){
         raycaster.setFromCamera(mouse, menuCamera);
         // menuScene.rotateY(cameraRotationCounter);
         
@@ -149,7 +147,6 @@ function animate() {
 
         physicsWorld.step(1 / 60); 
         physicsWorld.fixedStep();
-        cannonDebugger.update();
         aircraft.position.x = aircraftBody.position.x;
         aircraft.position.y = aircraftBody.position.y - (1 / 5);
         aircraft.position.z = aircraftBody.position.z;
@@ -157,13 +154,21 @@ function animate() {
         // console.log(aircraftBody.quaternion)
         // aircraft.quaternion.y=  aircraftBody.quaternion.y;
         // aircraft.quaternion.setFromEuler(aircraftBody.quaternion.x,aircraftBody.quaternion.y+Math.PI/2,aircraftBody.quaternion.z);
-        perspectiveCamera.position.set(aircraft.position.x, aircraft.position.y + 1 + offset.y, aircraft.position.z - 3 + offset.z);
-
-        // light.target = aircraft;
+                // light.target = aircraft;
         // light.position.set(aircraft.position.x, aircraft.position.y + 100, aircraft.position.z + 200);
 
+        perspectiveCamera.position.set(aircraft.position.x, aircraft.position.y + 1 + offset.y, aircraft.position.z - 3 + offset.z);
+
+
+        //debug (allows you to move around the scene)
         controls.update();
-        renderer.render(gameScene, gameCamera);
+        // renderer.render(gameScene, gameCamera);
+
+        // debug (allows you to see cannon bodies)
+        // cannonDebugger.update();
+
+        //rednders the scene
+        renderer.render(gameScene, perspectiveCamera);
         animationId = requestAnimationFrame(animate);
     }
 }
@@ -345,7 +350,7 @@ function initializeLevel1Scene() {
         const helper = new THREE.PointLightHelper(testlight, 1);
         gameScene.add(helper);
 
-        // gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
+        gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
 
         levelInitialize[0] = 1;
 
