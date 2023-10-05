@@ -9,8 +9,8 @@ import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 
 //============== Change Map Size ================//
-const mapWidth = 20;
-const maplength = 20;
+const mapWidth = 10;
+const maplength = 40;
 
 
 //============== Debugging Camera - FreeCam ================//
@@ -20,14 +20,14 @@ level3Camera.position.set(-17, 31, 33);
 
 //============== Scene and background colour ================//
 const level3Scene = new THREE.Scene();
-level3Scene.background = new THREE.Color("#333333");
+level3Scene.background = new THREE.Color("#800000");
 
 //============== Initialise Physics World ================//
 const level3PhysicsWorld = new CANNON.World({
     gravity: new CANNON.Vec3(0, 0, 0),
 });
 
-//============== Lights ================//
+//============== SunLight ================//
 const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
 pointLight.castShadow = true; 
 pointLight.shadow.mapSize.width = 512; 
@@ -39,6 +39,16 @@ pointLight.position.set(40, 30, 40);
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
 level3Scene.add(ambientLight);
+
+//============== Lava Light ================//
+const lavaPointLight = new THREE.PointLight( new THREE.Color("#ff6600").convertSRGBToLinear(), 5, 300 );
+pointLight.castShadow = true; 
+pointLight.shadow.mapSize.width = 512; 
+pointLight.shadow.mapSize.height = 512; 
+pointLight.shadow.camera.near = 0.5; 
+pointLight.shadow.camera.far = 500; 
+level3Scene.add(lavaPointLight);
+pointLight.position.set(0, 0, 0);
 
 //============== Phyics Aircraft Global Variables ================//
 let level3AircraftBody;
@@ -125,7 +135,7 @@ const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
 //============== Create Map With Size Specified In Global Variables =================//
 
-for (let i = Math.floor(-mapWidth / 2); i <= Math.floor(mapWidth / 2); i++) { 
+for (let i = -mapWidth; i <= mapWidth; i++) { 
     for (let j = -maplength; j <= maplength; j++) { 
         let position = tileToPosition(i, j)
         let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
@@ -142,7 +152,7 @@ let seaMesh = new THREE.Mesh(
     new THREE.MeshPhysicalMaterial({
         map: textures.lava, // Set the lava texture as the map
         emissive: new THREE.Color("#FF5733").convertSRGBToLinear(), // Emissive color
-        emissiveIntensity: 0.5, // Adjust intensity
+        emissiveIntensity: 0, // Adjust intensity
         ior: 1.4,
         transmission: 1,
         thickness: 1.5,
@@ -154,33 +164,33 @@ let seaMesh = new THREE.Mesh(
 
 //============== Add Point Lights Under The Lava To Make The Lava Give Off Light =================//
 
-// Define the number of point lights and their spacing
-const numLightsX = 1; // Number of lights along the X-axis
-const numLightsZ = 25; // Number of lights along the Z-axis
-const spacingX = 10; // Spacing between lights along the X-axis
-const spacingZ = 5; // Spacing between lights along the Z-axis
+// // Define the number of point lights and their spacing
+// const numLightsX = 1; // Number of lights along the X-axis
+// const numLightsZ = 25; // Number of lights along the Z-axis
+// const spacingX = 10; // Spacing between lights along the X-axis
+// const spacingZ = 5; // Spacing between lights along the Z-axis
 
-// Create an empty array to store the point lights
-const pointLights = [];
+// // Create an empty array to store the point lights
+// const pointLights = [];
 
-// Loop to create and position the point lights
-for (let i = 0; i < numLightsX; i++) {
-    for (let j = 0; j < numLightsZ; j++) {
-        const pointLight = new THREE.PointLight(0xcf1020, 2, 30); // Color, intensity, and distance
-        const x = i * spacingX - (numLightsX / 2) * spacingX;
-        const z = j * spacingZ - (numLightsZ / 2) * spacingZ;
+// // Loop to create and position the point lights
+// for (let i = 0; i < numLightsX; i++) {
+//     for (let j = 0; j < numLightsZ; j++) {
+//         const pointLight = new THREE.PointLight(0xcf1020, 2, 30); // Color, intensity, and distance
+//         const x = i * spacingX - (numLightsX / 2) * spacingX;
+//         const z = j * spacingZ - (numLightsZ / 2) * spacingZ;
 
-        pointLight.position.set(x, 0, z); // Position each light
-        level3Scene.add(pointLight); // Add the light to the scene
+//         pointLight.position.set(x, 0, z); // Position each light
+//         level3Scene.add(pointLight); // Add the light to the scene
 
-        pointLights.push(pointLight); // Add the light to the array for future manipulation
-    }
-}
+//         pointLights.push(pointLight); // Add the light to the array for future manipulation
+//     }
+// }
 
 //add all point lights generated above to the scene
-for (let i = 0; i < pointLights.length; i++) {
-    level3Scene.add(pointLights[i]);
-}
+// for (let i = 0; i < pointLights.length; i++) {
+//     level3Scene.add(pointLights[i]);
+// }
 
 //============== Position The Lava (seaMesh) =================//
 
@@ -459,7 +469,7 @@ function addCongratulationsText() {
 }
 
 //============== Adds Fog =================//
-level3Scene.fog = new THREE.Fog(0x444444, 0.015, 150);
+level3Scene.fog = new THREE.Fog(0xff7878, 0.015, 300);
 
 //============== Export All Objects Of Interest =================//
 export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3MixerAircraft }
