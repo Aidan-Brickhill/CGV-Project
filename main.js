@@ -1,23 +1,18 @@
+// IMPORTS
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es'
 import CannonDebugger from 'cannon-es-debugger';
-import { Box } from './js/aircraft.js';
-import { Ring } from './js/ring.js';
-
-//for dev purposes (allows you to navigate the 3D space)
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-
+// Initialization
 let MainMenu = true;
 let animationId;
 let controls;
 let levelInitialize = [0, 0, 0];
-
-
 let currentLevel = 0;
 
-// renderer setup
+// Renderer setup
 let renderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -27,14 +22,6 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-let envmap;
-let pmrem = new THREE.PMREMGenerator(renderer);
-pmrem.compileEquirectangularShader();
-const envmapTexture = await new RGBELoader().setDataType(THREE.FloatType).loadAsync("./Assets/envmap.hdr");
-const rt = pmrem.fromEquirectangular(envmapTexture);
-envmap = rt.texture;
-
-
 //imports from other levels
 import { menuScene, menuCamera, buttonScene } from "./js/mainMenu.js";
 import { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft } from "./js/level1.js";
@@ -43,11 +30,14 @@ import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3Ai
 
 let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody, mixer, floorMixer;
 let light, cannonDebugger;
+
+// debug for menu scene
 // controls = new OrbitControls(menuCamera, renderer.domElement);
 // controls.target.set(0,0,0);
 // controls.dampingFactor = 0.05;
 // controls.enableDamping = true;
-//3rd/fp camera
+
+//3rd/1st person camera
 const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let thirdPerson = true;
 let offset = {
@@ -55,16 +45,6 @@ let offset = {
     y: 5,
     z: 15
 };
-const testlight = new THREE.PointLight(new THREE.Color("#FFCB8E").convertSRGBToLinear(), 12, 200);
-
-// const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E"), 80, 200 );
-testlight.position.set(40, 30, 40);
-
-testlight.castShadow = true;
-testlight.shadow.mapSize.width = 512;
-testlight.shadow.mapSize.height = 512;
-testlight.shadow.camera.near = 0.5;
-testlight.shadow.camera.far = 500;
 
 const clock = new THREE.Clock();
 const raycaster = new THREE.Raycaster();
@@ -154,8 +134,6 @@ function animate(){
         // console.log(aircraftBody.quaternion)
         // aircraft.quaternion.y=  aircraftBody.quaternion.y;
         // aircraft.quaternion.setFromEuler(aircraftBody.quaternion.x,aircraftBody.quaternion.y+Math.PI/2,aircraftBody.quaternion.z);
-                // light.target = aircraft;
-        // light.position.set(aircraft.position.x, aircraft.position.y + 100, aircraft.position.z + 200);
 
         perspectiveCamera.position.set(aircraft.position.x, aircraft.position.y + 1 + offset.y, aircraft.position.z - 3 + offset.z);
 
@@ -173,7 +151,6 @@ function animate(){
     }
 }
 animate();
-
 
 //Event listeners
 //checks which button is presssed in main menu
@@ -219,12 +196,7 @@ function onMouseDown(event) {
                 MainMenu = false;
                 requestAnimationFrame(animate);
             }
-
-
         }
-
-
-        // Perform any actions or handle the selection as needed
     }
 }
 
@@ -266,13 +238,13 @@ window.addEventListener('keydown', (event) => {
             if (thirdPerson) {
                 thirdPerson = false;
                 offset.x = 0;
-                offset.y = 5;
-                offset.z = 15;
+                offset.y = 0;
+                offset.z = 0;
             } else {
                 thirdPerson = true;
                 offset.x = 0;
-                offset.y = 0;
-                offset.z = 0;
+                offset.y = 5;
+                offset.z = 10;
             }
             break;
         case 'Escape':
@@ -333,24 +305,6 @@ function initializeLevel1Scene() {
     // floorMixer = level1MixerOcean;
 
     if (levelInitialize[0] === 0) {
-        light = new THREE.DirectionalLight(0xffffff, 5)
-        // light.position.set(0, 100,  30)
-
-        light.castShadow = true;
-        gameScene.add(testlight);
-
-        // light.left = -20;
-        // light.right = 20;
-        // light.top = 20;
-        // light.bottom = -20;
-
-        // gameScene.add(light);
-
-
-        const helper = new THREE.PointLightHelper(testlight, 1);
-        gameScene.add(helper);
-
-        gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
 
         levelInitialize[0] = 1;
 
@@ -393,14 +347,6 @@ function initializeLevel2Scene() {
     mixer = level2MixerAircraft;
 
     if (levelInitialize[0] === 0) {
-        light = new THREE.DirectionalLight(0xffffff, 1)
-        light.castShadow = true;
-        gameScene.add(testlight);
-
-        const helper = new THREE.PointLightHelper(testlight, 1);
-        gameScene.add(helper);
-
-        gameScene.add(new THREE.AmbientLight(0xffffff, 0.3))
 
         levelInitialize[0] = 1;
 
@@ -440,16 +386,6 @@ function initializeLevel3Scene() {
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     physicsWorld.gravity.set(0, 0, 0);
 
-    const levelThreeLighting = new THREE.PointLight(new THREE.Color("#0C1445").convertSRGBToLinear(), 12, 200); //Dark colour for lava map
-
-    // const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E"), 80, 200 );
-    levelThreeLighting.position.set(40, 30, 40);
-
-    levelThreeLighting.castShadow = true;
-    levelThreeLighting.shadow.mapSize.width = 512;
-    levelThreeLighting.shadow.mapSize.height = 512;
-    levelThreeLighting.shadow.camera.near = 0.5;
-    levelThreeLighting.shadow.camera.far = 500;
 
     // aircraftBody.applyLocalForce(0, new CANNON.Vec3(0, 0, 0));
     aircraftBody.position.set(0, 30, 200);
@@ -459,24 +395,6 @@ function initializeLevel3Scene() {
     // floorMixer = level3MixerOcean;
 
     if (levelInitialize[0] === 0) {
-        light = new THREE.DirectionalLight(0x0C090A, 1)
-        // light.position.set(0, 100,  30)
-
-        light.castShadow = true;
-        gameScene.add(levelThreeLighting);
-
-        // light.left = -20;
-        // light.right = 20;
-        // light.top = 20;
-        // light.bottom = -20;
-
-        // gameScene.add(light);
-
-
-        const helper = new THREE.PointLightHelper(levelThreeLighting, 1);
-        gameScene.add(helper);
-
-        gameScene.add(new THREE.AmbientLight(0xFFFFFF, 0.2))
 
         levelInitialize[0] = 1;
 

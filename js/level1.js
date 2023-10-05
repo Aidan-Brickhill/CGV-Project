@@ -2,10 +2,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
-import { BoxGeometry } from 'three';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 // SCENE CAMERA, used for debugging only
 const level1Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -66,7 +64,11 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 });
 // ====================================================
 
-// 
+// Creates World
+const levelWidth=10;
+const levelLength=14;
+let scalar = 1.5;
+//  loads image textures
 let textures = {
     dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
     dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
@@ -76,42 +78,37 @@ let textures = {
     stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
     tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
-
-let stoneGeo = new BoxGeometry(0,0,0);
-let dirtGeo = new BoxGeometry(0,0,0);
-let dirt2Geo = new BoxGeometry(0,0,0);
-let sandGeo = new BoxGeometry(0,0,0);
-let grassGeo = new BoxGeometry(0,0,0);
-let treeGeo = new BoxGeometry(0,0,0);
-
-const simplex = new SimplexNoise();
+//  creates box gemeotries 
+let stoneGeo = new THREE.BoxGeometry(0,0,0);
+let dirtGeo = new THREE.BoxGeometry(0,0,0);
+let dirt2Geo = new THREE.BoxGeometry(0,0,0);
+let sandGeo = new THREE.BoxGeometry(0,0,0);
+let grassGeo = new THREE.BoxGeometry(0,0,0);
+let treeGeo = new THREE.BoxGeometry(0,0,0);
+// constants for scene creation
 const MAX_HEIGHT = 20;
 const STONE_HEIGHT = MAX_HEIGHT * 0.8;
 const DIRT_HEIGHT = MAX_HEIGHT * 0.7;
 const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
-const levelWidth=10;
-const levelLength=14;
-let scalar = 1.5;
+const simplex = new SimplexNoise();
 
+// Creates level randomly using noise 
 for(let i = -levelWidth; i <= levelWidth; i++) { //horizontal - x
     for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
         let position = tileToPosition(i,j)
-
-        // if (position.length() >100) continue;
-
         let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
         noise = Math.pow(noise, 1.5);
-
+        // function to create hexagonal prisms, both scene and cannon boides
         makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
     } 
 }
 
+// creates the water
 let seaMesh = new THREE.Mesh(
     new THREE.CylinderGeometry(300, 300, MAX_HEIGHT * 0.2, 50),
     new THREE.MeshPhysicalMaterial({
-    //   envMap: envmap,
       color: new THREE.Color("#55aaff").convertSRGBToLinear().multiplyScalar(3),
       ior: 1.4,
       transmission: 1,
@@ -122,31 +119,37 @@ let seaMesh = new THREE.Mesh(
       metalness: 0.025,
       roughnessMap: textures.water,
       metalnessMap: textures.water,
-    })
-  );
-  seaMesh.receiveShadow = true;
-  seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
-  seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
+    }));
+seaMesh.receiveShadow = true;
+seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
+seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
 
-// hexagonMesh.scale.set(90,1,90)   
-  let stoneMesh = hexMesh(stoneGeo, textures.stone);
-  let grassMesh = hexMesh(grassGeo, textures.grass);
-  let dirt2Mesh = hexMesh(dirt2Geo, textures.dirt2);
-  let dirtMesh  = hexMesh(dirtGeo, textures.dirt);
-  let sandMesh  = hexMesh(sandGeo, textures.sand);
-  let treeMesh  = hexMesh(treeGeo, textures.tree);
-
-
-  stoneMesh.scale.set(scalar, scalar, scalar);
-  grassMesh.scale.set(scalar, scalar, scalar);
-  dirt2Mesh.scale.set(scalar, scalar, scalar);
-  dirtMesh.scale.set(scalar, scalar, scalar);
-  sandMesh.scale.set(scalar, scalar, scalar);
-  seaMesh.scale.set(scalar, scalar, scalar);
-  treeMesh.scale.set(scalar, scalar, scalar);
-
-  level1Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh, treeMesh);
-  level1Scene.add(seaMesh);
+// creates meshes and links to geometries populated before
+let stoneMesh = hexMesh(stoneGeo, textures.stone);
+let grassMesh = hexMesh(grassGeo, textures.grass);
+let dirt2Mesh = hexMesh(dirt2Geo, textures.dirt2);
+let dirtMesh  = hexMesh(dirtGeo, textures.dirt);
+let sandMesh  = hexMesh(sandGeo, textures.sand);
+let treeMesh  = hexMesh(treeGeo, textures.tree);
+// sets the scales of scene
+stoneMesh.scale.set(scalar, scalar, scalar);
+grassMesh.scale.set(scalar, scalar, scalar);
+dirt2Mesh.scale.set(scalar, scalar, scalar);
+dirtMesh.scale.set(scalar, scalar, scalar);
+sandMesh.scale.set(scalar, scalar, scalar);
+seaMesh.scale.set(scalar, scalar, scalar);
+treeMesh.scale.set(scalar, scalar, scalar);
+// add grounds to scene
+level1Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh, treeMesh);
+level1Scene.add(seaMesh);
+// adds grounds plane
+level1GroundBody = new CANNON.Body({
+    type: CANNON.Body.STATIC,
+    shape: new CANNON.Plane(),
+});
+level1GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+level1GroundBody.position.set(0, 0, 0);
+level1PhysicsWorld.addBody(level1GroundBody);
 
 function hexGeometry(height, position) {
     let geo  = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
@@ -216,8 +219,6 @@ function cannonHexGeometry(height, position,) {
 
 function tileToPosition(tileX, tileY) {
     return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.7, tileY * 1.5);
-
-    // return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.77, tileY * 1.535);
 }
 
 function hexMesh(geo, map) {
@@ -299,14 +300,4 @@ function tree(height, position) {
     return mergeBufferGeometries([geo, geo2, geo3]);
 }
     
-
-//level1Ground
-level1GroundBody = new CANNON.Body({
-    type: CANNON.Body.STATIC,
-    shape: new CANNON.Plane(),
-});
-level1GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-level1GroundBody.position.set(0, 0, 0);
-level1PhysicsWorld.addBody(level1GroundBody);
-
 export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft }

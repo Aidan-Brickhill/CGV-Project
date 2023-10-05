@@ -1,90 +1,38 @@
+// IMPORTS
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
-import { BoxGeometry } from 'three';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-// variables that set the size of the map
-const mapWidth = 20;
-const maplength = 20;
-
+// SCENE CAMERA, used for debugging only
 const menuCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 menuCamera.position.set(0, 10, 2);
 
+// SCENE INITIALISATION
+const menuScene = new THREE.Scene();
+menuScene.background = new THREE.Color("#FFEECC");
+menuScene.add(new THREE.AmbientLight(0xffffff, 0.2));
+const buttonScene = new THREE.Scene();
+menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 50 );
+
+// Adds light to scene
 const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
 testlight.castShadow = true; 
 testlight.shadow.mapSize.width = 512; 
 testlight.shadow.mapSize.height = 512; 
 testlight.shadow.camera.near = 0.5; 
 testlight.shadow.camera.far = 500; 
-
-
-const menuScene = new THREE.Scene();
 menuScene.add(testlight);
 testlight.position.set(40, 30, 40);
-
-
-const helper = new THREE.PointLightHelper( testlight, 1 );
-        menuScene.add( helper );
-menuScene.background = new THREE.Color("#FFEECC");
-menuScene.add(new THREE.AmbientLight(0xffffff, 0.2))
-
-const buttonScene = new THREE.Scene();
-// buttonScene.background;
-
-const menuBackgroundGeometry = new THREE.PlaneGeometry(10, 6); // You can adjust the dimensions
-const menuBackgroundMaterial = new THREE.MeshBasicMaterial({ color: 0x222222 }); // Adjust the color as needed
-
-
-// Create and add menu element to the scene
-
-// Code to add a background to the menu buttons (OLD-LOOK)
-// const menuBackground = new THREE.Mesh(menuBackgroundGeometry, menuBackgroundMaterial);
-// menuBackground.position.set(0, 0, -5); // Position Menu background in the scene
-// menuScene.add(menuBackground);
 
 // Create buttons
 buttonScene.add(createButton("Level 1", "level1", "#black", "#ffecd1", 0, 12, -4));
 buttonScene.add(createButton("Level 2", "level2", "#black", "#008080", 0, 10, -4));
 buttonScene.add(createButton("Level 3", "level3", "#black", "#c5832b", 0, 8, -4));
 
-const level2Button = buttonScene.getObjectByName("level2");
-
-level2Button.addEventListener("click", () => {
-    // Logic to transition to Level 2
-    console.log("Level 2 button clicked");
-  });
-
-// Define a function to create button materials
-function createButton(text, name, backgroundColor, textColour, x, y, z) {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = 200; // Adjust the canvas size as needed
-    canvas.height = 100;
-    context.rect(0, 0, 200, 100);
-    context.fillStyle = backgroundColor;
-    context.fill();
-    context.font = '30px Impact';
-    context.fillStyle = textColour; // Text color
-    context.fillText(text, 60, 60); // Text content and position
-  
-    const texture = new THREE.Texture(canvas);
-    texture.needsUpdate = true;
-    const buttonMaterial = new THREE.MeshBasicMaterial({ map: texture });
-
-    const buttonGeometry = new THREE.PlaneGeometry(2, 1);
-    const button = new THREE.Mesh(buttonGeometry, buttonMaterial);
-    button.position.set(x, y, z); // Position button  in the scene
-    button.name=name;
-  
-    return button;
-}
-
-
 // Code for background
-
+const mapWidth = 20;
+const maplength = 20;
 let textures = {
     dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
     dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
@@ -95,14 +43,12 @@ let textures = {
     tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
 
-
-let stoneGeo = new BoxGeometry(0,0,0);
-let dirtGeo = new BoxGeometry(0,0,0);
-let dirt2Geo = new BoxGeometry(0,0,0);
-let sandGeo = new BoxGeometry(0,0,0);
-let grassGeo = new BoxGeometry(0,0,0);
-let treeGeo = new BoxGeometry(0,0,0);
-
+let stoneGeo = new THREE.BoxGeometry(0,0,0);
+let dirtGeo = new THREE.BoxGeometry(0,0,0);
+let dirt2Geo = new THREE.BoxGeometry(0,0,0);
+let sandGeo = new THREE.BoxGeometry(0,0,0);
+let grassGeo = new THREE.BoxGeometry(0,0,0);
+let treeGeo = new THREE.BoxGeometry(0,0,0);
 
 const simplex = new SimplexNoise();
 const MAX_HEIGHT = 10;
@@ -126,51 +72,44 @@ for (let i = Math.floor(-mapWidth / 2); i <= Math.floor(mapWidth / 2); i++) {
   }
 
 let seaMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(300, 300, MAX_HEIGHT * 0.2, 50),
-    new THREE.MeshPhysicalMaterial({
-    //   envMap: envmap,
-      color: new THREE.Color("#55aaff").convertSRGBToLinear().multiplyScalar(3),
-      ior: 1.4,
-      transmission: 1,
-      transparent: true,
-      thickness: 1.5,
-      envMapIntensity: 0.2, 
-      roughness: 1,
-      metalness: 0.025,
-      roughnessMap: textures.water,
-      metalnessMap: textures.water,
-    })
-  );
+new THREE.CylinderGeometry(300, 300, MAX_HEIGHT * 0.2, 50),
+new THREE.MeshPhysicalMaterial({
+//   envMap: envmap,
+    color: new THREE.Color("#55aaff").convertSRGBToLinear().multiplyScalar(3),
+    ior: 1.4,
+    transmission: 1,
+    transparent: true,
+    thickness: 1.5,
+    envMapIntensity: 0.2, 
+    roughness: 1,
+    metalness: 0.025,
+    roughnessMap: textures.water,
+    metalnessMap: textures.water,
+})
+);
 
-  seaMesh.receiveShadow = true;
-  seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
-  seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
+seaMesh.receiveShadow = true;
+seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
+seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
 
-// hexagonMesh.scale.set(90,1,90)   
-  let stoneMesh = hexMesh(stoneGeo, textures.stone);
-  let grassMesh = hexMesh(grassGeo, textures.grass);
-  let dirt2Mesh = hexMesh(dirt2Geo, textures.dirt2);
-  let dirtMesh  = hexMesh(dirtGeo, textures.dirt);
-  let sandMesh  = hexMesh(sandGeo, textures.sand);
-  let treeMesh  = hexMesh(treeGeo, textures.tree);
+let stoneMesh = hexMesh(stoneGeo, textures.stone);
+let grassMesh = hexMesh(grassGeo, textures.grass);
+let dirt2Mesh = hexMesh(dirt2Geo, textures.dirt2);
+let dirtMesh  = hexMesh(dirtGeo, textures.dirt);
+let sandMesh  = hexMesh(sandGeo, textures.sand);
+let treeMesh  = hexMesh(treeGeo, textures.tree);
 
-//   stoneMesh.scale.set(10,10,10);
-//   grassMesh.scale.set(10,10,10);
-//   dirt2Mesh.scale.set(10,10,10);
-//   dirtMesh.scale.set(10,10,10);
-//   sandMesh.scale.set(10,10,10);
-//   seaMesh.scale.set(10,10,10);//
+clouds();
 
-  menuScene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh, treeMesh);
-  menuScene.add(seaMesh);
+menuScene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh, treeMesh);
+menuScene.add(seaMesh);
 
+//ALL FUNCTIONS CREATE THE SCENE =================================================================
 function hexGeometry(height, position) {
     let geo  = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
     geo.translate(position.x, height * 0.5, position.y);
 
-    return geo;
-
-    
+    return geo;    
 }
 
 function makeHex(height, position) {
@@ -231,6 +170,43 @@ function stone(height, position) {
     return geo;
 }
 
+function clouds() {
+let geo = new THREE.SphereGeometry(0, 0, 0); 
+let count = Math.floor(Math.pow(Math.random(), 0.45) * 4);
+
+for(let i = 0; i < count; i++) {
+    const puff1 = new THREE.SphereGeometry(1.2, 7, 7);
+    const puff2 = new THREE.SphereGeometry(1.5, 7, 7);
+    const puff3 = new THREE.SphereGeometry(0.9, 7, 7);
+    
+    puff1.translate(-1.85, Math.random() * 0.3, 0);
+    puff2.translate(0,     Math.random() * 0.3, 0);
+    puff3.translate(1.85,  Math.random() * 0.3, 0);
+
+    const cloudGeo = mergeBufferGeometries([puff1, puff2, puff3]);
+    cloudGeo.translate( 
+    Math.random() * 20 - 10, 
+    Math.random() * 7 + 7, 
+    Math.random() * 20 - 10
+    );
+    cloudGeo.rotateY(Math.random() * Math.PI * 2);
+
+    geo = mergeBufferGeometries([geo, cloudGeo]);
+}
+    const mesh = new THREE.Mesh(
+        geo,
+        new THREE.MeshStandardMaterial({
+        // envMap: envmap, 
+        envMapIntensity: 0.75, 
+        flatShading: true,
+        // transparent: true,
+        // opacity: 0.85,
+        })
+    );
+    
+    menuScene.add(mesh);
+}
+
 function tree(height, position) {
     const treeHeight = Math.random() * 1 + 1.25;
     
@@ -245,16 +221,31 @@ function tree(height, position) {
     
     return mergeBufferGeometries([geo, geo2, geo3]);
 }
-    
-// GROUND
-let menuGroundBody = new CANNON.Body({
-    type: CANNON.Body.STATIC,
-    shape: new CANNON.Plane(),
-});
-menuGroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-menuGroundBody.position.set(0, 0, 0);
+// ===============================================================================================
 
+// function to create button materials
+function createButton(text, name, backgroundColor, textColour, x, y, z) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = 200; // Adjust the canvas size as needed
+    canvas.height = 100;
+    context.rect(0, 0, 200, 100);
+    context.fillStyle = backgroundColor;
+    context.fill();
+    context.font = '30px Impact';
+    context.fillStyle = textColour; // Text color
+    context.fillText(text, 60, 60); // Text content and position
+  
+    const texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+    const buttonMaterial = new THREE.MeshBasicMaterial({ map: texture });
 
-menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 50 );
+    const buttonGeometry = new THREE.PlaneGeometry(2, 1);
+    const button = new THREE.Mesh(buttonGeometry, buttonMaterial);
+    button.position.set(x, y, z); // Position button  in the scene
+    button.name=name;
+  
+    return button;
+}
 
 export {menuScene, menuCamera, buttonScene}
