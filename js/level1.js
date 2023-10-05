@@ -37,7 +37,6 @@ level1Scene.add(pointLight);
 pointLight.position.set(40, 30, 40);
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
-ambientLight.castShadow = true; 
 level1Scene.add(ambientLight);
 
 // Creates Aircraft + Loads model ====================================================
@@ -58,7 +57,6 @@ let glftLoader = new GLTFLoader();
 glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     level1Aircraft = gltfScene.scene;
     level1Scene.add(level1Aircraft);
-    // level1Aircraft.scale.set(5, 5, 5);
     level1Aircraft.rotation.y = Math.PI;
     
     level1Aircraft.traverse(function(node) {

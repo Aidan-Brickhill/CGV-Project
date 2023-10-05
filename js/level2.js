@@ -7,27 +7,43 @@ import * as CANNON from 'cannon-es';
 import { BoxGeometry } from 'three';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-//camera
 
+// SCENE CAMERA, used for debugging only
 const level2Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 level2Camera.position.set(-17,31,33);
 
-//scene-graphics
+// SCENE + PHYSICS INITIALISATION
 const level2Scene = new THREE.Scene();
 level2Scene.background = new THREE.Color("#FFEECC");
-//CANNON physics world
-
 const level2PhysicsWorld = new CANNON.World({
     gravity: new CANNON.Vec3(0, 0, 0),
 });
+level2PhysicsWorld.broadphase = new CANNON.SAPBroadphase(level2PhysicsWorld); 
+level2PhysicsWorld.solver = new CANNON.GSSolver(); 
 
+// INITALIZE 
 let level2AircraftBody;
 let level2AircraftVehicle;
 let level2GroundBody;
 let level2Ground;
+let level2Aircraft;
+let level2MixerAircraft;
 
-//level2Aircraft
+// Adds light to scene
+const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLight.castShadow = true; 
+pointLight.shadow.mapSize.width = 512; 
+pointLight.shadow.mapSize.height = 512; 
+pointLight.shadow.camera.near = 0.5; 
+pointLight.shadow.camera.far = 500; 
+level2Scene.add(pointLight);
+pointLight.position.set(40, 30, 40);
+
+const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
+ambientLight.castShadow = true; 
+level2Scene.add(ambientLight);
+
+// Creates Aircraft + Loads model ====================================================
 level2AircraftBody = new CANNON.Body({
     mass: 5,
     shape: new CANNON.Box(new CANNON.Vec3(0.75/5, 0.85/5, 3/5)),
@@ -36,21 +52,15 @@ level2AircraftBody.addShape(new CANNON.Box(
     new CANNON.Vec3(3.15/5, 0.9/5, 0.8/5)),
     new CANNON.Vec3(0, 0, -0.2/5)
     );
-level2AircraftBody.position.set(0, 0, 30);
-
+level2AircraftBody.position.set(0, 0, 80);
 level2AircraftVehicle = new CANNON.RigidVehicle({
     chassisBody: level2AircraftBody,
-})
-
+});
 level2AircraftVehicle.addToWorld(level2PhysicsWorld);
-
-let level2Aircraft;
-let level2MixerAircraft;
 let glftLoader = new GLTFLoader();
 glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     level2Aircraft = gltfScene.scene;
     level2Scene.add(level2Aircraft);
-    // level2Aircraft.scale.set(5, 5, 5);
     level2Aircraft.rotation.y = Math.PI;
     
     level2Aircraft.traverse(function(node) {
@@ -68,48 +78,53 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     });
     
 });
+// ====================================================
 
+// Creates World
+const levelWidth=10;
+const levelLength=14;
+let scalar = 1.5;
+//  loads image textures
 let textures = {
-    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt.png"),
+    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
     dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
     grass: await new THREE.TextureLoader().loadAsync("./Assets/grass.jpg"),
     sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
     water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
     stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
+    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
-
-
-let stoneGeo = new BoxGeometry(0,0,0);
-let dirtGeo = new BoxGeometry(0,0,0);
-let dirt2Geo = new BoxGeometry(0,0,0);
-let sandGeo = new BoxGeometry(0,0,0);
-let grassGeo = new BoxGeometry(0,0,0);
-
-const simplex = new SimplexNoise();
-const MAX_HEIGHT = 10;
+//  creates box gemeotries 
+let stoneGeo = new THREE.BoxGeometry(0,0,0);
+let dirtGeo = new THREE.BoxGeometry(0,0,0);
+let dirt2Geo = new THREE.BoxGeometry(0,0,0);
+let sandGeo = new THREE.BoxGeometry(0,0,0);
+let grassGeo = new THREE.BoxGeometry(0,0,0);
+let treeGeo = new THREE.BoxGeometry(0,0,0);
+// constants for scene creation
+const MAX_HEIGHT = 20;
 const STONE_HEIGHT = MAX_HEIGHT * 0.8;
 const DIRT_HEIGHT = MAX_HEIGHT * 0.7;
 const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
+const simplex = new SimplexNoise();
 
-for(let i = -10; i <= 10; i++) { //horizontal - x
-    for(let j = -50; j <= 50; j++) { //forwards - z
+// Creates level randomly using noise 
+for(let i = -levelWidth; i <= levelWidth; i++) { //horizontal - x
+    for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
         let position = tileToPosition(i,j)
-
-        // if (position.length() >100) continue;
-
         let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
         noise = Math.pow(noise, 1.5);
-
+        // function to create hexagonal prisms, both scene and cannon boides
         makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
     } 
-  }
+}
 
+// creates the water
 let seaMesh = new THREE.Mesh(
     new THREE.CylinderGeometry(300, 300, MAX_HEIGHT * 0.2, 50),
     new THREE.MeshPhysicalMaterial({
-    //   envMap: envmap,
       color: new THREE.Color("#55aaff").convertSRGBToLinear().multiplyScalar(3),
       ior: 1.4,
       transmission: 1,
@@ -120,39 +135,42 @@ let seaMesh = new THREE.Mesh(
       metalness: 0.025,
       roughnessMap: textures.water,
       metalnessMap: textures.water,
-    })
-  );
-  seaMesh.receiveShadow = true;
-  seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
-  seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
+    }));
+seaMesh.receiveShadow = true;
+seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
+seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
 
-// hexagonMesh.scale.set(90,1,90)   
-  let stoneMesh = hexMesh(stoneGeo, textures.stone);
-  let grassMesh = hexMesh(grassGeo, textures.grass);
-  let dirt2Mesh = hexMesh(dirt2Geo, textures.dirt2);
-  let dirtMesh  = hexMesh(dirtGeo, textures.dirt);
-  let sandMesh  = hexMesh(sandGeo, textures.sand);
-
-  let xscalar = 10;
-  let yscalar = 10;
-  let zscalar = 10;
-
-  let scalar = 2;
-
-  stoneMesh.scale.set(scalar, scalar, scalar);
-  grassMesh.scale.set(scalar, scalar, scalar);
-  dirt2Mesh.scale.set(scalar, scalar, scalar);
-  dirtMesh.scale.set(scalar, scalar, scalar);
-  sandMesh.scale.set(scalar, scalar, scalar);
-  seaMesh.scale.set(scalar, scalar, scalar);
-
-  level2Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh);
-  level2Scene.add(seaMesh);
+// creates meshes and links to geometries populated before
+let stoneMesh = hexMesh(stoneGeo, textures.stone);
+let grassMesh = hexMesh(grassGeo, textures.grass);
+let dirt2Mesh = hexMesh(dirt2Geo, textures.dirt2);
+let dirtMesh  = hexMesh(dirtGeo, textures.dirt);
+let sandMesh  = hexMesh(sandGeo, textures.sand);
+let treeMesh  = hexMesh(treeGeo, textures.tree);
+// sets the scales of scene
+stoneMesh.scale.set(scalar, scalar, scalar);
+grassMesh.scale.set(scalar, scalar, scalar);
+dirt2Mesh.scale.set(scalar, scalar, scalar);
+dirtMesh.scale.set(scalar, scalar, scalar);
+sandMesh.scale.set(scalar, scalar, scalar);
+seaMesh.scale.set(scalar, scalar, scalar);
+treeMesh.scale.set(scalar, scalar, scalar);
+// add grounds to scene
+level2Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh, treeMesh);
+level2Scene.add(seaMesh);
+// adds grounds plane
+level2GroundBody = new CANNON.Body({
+    type: CANNON.Body.STATIC,
+    shape: new CANNON.Plane(),
+});
+level2GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+level2GroundBody.position.set(0, 0, 0);
+level2PhysicsWorld.addBody(level2GroundBody);
 
 function hexGeometry(height, position) {
     let geo  = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
     geo.translate(position.x, height * 0.5, position.y);
-
+    cannonHexGeometry(height, position)
     return geo;
 }
 
@@ -168,7 +186,7 @@ function makeHex(height, position) {
         dirtGeo = mergeBufferGeometries([geo, dirtGeo]);
 
         if(Math.random() > 0.8) {
-        grassGeo = mergeBufferGeometries([grassGeo, tree(height, position)]);
+        treeGeo = mergeBufferGeometries([treeGeo, tree(height, position)]);
         }
     } else if(height > GRASS_HEIGHT) {
         grassGeo = mergeBufferGeometries([geo, grassGeo]);
@@ -183,10 +201,40 @@ function makeHex(height, position) {
     }  
 }
 
+function cannonHexGeometry(height, position,) {
+    const numSides = 6; // Number of sides in the hexagon
+    height = height * scalar * 2;
+    const radius = scalar;
+    // Create a Cannon.js ConvexPolyhedron shape for the hexagonal prism
+    const hexagonalPrismShape = new CANNON.Cylinder(
+        radius,          // Radius at the top (0 for a hexagon)
+        radius,     // Radius at the bottom
+        height,     // Height of the prism
+        numSides    // Number of segments (sides)
+    );
+
+    // Create a Cannon.js Body for the hexagonal prism
+    const hexagonalPrismBody = new CANNON.Body({
+        type: CANNON.Body.STATIC,
+        mass: 0 // Set mass to 0 for a static body
+    });
+
+    hexagonalPrismBody.addShape(hexagonalPrismShape);
+
+    // Set the position of the hexagonal prism
+    hexagonalPrismBody.position.set(
+        position.x * scalar,
+        0,
+        position.y * scalar
+    );
+
+    // Add the hexagonal prism to the Cannon.js world
+    level2PhysicsWorld.addBody(hexagonalPrismBody);
+
+}
+
 function tileToPosition(tileX, tileY) {
     return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.7, tileY * 1.5);
-
-    // return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.77, tileY * 1.535);
 }
 
 function hexMesh(geo, map) {
@@ -267,43 +315,6 @@ function tree(height, position) {
     
     return mergeBufferGeometries([geo, geo2, geo3]);
 }
-    
-// let level2MixerOcean;
-// glftLoader = new GLTFLoader();
-// glftLoader.load('./Assets/animated_ocean_scene_tutorial_example_1/scene.gltf', (gltfScene) => {
-//     level2Ground = gltfScene.scene;
-//     level2Scene.add(level2Ground);
-//     level2Ground.position.set(0, -10, 0);
-//     level2Ground.scale.set(100,1, 100);
-
-
-    
-//     level2Ground.traverse(function(node) {
-//         if (node.isMesh){
-//             node.castShadow = true;
-//             node.receiveShadow = true;
-//         }
-//     });
-
-//     const clips = gltfScene.animations;
-//     level2MixerOcean = new THREE.AnimationMixer(level2Ground);
-
-//     clips.forEach(function(clip) {
-//         const action = level2MixerOcean.clipAction(clip);
-//         action.play();
-//     });
-    
-// });
-
-//level2Ground
-level2GroundBody = new CANNON.Body({
-    type: CANNON.Body.STATIC,
-    shape: new CANNON.Plane(),
-});
-level2GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-level2GroundBody.position.set(0, 0, 0);
-level2PhysicsWorld.addBody(level2GroundBody);
-
 
 //plotting rings along the map
 let x;

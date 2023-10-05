@@ -34,12 +34,11 @@ pointLight.shadow.mapSize.width = 512;
 pointLight.shadow.mapSize.height = 512; 
 pointLight.shadow.camera.near = 0.5; 
 pointLight.shadow.camera.far = 500; 
-menuScene.add(pointLight);
+level3Scene.add(pointLight);
 pointLight.position.set(40, 30, 40);
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
-ambientLight.castShadow = true; 
-menuScene.add(ambientLight);
+level3Scene.add(ambientLight);
 
 //============== Phyics Aircraft Global Variables ================//
 let level3AircraftBody;

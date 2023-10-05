@@ -26,7 +26,6 @@ menuScene.add(pointLight);
 pointLight.position.set(40, 30, 40);
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
-ambientLight.castShadow = true; 
 menuScene.add(ambientLight);
 
 
