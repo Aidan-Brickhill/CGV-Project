@@ -7,33 +7,35 @@ import * as CANNON from 'cannon-es';
 import { BoxGeometry } from 'three';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-// variables to change for for map size
+//============== Change Map Size ================//
 const mapWidth = 20;
 const maplength = 20;
-//camera
+
+
+//============== Debugging Camera - FreeCam ================//
 const level3Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 level3Camera.position.set(-17, 31, 33);
 
 
-//scene-graphics
+//============== Scene and background colour ================//
 const level3Scene = new THREE.Scene();
 level3Scene.background = new THREE.Color("#333333");
-//CANNON physics world
 
+//============== Initialise Physics World ================//
 const level3PhysicsWorld = new CANNON.World({
     gravity: new CANNON.Vec3(0, 0, 0),
 });
 
 
+//============== Phyics Aircraft Global Variables ================//
 let level3AircraftBody;
 let level3AircraftVehicle;
 let level3GroundBody;
 let level3Ground;
 
 
-//level3Aircraft
+//============== Aircraft Physics ================//
 level3AircraftBody = new CANNON.Body({
     mass: 5,
     shape: new CANNON.Box(new CANNON.Vec3(0.75 / 5, 0.85 / 5, 3 / 5)),
@@ -48,15 +50,17 @@ level3AircraftVehicle = new CANNON.RigidVehicle({
     chassisBody: level3AircraftBody,
 })
 
-level3AircraftVehicle.addToWorld(level3PhysicsWorld);
+level3AircraftVehicle.addToWorld(level3PhysicsWorld); //add aircraft physics body to physics world
+
+
+//============== Aircraft Model Initialisation =================//
 
 let level3Aircraft;
 let level3MixerAircraft;
 let glftLoader = new GLTFLoader();
-glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
+glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => { //Load model design for aircraft
     level3Aircraft = gltfScene.scene;
-    level3Scene.add(level3Aircraft);
-    // level3Aircraft.scale.set(5, 5, 5);
+    level3Scene.add(level3Aircraft); //add model to the world
     level3Aircraft.rotation.y = Math.PI;
 
     level3Aircraft.traverse(function (node) {
@@ -75,6 +79,9 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 
 });
 
+
+//============== Define All The Textures In Map =================//
+
 let textures = {
     ashRock: await new THREE.TextureLoader().loadAsync("./Assets/ashRock.jpg"),
     lavaRock: await new THREE.TextureLoader().loadAsync("./Assets/lavaRock.jpg"),
@@ -85,6 +92,7 @@ let textures = {
     tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
 
+//============== Initialise All Individual Objects =================//
 
 let stoneGeo = new BoxGeometry(0, 0, 0);
 let dirtGeo = new BoxGeometry(0, 0, 0);
@@ -93,6 +101,7 @@ let sandGeo = new BoxGeometry(0, 0, 0);
 let grassGeo = new BoxGeometry(0, 0, 0);
 let treeGeo = new BoxGeometry(0, 0, 0);
 
+//============== Procedural Generation Variables =================//
 
 const simplex = new SimplexNoise();
 const MAX_HEIGHT = 20;
@@ -102,19 +111,19 @@ const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
-// Create the size of the map
+//============== Create Map With Size Specified In Global Variables =================//
+
 for (let i = Math.floor(-mapWidth / 2); i <= Math.floor(mapWidth / 2); i++) { 
     for (let j = -maplength; j <= maplength; j++) { 
         let position = tileToPosition(i, j)
-
-        // if (position.length() >100) continue;
-
         let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
         noise = Math.pow(noise, 1.5);
 
         makeHex(noise * MAX_HEIGHT, tileToPosition(i, j))
     }
 }
+
+//============== Create The Lave Ground - Note: Lava Is Callled seaMesh =================//
 
 let seaMesh = new THREE.Mesh(
     new THREE.CylinderGeometry(300, 300, MAX_HEIGHT * 0.2, 50),
@@ -131,6 +140,7 @@ let seaMesh = new THREE.Mesh(
     })
 );
 
+//============== Add Point Lights Under The Lava To Make The Lava Give Off Light =================//
 
 // Define the number of point lights and their spacing
 const numLightsX = 1; // Number of lights along the X-axis
@@ -155,16 +165,18 @@ for (let i = 0; i < numLightsX; i++) {
     }
 }
 
+//add all point lights generated above to the scene
 for (let i = 0; i < pointLights.length; i++) {
     level3Scene.add(pointLights[i]);
 }
 
+//============== Position The Lava (seaMesh) =================//
 
 seaMesh.receiveShadow = true;
 seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
 seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
 
-// hexagonMesh.scale.set(90,1,90)   
+//============== Define Mesh For Each Object And Add It's Texture =================//
 let stoneMesh = hexMesh(stoneGeo, textures.stone);
 let grassMesh = hexMesh(grassGeo, textures.crackedGround);
 let dirt2Mesh = hexMesh(dirt2Geo, textures.lavaRock);
@@ -181,8 +193,12 @@ dirtMesh.scale.set(scalar, scalar, scalar);
 sandMesh.scale.set(scalar, scalar, scalar);
 seaMesh.scale.set(scalar, scalar, scalar);
 
+//============== Add All Objects To The Scene =================//
+
 level3Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh); //removed tree mesh for lava level
 level3Scene.add(seaMesh);
+
+//============== Create Map With Size Specified In Global Variables =================//
 
 function hexGeometry(height, position) {
     let geo = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
@@ -220,8 +236,6 @@ function makeHex(height, position) {
 
 function tileToPosition(tileX, tileY) {
     return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.7, tileY * 1.5);
-
-    // return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.77, tileY * 1.535);
 }
 
 function hexMesh(geo, map) {
@@ -248,6 +262,8 @@ function stone(height, position) {
 
     return geo;
 }
+
+// //============== Add Clouds To The Scene =================//
 
 // function clouds() {
 // let geo = new THREE.SphereGeometry(0, 0, 0); 
@@ -283,65 +299,25 @@ function stone(height, position) {
 //         })
 //     );
 
-//     3Scene.add(mesh);
+//     level3Scene.add(mesh);
 // }
 
 // clouds();
 
-function tree(height, position) {
-    const treeHeight = Math.random() * 1 + 1.25;
 
-    const geo = new THREE.CylinderGeometry(0, 1.5, treeHeight, 3);
-    geo.translate(position.x, height + treeHeight * 0 + 1, position.y);
+//============== Initialise The Ground Physics Object =================//
 
-    const geo2 = new THREE.CylinderGeometry(0, 1.15, treeHeight, 3);
-    geo2.translate(position.x, height + treeHeight * 0.6 + 1, position.y);
-
-    const geo3 = new THREE.CylinderGeometry(0, 0.8, treeHeight, 3);
-    geo3.translate(position.x, height + treeHeight * 1.25 + 1, position.y);
-
-    return mergeBufferGeometries([geo, geo2, geo3]);
-}
-
-
-// let level1MixerOcean;
-// glftLoader = new GLTFLoader();
-// glftLoader.load('./Assets/animated_ocean_scene_tutorial_example_1/scene.gltf', (gltfScene) => {
-//     level1Ground = gltfScene.scene;
-//     level1Scene.add(level1Ground);
-//     level1Ground.position.set(0, -10, 0);
-//     level1Ground.scale.set(100,1, 100);
-
-
-
-//     level1Ground.traverse(function(node) {
-//         if (node.isMesh){
-//             node.castShadow = true;
-//             node.receiveShadow = true;
-//         }
-//     });
-
-//     const clips = gltfScene.animations;
-//     level1MixerOcean = new THREE.AnimationMixer(level1Ground);
-
-//     clips.forEach(function(clip) {
-//         const action = level1MixerOcean.clipAction(clip);
-//         action.play();
-//     });
-
-// });
-
-//level1Ground
 level3GroundBody = new CANNON.Body({
     type: CANNON.Body.STATIC,
     shape: new CANNON.Plane(),
 });
+
 level3GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 level3GroundBody.position.set(0, 0, 0);
 level3PhysicsWorld.addBody(level3GroundBody);
 
+//============== Add Rings to The Scene =================//
 
-//plotting rings along the map
 let x;
 let y;
 let randz;
@@ -351,6 +327,7 @@ let minDist = 30;
 let ringRadius = 3;
 const sphereRadius = 0.2;
 const numSegments = 64;
+
 // Create Cannon.js bodies for the spheres and cylinders and position them accordingly
 for (let z = 0; z < 15; z++) {
 
@@ -404,19 +381,25 @@ for (let z = 0; z < 15; z++) {
         console.log('Error loading Ring class:', error);
     });
 }
+
+//============== Define The "Finish Line" For the Aircraft =================//
+
 const levelCompletionThreshold = -140;
 let animationId;
 
+//checks to see if aircraft has passed finish line on current frame
 function update() {
     animationId = requestAnimationFrame(update);
     if (level3Aircraft.position.z < levelCompletionThreshold) {
-        console.log("Level 3 completed");
+        // console.log("Level 3 completed");
         addCongratulationsText();
     }
 
 }
+
 update();
 
+//add congratualions text when the plane passes finish line
 function addCongratulationsText() {
     const fontLoader = new FontLoader();
     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
@@ -435,6 +418,8 @@ function addCongratulationsText() {
     });
 }
 
-
+//============== Adds Fog =================//
 level3Scene.fog = new THREE.Fog(0x444444, 0.015, 150);
+
+//============== Export All Objects Of Interest =================//
 export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3MixerAircraft }
