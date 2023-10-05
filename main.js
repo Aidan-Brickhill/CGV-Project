@@ -51,19 +51,16 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 // Angle for rotating camera
-let cameraRotationCounter = 2 * Math.PI / 750;
+let cameraRotationCounter = 2 * Math.PI / 2000;
 function animate(){
     if (MainMenu){
         raycaster.setFromCamera(mouse, menuCamera);
-        // menuScene.rotateY(cameraRotationCounter);
+        menuScene.rotateY(cameraRotationCounter);
 
         renderer.autoClear = false;
         renderer.clear();
 
         // controls.update();
-
-
-
         //This line loads the Main Menu as the active scene at first, active scene gets updated on click
         renderer.render(menuScene, menuCamera);
         renderer.clearDepth();

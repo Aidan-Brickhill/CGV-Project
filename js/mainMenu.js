@@ -6,14 +6,14 @@ import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.
 
 // SCENE CAMERA, used for debugging only
 const menuCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-menuCamera.position.set(0, 10, 2);
+menuCamera.position.set(0, 10, 0);
 
 // SCENE INITIALISATION
 const menuScene = new THREE.Scene();
 menuScene.background = new THREE.Color("#FFEECC");
 menuScene.add(new THREE.AmbientLight(0xffffff, 0.2));
 const buttonScene = new THREE.Scene();
-menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 50 );
+menuScene.fog = new THREE.Fog( 0xffffff, 5, 50 );
 
 // Adds light to scene
 const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
@@ -58,7 +58,7 @@ const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
-for (let i = Math.floor(-mapWidth / 2); i <= Math.floor(mapWidth / 2); i++) { 
+for (let i = -mapWidth; i <= mapWidth; i++) { 
     for (let j = -maplength; j <= maplength; j++) { 
         let position = tileToPosition(i,j)
 
@@ -181,12 +181,12 @@ for(let i = 0; i < count; i++) {
     
     puff1.translate(-1.85, Math.random() * 0.3, 0);
     puff2.translate(0,     Math.random() * 0.3, 0);
-    puff3.translate(1.85,  Math.random() * 0.3, 0);
+    puff3.translate(1.85,  Math.random() * 3, 0);
 
     const cloudGeo = mergeBufferGeometries([puff1, puff2, puff3]);
     cloudGeo.translate( 
     Math.random() * 20 - 10, 
-    Math.random() * 7 + 7, 
+    Math.random() * 7 + 12, 
     Math.random() * 20 - 10
     );
     cloudGeo.rotateY(Math.random() * Math.PI * 2);
@@ -199,8 +199,8 @@ for(let i = 0; i < count; i++) {
         // envMap: envmap, 
         envMapIntensity: 0.75, 
         flatShading: true,
-        // transparent: true,
-        // opacity: 0.85,
+        transparent: true,
+        opacity: 0.7,
         })
     );
     
