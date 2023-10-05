@@ -27,12 +27,27 @@ const level3PhysicsWorld = new CANNON.World({
     gravity: new CANNON.Vec3(0, 0, 0),
 });
 
+//============== Lights ================//
+const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLight.castShadow = true; 
+pointLight.shadow.mapSize.width = 512; 
+pointLight.shadow.mapSize.height = 512; 
+pointLight.shadow.camera.near = 0.5; 
+pointLight.shadow.camera.far = 500; 
+menuScene.add(pointLight);
+pointLight.position.set(40, 30, 40);
+
+const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
+ambientLight.castShadow = true; 
+menuScene.add(ambientLight);
 
 //============== Phyics Aircraft Global Variables ================//
 let level3AircraftBody;
 let level3AircraftVehicle;
 let level3GroundBody;
 let level3Ground;
+let scalar = 2;
+
 
 
 //============== Aircraft Physics ================//
@@ -89,7 +104,6 @@ let textures = {
     volcanicDirt: await new THREE.TextureLoader().loadAsync("./Assets/volcanicDirt.jpg"),
     lava: await new THREE.TextureLoader().loadAsync("./Assets/lava.jpg"),
     stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
-    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
 };
 
 //============== Initialise All Individual Objects =================//
@@ -99,7 +113,6 @@ let dirtGeo = new BoxGeometry(0, 0, 0);
 let dirt2Geo = new BoxGeometry(0, 0, 0);
 let sandGeo = new BoxGeometry(0, 0, 0);
 let grassGeo = new BoxGeometry(0, 0, 0);
-let treeGeo = new BoxGeometry(0, 0, 0);
 
 //============== Procedural Generation Variables =================//
 
@@ -182,9 +195,7 @@ let grassMesh = hexMesh(grassGeo, textures.crackedGround);
 let dirt2Mesh = hexMesh(dirt2Geo, textures.lavaRock);
 let dirtMesh = hexMesh(dirtGeo, textures.ashRock);
 let sandMesh = hexMesh(sandGeo, textures.volcanicDirt);
-let treeMesh = hexMesh(treeGeo, textures.tree);
 
-let scalar = 2;
 
 stoneMesh.scale.set(scalar, scalar, scalar);
 grassMesh.scale.set(scalar, scalar, scalar);
@@ -198,12 +209,14 @@ seaMesh.scale.set(scalar, scalar, scalar);
 level3Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh); //removed tree mesh for lava level
 level3Scene.add(seaMesh);
 
-//============== Create Map With Size Specified In Global Variables =================//
+//============== Functions for creating the terrain (hexagonalprisms)  =================//
+
 
 function hexGeometry(height, position) {
     let geo = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
     geo.translate(position.x, height * 0.5, position.y);
 
+    cannonHexGeometry(height, position);
     return geo;
 }
 
@@ -217,10 +230,6 @@ function makeHex(height, position) {
         }
     } else if (height > DIRT_HEIGHT) {
         dirtGeo = mergeBufferGeometries([geo, dirtGeo]);
-
-        if (Math.random() > 0.8) {
-            treeGeo = mergeBufferGeometries([treeGeo, tree(height, position)]);
-        }
     } else if (height > GRASS_HEIGHT) {
         grassGeo = mergeBufferGeometries([geo, grassGeo]);
     } else if (height > SAND_HEIGHT) {
@@ -261,6 +270,38 @@ function stone(height, position) {
     geo.translate(position.x + px, height, position.y + pz);
 
     return geo;
+}
+
+function cannonHexGeometry(height, position,) {
+    const numSides = 6; // Number of sides in the hexagon
+    height = height * scalar * 2;
+    const radius = scalar;
+    // Create a Cannon.js ConvexPolyhedron shape for the hexagonal prism
+    const hexagonalPrismShape = new CANNON.Cylinder(
+        radius,          // Radius at the top (0 for a hexagon)
+        radius,     // Radius at the bottom
+        height,     // Height of the prism
+        numSides    // Number of segments (sides)
+    );
+
+    // Create a Cannon.js Body for the hexagonal prism
+    const hexagonalPrismBody = new CANNON.Body({
+        type: CANNON.Body.STATIC,
+        mass: 0 // Set mass to 0 for a static body
+    });
+
+    hexagonalPrismBody.addShape(hexagonalPrismShape);
+
+    // Set the position of the hexagonal prism
+    hexagonalPrismBody.position.set(
+        position.x * scalar,
+        0,
+        position.y * scalar
+    );
+
+    // Add the hexagonal prism to the Cannon.js world
+    level3PhysicsWorld.addBody(hexagonalPrismBody);
+
 }
 
 // //============== Add Clouds To The Scene =================//

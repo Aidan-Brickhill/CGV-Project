@@ -26,6 +26,20 @@ let level1Ground;
 let level1Aircraft;
 let level1MixerAircraft;
 
+// Adds light to scene
+const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLight.castShadow = true; 
+pointLight.shadow.mapSize.width = 512; 
+pointLight.shadow.mapSize.height = 512; 
+pointLight.shadow.camera.near = 0.5; 
+pointLight.shadow.camera.far = 500; 
+level1Scene.add(pointLight);
+pointLight.position.set(40, 30, 40);
+
+const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
+ambientLight.castShadow = true; 
+level1Scene.add(ambientLight);
+
 // Creates Aircraft + Loads model ====================================================
 level1AircraftBody = new CANNON.Body({
     mass: 5,

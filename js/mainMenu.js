@@ -16,14 +16,19 @@ const buttonScene = new THREE.Scene();
 menuScene.fog = new THREE.Fog( 0xffffff, 5, 50 );
 
 // Adds light to scene
-const testlight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
-testlight.castShadow = true; 
-testlight.shadow.mapSize.width = 512; 
-testlight.shadow.mapSize.height = 512; 
-testlight.shadow.camera.near = 0.5; 
-testlight.shadow.camera.far = 500; 
-menuScene.add(testlight);
-testlight.position.set(40, 30, 40);
+const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLight.castShadow = true; 
+pointLight.shadow.mapSize.width = 512; 
+pointLight.shadow.mapSize.height = 512; 
+pointLight.shadow.camera.near = 0.5; 
+pointLight.shadow.camera.far = 500; 
+menuScene.add(pointLight);
+pointLight.position.set(40, 30, 40);
+
+const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
+ambientLight.castShadow = true; 
+menuScene.add(ambientLight);
+
 
 // Create buttons
 buttonScene.add(createButton("Level 1", "level1", "#black", "#ffecd1", 0, 12, -4));
