@@ -11,7 +11,6 @@ menuCamera.position.set(0, 10, 0);
 // SCENE INITIALISATION
 const menuScene = new THREE.Scene();
 menuScene.background = new THREE.Color("#FFEECC");
-menuScene.add(new THREE.AmbientLight(0xffffff, 0.2));
 const buttonScene = new THREE.Scene();
 menuScene.fog = new THREE.Fog( 0xffffff, 5, 50 );
 

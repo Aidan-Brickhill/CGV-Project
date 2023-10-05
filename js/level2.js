@@ -40,7 +40,6 @@ level2Scene.add(pointLight);
 pointLight.position.set(40, 30, 40);
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
-ambientLight.castShadow = true; 
 level2Scene.add(ambientLight);
 
 // Creates Aircraft + Loads model ====================================================
