@@ -10,8 +10,8 @@ import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 // variables to change for for map size
-const mapWidth = 50;
-const maplength = 50;
+const mapWidth = 20;
+const maplength = 20;
 //camera
 const level3Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 level3Camera.position.set(-17, 31, 33);
@@ -103,8 +103,8 @@ const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
 // Create the size of the map
-for (let i = Math.floor(-mapWidth / 2); i <= Math.floor(mapWidth / 2); i++) { //horizontal - x
-    for (let j = -maplength; j <= maplength; j++) { //forwards - z
+for (let i = Math.floor(-mapWidth / 2); i <= Math.floor(mapWidth / 2); i++) { 
+    for (let j = -maplength; j <= maplength; j++) { 
         let position = tileToPosition(i, j)
 
         // if (position.length() >100) continue;
@@ -121,7 +121,7 @@ let seaMesh = new THREE.Mesh(
     new THREE.MeshPhysicalMaterial({
         map: textures.lava, // Set the lava texture as the map
         emissive: new THREE.Color("#FF5733").convertSRGBToLinear(), // Emissive color
-        emissiveIntensity: 1, // Adjust intensity
+        emissiveIntensity: 0.5, // Adjust intensity
         ior: 1.4,
         transmission: 1,
         thickness: 1.5,
