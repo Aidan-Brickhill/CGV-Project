@@ -1,8 +1,6 @@
 //imports
 import { startTimer, stopTimer, getElapsedSeconds } from './timer.js';
 import * as THREE from 'three';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { BoxGeometry } from 'three';

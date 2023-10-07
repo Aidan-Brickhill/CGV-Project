@@ -493,8 +493,8 @@ function levelCompleted(){
     currentLevel = 0;
     cancelAnimationFrame(animationId);
 
-    gameScene = null;
-    gameCamera = null;
+    gameScene = menuScene;
+    gameCamera = menuCamera;
 
     MainMenu = true;
     requestAnimationFrame(animate);
