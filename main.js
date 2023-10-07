@@ -1,11 +1,15 @@
 // IMPORTS
+import { startTimer, pauseTimer, resumeTimer, resetTimer, stopTimer, getElapsedSeconds } from './js/timer.js';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es'
 import CannonDebugger from 'cannon-es-debugger';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 
 // Initialization
+let levelCompletionThreshold = -80;
 let MainMenu = true;
 let animationId;
 let controls;
@@ -85,7 +89,6 @@ function animate(){
         const xresponseModulator = 1.5;
         const yresponseModulator = 1.25;
         aircraftBody.velocity.z = forwardSpeed;
-        console.log(forwardSpeed);
         const mass = 1;
 
         let vxi = aircraftBody.velocity.x;
@@ -116,7 +119,6 @@ function animate(){
         }
         if (keys.spacebar.pressed){    
             if(!spacebarIntervalId){
-                console.log('Spacebar Held Down');
                 spacebarIntervalId = setInterval(() => {
                     forwardSpeed -= 0.5;
                 }, 100);     
@@ -139,6 +141,11 @@ function animate(){
                 aircraftBody.position.y = ceiling1;
                 aircraftBody.velocity.y = 0;
             }
+        }
+
+        if(aircraft.position.z < levelCompletionThreshold){
+            levelCompleted();
+            //addCongratulationsText();
         }
 
         physicsWorld.step(1 / 60);
@@ -269,10 +276,12 @@ window.addEventListener('keydown', (event) => {
             break;
         case 'Escape':
             if (MainMenu) {
+                resumeTimer();
                 cancelAnimationFrame(animationId);
                 MainMenu = false;
                 requestAnimationFrame(animate);
             } else {
+                pauseTimer();
                 cancelAnimationFrame(animationId);
                 MainMenu = true;
                 requestAnimationFrame(animate);
@@ -312,6 +321,8 @@ window.addEventListener('keyup', (event) => {
 })
 
 function initializeLevel1Scene() {
+    resetTimer();
+    startTimer();
     gameScene = level1Scene;
     gameCamera = level1Camera;
     physicsWorld = level1PhysicsWorld;
@@ -358,6 +369,8 @@ function initializeLevel1Scene() {
 }
 
 function initializeLevel2Scene() {
+    resetTimer();
+    startTimer();
     gameScene = level2Scene;
     gameCamera = level2Camera;
     physicsWorld = level2PhysicsWorld;
@@ -404,6 +417,8 @@ function initializeLevel2Scene() {
 }
 
 function initializeLevel3Scene() {
+    resetTimer();
+    startTimer();
     gameScene = level3Scene;
     gameCamera = level3Camera;
     physicsWorld = level3PhysicsWorld;
@@ -446,10 +461,45 @@ function initializeLevel3Scene() {
         console.log("collison occured");
         physicsWorld.gravity.set(0, -9.8, 0);
     });
-
+    
 
 
 }
+
+// function addCongratulationsText() {
+//     const fontLoader = new FontLoader();
+//     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+//         const textGeometry = new TextGeometry('Congratulations', {
+//             font: font,
+//             size: 5,
+//             height: 0.5,
+//         });
+
+//         const textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+//         const congratulationsText = new THREE.Mesh(textGeometry, textMaterial);
+
+//         congratulationsText.position.set(-20, 30, -180);
+
+//         level2Scene.add(congratulationsText);
+//     });
+// }
+
+function levelCompleted(){
+    stopTimer();
+    const elapsedSeconds = getElapsedSeconds();
+    console.log("level complete");
+    console.log(elapsedSeconds);
+
+    currentLevel = 0;
+    cancelAnimationFrame(animationId);
+
+    gameScene = null;
+    gameCamera = null;
+
+    MainMenu = true;
+    requestAnimationFrame(animate);
+}
+
 
 
 

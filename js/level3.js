@@ -468,6 +468,13 @@ function addCongratulationsText() {
     });
 }
 
+function levelCompleted(){
+    stopTimer();
+    const elapsedSeconds = getElapsedSeconds();
+    console.log("level complete");
+    console.log(elapsedSeconds);
+}
+
 //============== Adds Fog =================//
 level3Scene.fog = new THREE.Fog(0xff7878, 0.015, 300);
 

@@ -1,4 +1,5 @@
 //imports
+import { startTimer, stopTimer, getElapsedSeconds } from './timer.js';
 import * as THREE from 'three';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
@@ -379,37 +380,6 @@ for (let z = 0; z < 15; z++) {
     });
 }
 //level logic
-const levelCompletionThreshold = -140;
-let animationId;
 
-function update(){
-    animationId = requestAnimationFrame(update);
-    //console.log(level2Aircraft.position.y);
-    if(level2Aircraft.position.z < levelCompletionThreshold){
-        console.log("Level 2 completed");
-        //cancelAnimationFrame(animationId);
-        addCongratulationsText();
-    }
-    //requestAnimationFrame(update);
-}
-update();
-
-function addCongratulationsText() {
-    const fontLoader = new FontLoader();
-    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-        const textGeometry = new TextGeometry('Congratulations', {
-            font: font,
-            size: 5,
-            height: 0.5,
-        });
-
-        const textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        const congratulationsText = new THREE.Mesh(textGeometry, textMaterial);
-
-        congratulationsText.position.set(-20, 30, -180);
-
-        level2Scene.add(congratulationsText);
-    });
-}
 // level2Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
 export { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2MixerAircraft }
