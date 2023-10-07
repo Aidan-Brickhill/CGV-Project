@@ -11,6 +11,8 @@ let animationId;
 let controls;
 let levelInitialize = [0, 0, 0];
 let currentLevel = 0;
+let forwardSpeed = -5;
+let speed = 50;
 
 // Renderer setup
 let renderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
@@ -30,6 +32,7 @@ import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3Ai
 
 let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody, mixer, floorMixer;
 let light, cannonDebugger;
+let spacebarIntervalId = null;
 
 // debug for menu scene
 // controls = new OrbitControls(menuCamera, renderer.domElement);
@@ -72,15 +75,17 @@ function animate(){
         if (mixer) {
             mixer.update(clock.getDelta());
         }
+        
         // if (floorMixer){
         //     floorMixer.update(clock.getDelta());
         // }
         // const force = new CANNON.Vec3(0, 0, 0);
-        let speed = 50;
+        
         let force = new CANNON.Vec3(0, 0, 0);
         const xresponseModulator = 1.5;
         const yresponseModulator = 1.25;
-        aircraftBody.velocity.z = -5;
+        aircraftBody.velocity.z = forwardSpeed;
+        console.log(forwardSpeed);
         const mass = 1;
 
         let vxi = aircraftBody.velocity.x;
@@ -108,6 +113,20 @@ function animate(){
         if (keys.s.pressed) {
             vxf = 0;
             vyf = -speed;
+        }
+        if (keys.spacebar.pressed){    
+            if(!spacebarIntervalId){
+                console.log('Spacebar Held Down');
+                spacebarIntervalId = setInterval(() => {
+                    forwardSpeed -= 0.5;
+                }, 100);     
+            }
+        }else if (spacebarIntervalId){
+            clearInterval(spacebarIntervalId);
+            spacebarIntervalId = null;
+        } 
+        if (forwardSpeed < -5.5 && !keys.spacebar.pressed){
+            forwardSpeed += 0.5;
         }
 
         force.x = xresponseModulator * (vxf - vxi) / mass;
@@ -211,6 +230,10 @@ const keys = {
     s: {
         pressed: false
     },
+    spacebar: {
+        pressed: false,
+        intervalId : null,
+    },
 }
 //onpress of a key
 window.addEventListener('keydown', (event) => {
@@ -256,6 +279,10 @@ window.addEventListener('keydown', (event) => {
             }
 
             break;
+        case 'Space':
+            keys.spacebar.pressed = true;
+            break;
+
     }
 })
 
@@ -278,6 +305,9 @@ window.addEventListener('keyup', (event) => {
         case 'KeyS':
             keys.s.pressed = false;
             break;
+        case 'Space':
+            keys.spacebar.pressed = false;
+            break;
     }
 })
 
@@ -285,14 +315,15 @@ function initializeLevel1Scene() {
     gameScene = level1Scene;
     gameCamera = level1Camera;
     physicsWorld = level1PhysicsWorld;
+    physicsWorld.gravity.set(0,-1,0);
     aircraft = level1Aircraft;
     aircraftBody = level1AircraftBody;
     console.log(aircraft)
     console.log(aircraftBody)
+    forwardSpeed = -5
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
-    physicsWorld.gravity.set(0, 0, 0);
 
     // aircraftBody.applyLocalForce(0, new CANNON.Vec3(0, 0, 0));
     aircraftBody.position.set(0, 30, 200);
@@ -330,12 +361,14 @@ function initializeLevel2Scene() {
     gameScene = level2Scene;
     gameCamera = level2Camera;
     physicsWorld = level2PhysicsWorld;
+    physicsWorld.gravity.set(0,-1,0);
     aircraft = level2Aircraft;
     aircraftBody = level2AircraftBody;
+    forwardSpeed = -5
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
-    physicsWorld.gravity.set(0, 0, 0);
+    
 
     // aircraftBody.applyLocalForce(0, new CANNON.Vec3(0, 0, 0));
     aircraftBody.position.set(0, 30, 200);
@@ -374,14 +407,16 @@ function initializeLevel3Scene() {
     gameScene = level3Scene;
     gameCamera = level3Camera;
     physicsWorld = level3PhysicsWorld;
+    physicsWorld.gravity.set(0,-1,0);
     aircraft = level3Aircraft;
     aircraftBody = level3AircraftBody;
     console.log(aircraft)
     console.log(aircraftBody)
+    forwardSpeed = -5
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
-    physicsWorld.gravity.set(0, 0, 0);
+
 
 
     // aircraftBody.applyLocalForce(0, new CANNON.Vec3(0, 0, 0));

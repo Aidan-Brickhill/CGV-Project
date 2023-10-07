@@ -384,7 +384,7 @@ let animationId;
 
 function update(){
     animationId = requestAnimationFrame(update);
-    console.log(level2Aircraft.position.y);
+    //console.log(level2Aircraft.position.y);
     if(level2Aircraft.position.z < levelCompletionThreshold){
         console.log("Level 2 completed");
         //cancelAnimationFrame(animationId);
