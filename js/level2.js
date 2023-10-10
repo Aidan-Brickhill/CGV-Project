@@ -23,8 +23,6 @@ level2PhysicsWorld.solver = new CANNON.GSSolver();
 // INITALIZE 
 let level2AircraftBody;
 let level2AircraftVehicle;
-let level2GroundBody;
-let level2Ground;
 let level2Aircraft;
 let level2MixerAircraft;
 
@@ -50,7 +48,6 @@ level2AircraftBody.addShape(new CANNON.Box(
     new CANNON.Vec3(3.15/5, 0.9/5, 0.8/5)),
     new CANNON.Vec3(0, 0, -0.2/5)
     );
-level2AircraftBody.position.set(0, 0, 80);
 level2AircraftVehicle = new CANNON.RigidVehicle({
     chassisBody: level2AircraftBody,
 });
@@ -80,8 +77,8 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 
 // Creates World
 const levelWidth=10;
-const levelLength=14;
-let scalar = 1.5;
+const levelLength=30;
+let scalar = 2;
 //  loads image textures
 let textures = {
     dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
@@ -108,14 +105,21 @@ const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 const simplex = new SimplexNoise();
 
-// Creates level randomly using noise 
-for(let i = -levelWidth; i <= levelWidth; i++) { //horizontal - x
+const level2Start = tileToPosition(levelWidth  * scalar,levelLength  * scalar);
+const level2End = tileToPosition(-levelWidth  * scalar,-levelLength  * scalar);
+
+const Buffer = 2 //sets the cliffs on the sides of the map
+const MAX_HEIGHT_BARRIER = 50;
+for(let i = -levelWidth-Buffer; i <= levelWidth + Buffer; i++) { //horizontal - x
     for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
-        let position = tileToPosition(i,j)
         let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
-        noise = Math.pow(noise, 1.5);
-        // function to create hexagonal prisms, both scene and cannon boides
-        makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
+        if (i >= -levelWidth && i <= levelWidth ){
+            noise = Math.pow(noise, 1.5);
+            // function to create hexagonal prisms, both scene and cannon boides
+            makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
+        } else {
+            makeHex(noise*MAX_HEIGHT_BARRIER, tileToPosition(i,j))
+        }
     } 
 }
 
@@ -156,14 +160,7 @@ treeMesh.scale.set(scalar, scalar, scalar);
 // add grounds to scene
 level2Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh, treeMesh);
 level2Scene.add(seaMesh);
-// adds grounds plane
-level2GroundBody = new CANNON.Body({
-    type: CANNON.Body.STATIC,
-    shape: new CANNON.Plane(),
-});
-level2GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-level2GroundBody.position.set(0, 0, 0);
-level2PhysicsWorld.addBody(level2GroundBody);
+
 
 function hexGeometry(height, position) {
     let geo  = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
@@ -353,11 +350,13 @@ for (let z = 0; z < 15; z++) {
 
         // Add both sphere and cylinder bodies to the torusBody
         torusBody.addShape(sphereShape, new CANNON.Vec3(x + randx, y + randy, z * -randz - minDist));
-
     }
 
     // Add the torusBody to the Cannon.js world
     level2PhysicsWorld.addBody(torusBody);
+
+    
+
     await import('./ring.js').then(({ Ring }) => {
 
         const ring = new Ring({
@@ -377,7 +376,22 @@ for (let z = 0; z < 15; z++) {
         console.log('Error loading Ring class:', error);
     });
 }
-//level logic
+
+level2PhysicsWorld.addEventListener('collide', function (event) {
+    const bodyA = event.bodyA;
+    const bodyB = event.bodyB;
+  
+    // Check if either bodyA or bodyB is your static body (groundBody)
+    if (bodyA === torusBody || bodyB === torusBody) {
+      // This means your static body is touching something
+      console.log('Static body is touching another object.');
+    }
+  });
+
+
 
 // level2Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
-export { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2MixerAircraft }
+export { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End }
+
+
+

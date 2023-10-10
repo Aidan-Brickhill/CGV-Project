@@ -17,6 +17,7 @@ let levelInitialize = [0, 0, 0];
 let currentLevel = 0;
 let forwardSpeed = -5;
 let speed = 50;
+let dead = false;
 
 // Renderer setup
 let renderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
@@ -29,12 +30,12 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 //imports from other levels
-import { menuScene, menuCamera, buttonScene } from "./js/mainMenu.js";
-import { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft } from "./js/level1.js";
-import { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2Ground, level2GroundBody, level2MixerAircraft } from "./js/level2.js";
-import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3MixerAircraft } from "./js/level3.js";
+import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
+import { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody,  level1MixerAircraft, level1Start, level1End} from "./js/level1.js";
+import { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End } from "./js/level2.js";
+import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End } from "./js/level3.js";
 
-let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, ground, groundBody, mixer, floorMixer;
+let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody,mixer,levelStart,levelEnd;
 let light, cannonDebugger;
 let spacebarIntervalId = null;
 
@@ -58,7 +59,7 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 // Angle for rotating camera
-let cameraRotationCounter = 2 * Math.PI / 2000;
+let cameraRotationCounter = 2 * Math.PI / 10000;
 function animate(){
     if (MainMenu){
         raycaster.setFromCamera(mouse, menuCamera);
@@ -80,11 +81,6 @@ function animate(){
             mixer.update(clock.getDelta());
         }
         
-        // if (floorMixer){
-        //     floorMixer.update(clock.getDelta());
-        // }
-        // const force = new CANNON.Vec3(0, 0, 0);
-        
         let force = new CANNON.Vec3(0, 0, 0);
         const xresponseModulator = 1.5;
         const yresponseModulator = 1.25;
@@ -96,39 +92,81 @@ function animate(){
         let vxf = 0;
         let vyf = 0;
 
-        const ceiling1 = 20;
+        const ceiling1 = 30;
         const ceiling2 = 0;
         const ceiling3 = 0;
 
         // // Update the physics worlds
-        if (keys.a.pressed) {
-            vxf = -speed;
-            vyf = 0;
-        }
-        if (keys.d.pressed) {
-            vxf = speed;
-            vyf = 0;
-        }
-        if (keys.w.pressed) {
-            vxf = 0;
-            vyf = speed;
-        }
-        if (keys.s.pressed) {
-            vxf = 0;
-            vyf = -speed;
-        }
-        if (keys.spacebar.pressed){    
-            if(!spacebarIntervalId){
-                spacebarIntervalId = setInterval(() => {
-                    forwardSpeed -= 0.5;
-                }, 100);     
+        if (!dead){
+
+            if (keys.a.pressed) {
+                if (aircraftBody.quaternion.z <= 0.2){
+                    aircraftBody.quaternion.z += 0.02;
+                }
+                vxf = -speed;
+                vyf = 0;
+            } else {
+                if ( aircraftBody.quaternion.z > 0){
+                    aircraftBody.quaternion.z -= 0.02;
+                }
             }
-        }else if (spacebarIntervalId){
-            clearInterval(spacebarIntervalId);
-            spacebarIntervalId = null;
-        } 
-        if (forwardSpeed < -5.5 && !keys.spacebar.pressed){
-            forwardSpeed += 0.5;
+            if (keys.d.pressed) {
+                if ( aircraftBody.quaternion.z >= -0.2){
+                    aircraftBody.quaternion.z -= 0.02;
+                }
+                vxf = speed;
+                vyf = 0;
+            } else {
+                if ( aircraftBody.quaternion.z < 0){
+                    aircraftBody.quaternion.z += 0.02;
+                }
+            }
+            if (keys.w.pressed) {
+                if (aircraftBody.quaternion.x <= 0.1){
+                    aircraftBody.quaternion.x += 0.02;
+                }
+                vxf = 0;
+                vyf = speed;
+            }  else {
+                if (aircraftBody.quaternion.x > 0){
+                    aircraftBody.quaternion.x -= 0.02;
+                }
+            }
+            if (keys.s.pressed) {
+                if (aircraftBody.quaternion.x >= -0.1){
+                    aircraftBody.quaternion.x -=0.02;
+                }
+
+                vxf = 0;
+                vyf = -speed;
+            }  else {
+                if (aircraftBody.quaternion.x < 0){
+                    aircraftBody.quaternion.x += 0.02;
+                }
+            }
+
+            if (keys.spacebar.pressed){    
+                if(!spacebarIntervalId){
+                    spacebarIntervalId = setInterval(() => {
+                        forwardSpeed -= 0.5;
+                    }, 100);     
+                }
+            } else if (spacebarIntervalId){
+                clearInterval(spacebarIntervalId);
+                spacebarIntervalId = null;
+            } 
+            if (forwardSpeed < -5.5 && !keys.spacebar.pressed){
+                forwardSpeed += 0.5;
+            }
+
+            aircraft.quaternion.z = aircraftBody.quaternion.x;
+            aircraft.quaternion.x = -aircraftBody.quaternion.z;
+            aircraft.quaternion.y = 1;
+
+        } else {
+            aircraft.quaternion.z = aircraftBody.quaternion.x;
+            aircraft.quaternion.x = -aircraftBody.quaternion.z; 
+            aircraft.quaternion.y = 1; 
         }
 
         force.x = xresponseModulator * (vxf - vxi) / mass;
@@ -143,7 +181,16 @@ function animate(){
             }
         }
 
-        if(aircraft.position.z < levelCompletionThreshold){
+        // boarders for sides of the map
+        if (aircraftBody.position.x > levelStart.x){
+            aircraftBody.position.x = levelStart.x;
+        }
+
+        if (aircraftBody.position.x < levelEnd.x){
+            aircraftBody.position.x = levelEnd.x;
+        }
+
+        if(aircraft.position.z < levelEnd.y){
             levelCompleted();
             //addCongratulationsText();
         }
@@ -153,9 +200,8 @@ function animate(){
         aircraft.position.x = aircraftBody.position.x;
         aircraft.position.y = aircraftBody.position.y - (1 / 5);
         aircraft.position.z = aircraftBody.position.z;
-        // aircraft.quaternion.x= aircraftBody.quaternion.x;
-        // console.log(aircraftBody.quaternion)
-        // aircraft.quaternion.y=  aircraftBody.quaternion.y;
+        
+        // aircraft.quaternion.y=  -aircraftBody.quaternion.y;
         // aircraft.quaternion.setFromEuler(aircraftBody.quaternion.x,aircraftBody.quaternion.y+Math.PI/2,aircraftBody.quaternion.z);
 
         perspectiveCamera.position.set(aircraft.position.x, aircraft.position.y + 1 + offset.y, aircraft.position.z - 3 + offset.z);
@@ -168,8 +214,14 @@ function animate(){
         // debug (allows you to see cannon bodies)
         // cannonDebugger.update();
 
-        //rednders the scene
-        renderer.render(gameScene, perspectiveCamera);
+        //renders the scene
+        if (dead){
+            renderer.render(gameScene, perspectiveCamera);
+            renderer.clearDepth();
+            renderer.render(deathScene, menuCamera);
+        } else {
+            renderer.render(gameScene, perspectiveCamera);
+        }
         animationId = requestAnimationFrame(animate);
     }
 }
@@ -323,6 +375,7 @@ window.addEventListener('keyup', (event) => {
 function initializeLevel1Scene() {
     resetTimer();
     startTimer();
+    dead = false;
     gameScene = level1Scene;
     gameCamera = level1Camera;
     physicsWorld = level1PhysicsWorld;
@@ -335,11 +388,11 @@ function initializeLevel1Scene() {
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
+    levelStart = level1Start;
+    levelEnd = level1End;  
 
     // aircraftBody.applyLocalForce(0, new CANNON.Vec3(0, 0, 0));
-    aircraftBody.position.set(0, 30, 200);
-    ground = level1Ground;
-    groundBody = level1GroundBody;
+    aircraftBody.position.set(0, 30, level1Start.y);
     mixer = level1MixerAircraft;
     // floorMixer = level1MixerOcean;
 
@@ -362,6 +415,7 @@ function initializeLevel1Scene() {
     aircraftBody.addEventListener("collide", function (e) {
         console.log("collison occured");
         physicsWorld.gravity.set(0, -9.8, 0);
+        dead = true;
     });
 
 
@@ -369,6 +423,7 @@ function initializeLevel1Scene() {
 }
 
 function initializeLevel2Scene() {
+    dead = false;
     resetTimer();
     startTimer();
     gameScene = level2Scene;
@@ -381,12 +436,13 @@ function initializeLevel2Scene() {
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
-    
+    levelStart = level2Start;
+    levelEnd = level2End;    
+    console.log(levelStart);
+    console.log(levelEnd);
 
-    // aircraftBody.applyLocalForce(0, new CANNON.Vec3(0, 0, 0));
-    aircraftBody.position.set(0, 30, 200);
-    ground = level2Ground;
-    groundBody = level2GroundBody;
+    
+    aircraftBody.position.set(0, 30, level1Start.y);
     mixer = level2MixerAircraft;
 
     if (levelInitialize[0] === 0) {
@@ -410,6 +466,7 @@ function initializeLevel2Scene() {
     aircraftBody.addEventListener("collide", function (e) {
         console.log("collison occured");
         physicsWorld.gravity.set(0, -9.8, 0);
+        dead = true;
     });
 
 
@@ -419,6 +476,8 @@ function initializeLevel2Scene() {
 function initializeLevel3Scene() {
     resetTimer();
     startTimer();
+    dead = false;
+
     gameScene = level3Scene;
     gameCamera = level3Camera;
     physicsWorld = level3PhysicsWorld;
@@ -431,13 +490,13 @@ function initializeLevel3Scene() {
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
+    levelStart = level3Start;
+    levelEnd = level3End; 
 
 
 
     // aircraftBody.applyLocalForce(0, new CANNON.Vec3(0, 0, 0));
-    aircraftBody.position.set(0, 30, 200);
-    ground = level3Ground;
-    groundBody = level3GroundBody;
+    aircraftBody.position.set(0, 30, level1Start.y);
     mixer = level3MixerAircraft;
     // floorMixer = level3MixerOcean;
 
@@ -460,6 +519,7 @@ function initializeLevel3Scene() {
     aircraftBody.addEventListener("collide", function (e) {
         console.log("collison occured");
         physicsWorld.gravity.set(0, -9.8, 0);
+        dead = true;
     });
     
 

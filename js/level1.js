@@ -22,23 +22,10 @@ level1PhysicsWorld.solver = new CANNON.GSSolver();
 // INITALIZE 
 let level1AircraftBody;
 let level1AircraftVehicle;
-let level1GroundBody;
-let level1Ground;
 let level1Aircraft;
 let level1MixerAircraft;
 
-// Adds light to scene
-const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
-pointLight.castShadow = true; 
-pointLight.shadow.mapSize.width = 512; 
-pointLight.shadow.mapSize.height = 512; 
-pointLight.shadow.camera.near = 0.5; 
-pointLight.shadow.camera.far = 500; 
-level1Scene.add(pointLight);
-pointLight.position.set(40, 30, 40);
 
-const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
-level1Scene.add(ambientLight);
 
 // Creates Aircraft + Loads model ====================================================
 level1AircraftBody = new CANNON.Body({
@@ -107,14 +94,21 @@ const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 const simplex = new SimplexNoise();
 
-// Creates level randomly using noise 
-for(let i = -levelWidth; i <= levelWidth; i++) { //horizontal - x
+const level1Start = tileToPosition(levelWidth  * scalar,levelLength  * scalar);
+const level1End = tileToPosition(-levelWidth  * scalar,-levelLength  * scalar);
+
+const Buffer = 2 //sets the cliffs on the sides of the map
+const MAX_HEIGHT_BARRIER = 50;
+for(let i = -levelWidth-Buffer; i <= levelWidth + Buffer; i++) { //horizontal - x
     for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
-        let position = tileToPosition(i,j)
         let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
-        noise = Math.pow(noise, 1.5);
-        // function to create hexagonal prisms, both scene and cannon boides
-        makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
+        if (i >= -levelWidth && i <= levelWidth ){
+            noise = Math.pow(noise, 1.5);
+            // function to create hexagonal prisms, both scene and cannon boides
+            makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
+        } else {
+            makeHex(noise*MAX_HEIGHT_BARRIER, tileToPosition(i,j))
+        }
     } 
 }
 
@@ -155,14 +149,6 @@ treeMesh.scale.set(scalar, scalar, scalar);
 // add grounds to scene
 level1Scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh, treeMesh);
 level1Scene.add(seaMesh);
-// adds grounds plane
-level1GroundBody = new CANNON.Body({
-    type: CANNON.Body.STATIC,
-    shape: new CANNON.Plane(),
-});
-level1GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-level1GroundBody.position.set(0, 0, 0);
-level1PhysicsWorld.addBody(level1GroundBody);
 
 function hexGeometry(height, position) {
     let geo  = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
@@ -312,5 +298,18 @@ function tree(height, position) {
     
     return mergeBufferGeometries([geo, geo2, geo3]);
 }
+
+// Adds light to scene
+const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLight.castShadow = true; 
+pointLight.shadow.mapSize.width = 512; 
+pointLight.shadow.mapSize.height = 512; 
+pointLight.shadow.camera.near = 0.5; 
+pointLight.shadow.camera.far = 500; 
+level1Scene.add(pointLight);
+pointLight.position.set(0, 50, level1Start.y + 50);
+
+const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
+level1Scene.add(ambientLight);
     
-export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1Ground, level1GroundBody, level1MixerAircraft }
+export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody,  level1MixerAircraft, level1Start, level1End}

@@ -9,8 +9,8 @@ import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 
 //============== Change Map Size ================//
-const mapWidth = 10;
-const maplength = 40;
+const levelWidth = 10;
+const levelLength = 40;
 
 
 //============== Debugging Camera - FreeCam ================//
@@ -53,8 +53,6 @@ pointLight.position.set(0, 0, 0);
 //============== Phyics Aircraft Global Variables ================//
 let level3AircraftBody;
 let level3AircraftVehicle;
-let level3GroundBody;
-let level3Ground;
 let scalar = 2;
 
 
@@ -134,15 +132,21 @@ const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
 //============== Create Map With Size Specified In Global Variables =================//
-
-for (let i = -mapWidth; i <= mapWidth; i++) { 
-    for (let j = -maplength; j <= maplength; j++) { 
-        let position = tileToPosition(i, j)
+const level3Start = tileToPosition(levelWidth  * scalar,levelLength  * scalar);
+const level3End = tileToPosition(-levelWidth  * scalar,-levelLength  * scalar);
+const Buffer = 2 //sets the cliffs on the sides of the map
+const MAX_HEIGHT_BARRIER = 50;
+for(let i = -levelWidth-Buffer; i <= levelWidth + Buffer; i++) { //horizontal - x
+    for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
         let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
-        noise = Math.pow(noise, 1.5);
-
-        makeHex(noise * MAX_HEIGHT, tileToPosition(i, j))
-    }
+        if (i >= -levelWidth && i <= levelWidth ){
+            noise = Math.pow(noise, 1.5);
+            // function to create hexagonal prisms, both scene and cannon boides
+            makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
+        } else {
+            makeHex(noise*MAX_HEIGHT_BARRIER, tileToPosition(i,j))
+        }
+    } 
 }
 
 //============== Create The Lave Ground - Note: Lava Is Callled seaMesh =================//
@@ -355,16 +359,6 @@ function cannonHexGeometry(height, position,) {
 // clouds();
 
 
-//============== Initialise The Ground Physics Object =================//
-
-level3GroundBody = new CANNON.Body({
-    type: CANNON.Body.STATIC,
-    shape: new CANNON.Plane(),
-});
-
-level3GroundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-level3GroundBody.position.set(0, 0, 0);
-level3PhysicsWorld.addBody(level3GroundBody);
 
 //============== Add Rings to The Scene =================//
 
@@ -479,4 +473,4 @@ function levelCompleted(){
 level3Scene.fog = new THREE.Fog(0xff7878, 0.015, 300);
 
 //============== Export All Objects Of Interest =================//
-export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3Ground, level3GroundBody, level3MixerAircraft }
+export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End }
