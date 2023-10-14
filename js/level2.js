@@ -351,9 +351,17 @@ for (let z = 0; z < 15; z++) {
         // Add both sphere and cylinder bodies to the torusBody
         torusBody.addShape(sphereShape, new CANNON.Vec3(x + randx, y + randy, z * -randz - minDist));
     }
-
+    
     // Add the torusBody to the Cannon.js world
     level2PhysicsWorld.addBody(torusBody);
+
+    torusBody.addEventListener("collide", function (e) {
+        console.log("ring collision");
+    });
+
+    const timeStep = 1 / 60; // Adjust this according to your needs
+    level2PhysicsWorld.step(timeStep);
+    level2PhysicsWorld.fixedStep();
 
     
 

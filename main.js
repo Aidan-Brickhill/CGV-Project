@@ -220,7 +220,7 @@ function animate(){
             renderer.clearDepth();
             renderer.render(deathScene, menuCamera);
         } else {
-            renderer.render(gameScene, perspectiveCamera);
+            renderer.render(gameScene, gameCamera);
         }
         animationId = requestAnimationFrame(animate);
     }
@@ -463,11 +463,11 @@ function initializeLevel2Scene() {
 
 
     //collsion on aircraft
-    aircraftBody.addEventListener("collide", function (e) {
-        console.log("collison occured");
-        physicsWorld.gravity.set(0, -9.8, 0);
-        dead = true;
-    });
+    // aircraftBody.addEventListener("collide", function (e) {
+    //     console.log("collison occured");
+    //     physicsWorld.gravity.set(0, -9.8, 0);
+    //     dead = true;
+    // });
 
 
 
