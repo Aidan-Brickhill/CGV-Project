@@ -134,7 +134,7 @@ const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 //============== Create Map With Size Specified In Global Variables =================//
 const level3Start = tileToPosition(levelWidth  * scalar,levelLength  * scalar);
 const level3End = tileToPosition(-levelWidth  * scalar,-levelLength  * scalar);
-const Buffer = 2 //sets the cliffs on the sides of the map
+const Buffer = 3 //sets the cliffs on the sides of the map
 const MAX_HEIGHT_BARRIER = 50;
 for(let i = -levelWidth-Buffer; i <= levelWidth + Buffer; i++) { //horizontal - x
     for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
@@ -317,46 +317,46 @@ function cannonHexGeometry(height, position,) {
 
 }
 
-// //============== Add Clouds To The Scene =================//
+//============== Add Clouds To The Scene =================//
 
-// function clouds() {
-// let geo = new THREE.SphereGeometry(0, 0, 0); 
-// let count = Math.floor(Math.pow(Math.random(), 0.45) * 4);
+function clouds() {
+let geo = new THREE.SphereGeometry(0, 0, 0); 
+let count = Math.floor(Math.pow(Math.random(), 0.45) * 4);
 
-// for(let i = 0; i < count; i++) {
-//     const puff1 = new THREE.SphereGeometry(1.2, 7, 7);
-//     const puff2 = new THREE.SphereGeometry(1.5, 7, 7);
-//     const puff3 = new THREE.SphereGeometry(0.9, 7, 7);
+for(let i = 0; i < count; i++) {
+    const puff1 = new THREE.SphereGeometry(1.2, 7, 7);
+    const puff2 = new THREE.SphereGeometry(1.5, 7, 7);
+    const puff3 = new THREE.SphereGeometry(0.9, 7, 7);
 
-//     puff1.translate(-1.85, Math.random() * 0.3, 0);
-//     puff2.translate(0,     Math.random() * 0.3, 0);
-//     puff3.translate(1.85,  Math.random() * 0.3, 0);
+    puff1.translate(-1.85, Math.random() * 0.3, 0);
+    puff2.translate(0,     Math.random() * 0.3, 0);
+    puff3.translate(1.85,  Math.random() * 0.3, 0);
 
-//     const cloudGeo = mergeBufferGeometries([puff1, puff2, puff3]);
-//     cloudGeo.translate( 
-//     Math.random() * 20 - 10, 
-//     Math.random() * 7 + 7, 
-//     Math.random() * 20 - 10
-//     );
-//     cloudGeo.rotateY(Math.random() * Math.PI * 2);
+    const cloudGeo = mergeBufferGeometries([puff1, puff2, puff3]);
+    cloudGeo.translate( 
+    Math.random() * 20 - 10, 
+    Math.random() * 7 + 7, 
+    Math.random() * 20 - 10
+    );
+    cloudGeo.rotateY(Math.random() * Math.PI * 2);
 
-//     geo = mergeBufferGeometries([geo, cloudGeo]);
-// }
-//     const mesh = new THREE.Mesh(
-//         geo,
-//         new THREE.MeshStandardMaterial({
-//         // envMap: envmap, 
-//         envMapIntensity: 0.75, 
-//         flatShading: true,
-//         // transparent: true,
-//         // opacity: 0.85,
-//         })
-//     );
+    geo = mergeBufferGeometries([geo, cloudGeo]);
+}
+    const mesh = new THREE.Mesh(
+        geo,
+        new THREE.MeshStandardMaterial({
+        // envMap: envmap, 
+        envMapIntensity: 0.75, 
+        flatShading: true,
+        // transparent: true,
+        // opacity: 0.85,
+        })
+    );
 
-//     level3Scene.add(mesh);
-// }
+    level3Scene.add(mesh);
+}
 
-// clouds();
+clouds();
 
 
 

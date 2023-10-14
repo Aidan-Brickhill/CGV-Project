@@ -108,7 +108,7 @@ const simplex = new SimplexNoise();
 const level2Start = tileToPosition(levelWidth  * scalar,levelLength  * scalar);
 const level2End = tileToPosition(-levelWidth  * scalar,-levelLength  * scalar);
 
-const Buffer = 2 //sets the cliffs on the sides of the map
+const Buffer = 3 //sets the cliffs on the sides of the map
 const MAX_HEIGHT_BARRIER = 50;
 for(let i = -levelWidth-Buffer; i <= levelWidth + Buffer; i++) { //horizontal - x
     for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
