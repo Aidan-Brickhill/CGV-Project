@@ -9,8 +9,8 @@ import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 
 //============== Change Map Size ================//
-const levelWidth = 10;
-const levelLength = 40;
+const levelWidth = 7;
+const levelLength = 65;
 
 
 //============== Debugging Camera - FreeCam ================//

@@ -30,7 +30,7 @@ document.body.appendChild(renderer.domElement);
 
 //imports from other levels
 import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
-import { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody,  level1MixerAircraft, level1Start, level1End, MAX_HEIGHT} from "./js/level1.js";
+import { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1MixerAircraft,  startPos,MAX_HEIGHT, level1End} from "./js/level1.js";
 import { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End, level2Rings} from "./js/level2.js";
 import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End, level3Rings} from "./js/level3.js";
 
@@ -85,9 +85,7 @@ function animate(){
         let vxf = 0;
         let vyf = 0;
 
-        const ceiling1 = MAX_HEIGHT/2;
-        const ceiling2 = 0;
-        const ceiling3 = 0;
+        const ceiling1 = MAX_HEIGHT/2 + 100;
 
         // // Update the physics worlds
         if (!dead){
@@ -172,15 +170,15 @@ function animate(){
                 aircraftBody.position.y = ceiling1;
                 aircraftBody.velocity.y = 0;
             }
-        }
+        } else {
+            // boarders for sides of the map
+            if (aircraftBody.position.x > levelStart.x){
+                aircraftBody.position.x = levelStart.x;
+            }
 
-        // boarders for sides of the map
-        if (aircraftBody.position.x > levelStart.x){
-            aircraftBody.position.x = levelStart.x;
-        }
-
-        if (aircraftBody.position.x < levelEnd.x){
-            aircraftBody.position.x = levelEnd.x;
+            if (aircraftBody.position.x < levelEnd.x){
+                aircraftBody.position.x = levelEnd.x;
+            }
         }
 
         if(aircraft.position.z < levelEnd.y){
@@ -194,9 +192,6 @@ function animate(){
         aircraft.position.y = aircraftBody.position.y - (1 / 5);
         aircraft.position.z = aircraftBody.position.z;
         
-        // aircraft.quaternion.y=  -aircraftBody.quaternion.y;
-        // aircraft.quaternion.setFromEuler(aircraftBody.quaternion.x,aircraftBody.quaternion.y+Math.PI/2,aircraftBody.quaternion.z);
-
         perspectiveCamera.position.set(aircraft.position.x, aircraft.position.y + 1 + offset.y, aircraft.position.z - 3 + offset.z);
 
         //debug (allows you to move around the scene)
@@ -206,7 +201,7 @@ function animate(){
         // debug (allows you to see cannon bodies)
         // cannonDebugger.update();
 
-        if (currentLevel!=1){
+        if (currentLevel>=2){
             Rings.forEach((ring) => {            
                 checkRingCollision(aircraftBody.position, ring)
         });
@@ -270,25 +265,26 @@ function onMouseDown(event) {
 
         if (MainMenu) {
             if (selectedObject.name === "level1") {
-                currentLevel = 1;
                 cancelAnimationFrame(animationId);
                 initializeLevel1Scene();
                 MainMenu = false;
+                currentLevel = 1;
                 requestAnimationFrame(animate);
             }
             if (selectedObject.name === "level2") {
-                currentLevel = 2;
                 cancelAnimationFrame(animationId);
                 initializeLevel2Scene();
                 MainMenu = false;
+                currentLevel = 2;
                 requestAnimationFrame(animate);
             }
             if (selectedObject.name === "level3") {
-                currentLevel = 3;
                 cancelAnimationFrame(animationId);
                 initializeLevel3Scene();
                 MainMenu = false;
+                currentLevel = 3;
                 requestAnimationFrame(animate);
+
             }
         }
     }
@@ -403,9 +399,9 @@ function initializeLevel1Scene() {
     aircraft = level1Aircraft;
     aircraftBody = level1AircraftBody;
     forwardSpeed = -5
-    levelStart = level1Start;
-    levelEnd = level1End;  
-    physicsWorld.gravity.set(0,-1,0);
+    levelEnd = level1End;
+    aircraftBody.position.set(startPos.x, MAX_HEIGHT/2, startPos.y+3);
+    physicsWorld.gravity.set(0,-0.5,0);
     // aircraftBody.position.set(0, 30, levelStart.y);
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
@@ -451,7 +447,7 @@ async function initializeLevel2Scene() {
     forwardSpeed = -5;
     levelStart = level2Start;
     levelEnd = level2End;  
-    physicsWorld.gravity.set(0,-1,0);
+    physicsWorld.gravity.set(0,-0.5,0);
     aircraftBody.position.set(0, 30, levelStart.y);
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
@@ -503,7 +499,7 @@ function initializeLevel3Scene() {
     forwardSpeed = -5;
     levelStart = level3Start;
     levelEnd = level3End; 
-    physicsWorld.gravity.set(0,-1,0);
+    physicsWorld.gravity.set(0,-0.5,0);
     aircraftBody.position.set(0, 30, levelStart.y);
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);

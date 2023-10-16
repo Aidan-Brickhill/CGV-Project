@@ -92,9 +92,6 @@ const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
-const level1Start = tileToPosition(levelWidth  * scalar,levelLength  * scalar);
-const level1End = tileToPosition(-levelWidth  * scalar,-levelLength  * scalar);
-
 // for(let i = -levelWidth-Buffer; i <= levelWidth + Buffer; i++) { //horizontal - x
 //     for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
 //         let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
@@ -141,7 +138,7 @@ for (let i = -levelWidth; i <= levelWidth; i++) {
 
 //  Set aricraft position to start of canyon AT LOW POINT
 let startPos = tileToPosition(Math.floor(initRiverAmplitude * Math.sin(riverWavelength * levelLength)), levelLength*scalar);
-
+let level1End = tileToPosition(Math.floor(initRiverAmplitude * Math.sin(riverWavelength * levelLength)), -levelLength*scalar);
 level1AircraftBody.position.set(startPos.x, MAX_HEIGHT/2, startPos.y+3);
 
 // creates the water
@@ -331,7 +328,6 @@ function tree(height, position) {
     return mergeBufferGeometries([geo, geo2, geo3]);
 }
 
-
 // Adds light to scene
 const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
 pointLight.castShadow = true; 
@@ -340,9 +336,9 @@ pointLight.shadow.mapSize.height = 512;
 pointLight.shadow.camera.near = 0.5; 
 pointLight.shadow.camera.far = 500; 
 level1Scene.add(pointLight);
-pointLight.position.set(0, 50, level1Start.y + 50);
+pointLight.position.set(0, 50, startPos.y + 50);
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
 level1Scene.add(ambientLight);
     
-export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody,  level1MixerAircraft, level1Start, level1End, MAX_HEIGHT}
+export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody,  level1MixerAircraft, startPos, MAX_HEIGHT, level1End}
