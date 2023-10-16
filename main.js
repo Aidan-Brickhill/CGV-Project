@@ -1,6 +1,7 @@
 // IMPORTS
 import { startTimer, pauseTimer, resumeTimer, resetTimer, stopTimer, getElapsedSeconds } from './js/timer.js';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es'
 import CannonDebugger from 'cannon-es-debugger';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -11,13 +12,14 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 // Initialization
 let MainMenu = true;
 let animationId;
-let controls;
-let levelInitialize = [0, 0, 0];
 let currentLevel = 0;
 let forwardSpeed = -5;
 let speed = 50;
 let dead = false;
 let numRingsPassed;
+let levelComplete = false;
+let endLeveltext;
+
 
 // Renderer setup
 let renderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
@@ -26,16 +28,16 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.outputColorSpac = THREE.sRGBEncoding;
 renderer.useLegacyLights = true;
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.BasicShadowMap;
 document.body.appendChild(renderer.domElement);
 
 //imports from other levels
 import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
-import { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1MixerAircraft,  startPos,MAX_HEIGHT, level1End} from "./js/level1.js";
-import { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End, level2Rings} from "./js/level2.js";
-import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End, level3Rings} from "./js/level3.js";
+import { level1Scene, level1Camera, level1PhysicsWorld,  level1AircraftBody,   startPos,MAX_HEIGHT, level1End} from "./js/level1.js";
+import { level2Scene, level2Camera, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings} from "./js/level2.js";
+import { level3Scene, level3Camera, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings} from "./js/level3.js";
 
-let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, mixer, levelStart, levelEnd, Rings;
+let physicsWorld, aircraft, aircraftBody, mixer, levelStart, levelEnd, Rings;
 let cannonDebugger;
 let spacebarIntervalId = null;
 
@@ -47,6 +49,32 @@ let offset = {
     y: 1,
     z: 6,
 };
+
+let glftLoader = new GLTFLoader();
+let AircraftGLTF;
+let AircraftMIXER;
+glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
+    AircraftGLTF = gltfScene.scene;
+
+
+    AircraftGLTF.rotation.y = Math.PI;
+    
+    AircraftGLTF.traverse(function(node) {
+        if (node.isMesh){
+            node.castShadow = true;
+        }
+    });
+
+    const clips = gltfScene.animations;
+    AircraftMIXER = new THREE.AnimationMixer(AircraftGLTF);
+
+    clips.forEach(function(clip) {
+        const action = AircraftMIXER.clipAction(clip);
+        action.play();
+    });
+
+});
+
 
 // Radar setup
 // Create the radar container div
@@ -167,6 +195,7 @@ const initAudio = () => {
             sound = new THREE.Audio(listener);
             sound.setBuffer(buffer);
             sound.setVolume(0.3);
+            sound.setLoop(true);
             playSound();
         });
 
@@ -198,8 +227,8 @@ function animate() {
         animationId = requestAnimationFrame(animate);
 
     } else {
-        if (mixer) {
-            mixer.update(clock.getDelta());
+        if (AircraftMIXER) {
+            AircraftMIXER.update(clock.getDelta());
         }
 
         let force = new CANNON.Vec3(0, 0, 0);
@@ -278,14 +307,14 @@ function animate() {
                 forwardSpeed += 0.5;
             }
 
-            aircraft.quaternion.z = aircraftBody.quaternion.x;
-            aircraft.quaternion.x = -aircraftBody.quaternion.z;
-            aircraft.quaternion.y = 1;
+            AircraftGLTF.quaternion.z = aircraftBody.quaternion.x;
+            AircraftGLTF.quaternion.x = -aircraftBody.quaternion.z;
+            AircraftGLTF.quaternion.y = 1;
 
         } else {
-            aircraft.quaternion.z = aircraftBody.quaternion.x;
-            aircraft.quaternion.x = -aircraftBody.quaternion.z;
-            aircraft.quaternion.y = 1;
+            AircraftGLTF.quaternion.z = aircraftBody.quaternion.x;
+            AircraftGLTF.quaternion.x = -aircraftBody.quaternion.z;
+            AircraftGLTF.quaternion.y = 1;
         }
 
         force.x = xresponseModulator * (vxf - vxi) / mass;
@@ -307,35 +336,35 @@ function animate() {
             if (aircraftBody.position.x < levelEnd.x){
                 aircraftBody.position.x = levelEnd.x;
             }
+
+          
         }
 
-        if (aircraft.position.z < levelEnd.y) {
+        if (aircraftBody.position.z < levelEnd.y) {
             levelCompleted();
-            // addCongratulationsText();
         }
 
         physicsWorld.step(1 / 60);
         physicsWorld.fixedStep();
-        aircraft.position.x = aircraftBody.position.x;
-        aircraft.position.y = aircraftBody.position.y - (1 / 5);
-        aircraft.position.z = aircraftBody.position.z;
+        AircraftGLTF.position.x = aircraftBody.position.x;
+        AircraftGLTF.position.y = aircraftBody.position.y - (1 / 5);
+        AircraftGLTF.position.z = aircraftBody.position.z;
         
-        perspectiveCamera.position.set(aircraft.position.x, aircraft.position.y + 1 + offset.y, aircraft.position.z - 3 + offset.z);
+        perspectiveCamera.position.set(aircraftBody.position.x, aircraftBody.position.y + 1 + offset.y, aircraftBody.position.z - 3 + offset.z);
 
-        radarCamera.position.set(aircraft.position.x, aircraft.position.y + radarOffset.y, aircraft.position.z); 
-        radarCamera.lookAt(aircraft.position.x, aircraft.position.y, aircraft.position.z);
-
-        //debug (allows you to move around the scene)
-        // controls.update();
-        // renderer.render(gameScene, gameCamera);
-
-        // debug (allows you to see cannon bodies)
-        // cannonDebugger.update();
+        radarCamera.position.set(aircraftBody.position.x, aircraftBody.position.y + radarOffset.y, aircraftBody.position.z); 
+        radarCamera.lookAt(aircraftBody.position.x, aircraftBody.position.y, aircraftBody.position.z);
 
         if (currentLevel>=2){
             Rings.forEach((ring) => {            
                 checkRingCollision(aircraftBody.position, ring)
             });
+
+            if (aircraftBody.position.z < Rings[Rings.length - 1].ringBody.position.z && !levelComplete) {
+                levelComplete = true;
+                addCongratulationsText();
+
+            }
         }
 
         //renders the scene
@@ -386,7 +415,7 @@ function animate() {
                 renderer.render(level3Scene, perspectiveCamera);
             }
         }
-        
+
     animationId = requestAnimationFrame(animate);
 
 }
@@ -418,7 +447,7 @@ function onMouseDown(event) {
 
         if (MainMenu) {
             if (selectedObject.name === "level1") {
-                stopSound();
+                pauseSound();
                 currentLevel = 1;
                 cancelAnimationFrame(animationId);
                 initializeLevel1Scene();
@@ -427,7 +456,7 @@ function onMouseDown(event) {
                 requestAnimationFrame(animate);
             }
             if (selectedObject.name === "level2") {
-                stopSound();
+                pauseSound();
                 cancelAnimationFrame(animationId);
                 initializeLevel2Scene();
                 MainMenu = false;
@@ -435,7 +464,7 @@ function onMouseDown(event) {
                 requestAnimationFrame(animate);
             }
             if (selectedObject.name === "level3") {
-                stopSound();
+                pauseSound();
                 cancelAnimationFrame(animationId);
                 initializeLevel3Scene();
                 MainMenu = false;
@@ -443,6 +472,8 @@ function onMouseDown(event) {
                 requestAnimationFrame(animate);
 
             }
+        } else {
+            playSound();
         }
     }
 }
@@ -500,11 +531,13 @@ window.addEventListener('keydown', (event) => {
             break;
         case 'Escape':
             if (MainMenu) {
+                pauseSound();
                 resumeTimer();
                 cancelAnimationFrame(animationId);
                 MainMenu = false;
                 requestAnimationFrame(animate);
             } else {
+                playSound();
                 pauseTimer();
                 cancelAnimationFrame(animationId);
                 MainMenu = true;
@@ -548,14 +581,30 @@ function initializeLevel1Scene() {
     resetTimer();
     startTimer();
     dead = false;
+    if (levelComplete) {
+        try {
+            level1Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level2Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level3Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+    }
+    levelComplete = false;
 
-    mixer = level1MixerAircraft;
-    // gameScene = level1Scene;
-    gameCamera = level1Camera;
     physicsWorld = level1PhysicsWorld;
-    aircraft = level1Aircraft;
     aircraftBody = level1AircraftBody;
     levelEnd = level1End;
+    level1Scene.add(AircraftGLTF);
+
     aircraftBody.position.set(startPos.x, MAX_HEIGHT/2, startPos.y+3);
     physicsWorld.gravity.set(0,-0.5,0);
     // aircraftBody.position.set(0, 30, levelStart.y);
@@ -564,21 +613,6 @@ function initializeLevel1Scene() {
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     forwardSpeed = -5;
 
-
-
-    if (levelInitialize[0] === 0) {
-
-        levelInitialize[0] = 1;
-
-        controls = new OrbitControls(gameCamera, renderer.domElement);
-        controls.target.set(0, 0, 0);
-        controls.dampingFactor = 0.05;
-        controls.enableDamping = true;
-    }
-
-    cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
-        // color: 0xff0000,
-    });
 
     //collsion on aircraft
     aircraftBody.addEventListener("collide", function (e) {
@@ -595,17 +629,32 @@ async function initializeLevel2Scene() {
     dead = false;
     resetTimer();
     startTimer();
+    if (levelComplete) {
+        try {
+            level1Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level2Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level3Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+    }
+    levelComplete = false;
 
-    mixer = level2MixerAircraft;
-    // gameScene = level2Scene;
-    gameCamera = level2Camera;
+    level2Scene.add(AircraftGLTF);
     physicsWorld = level2PhysicsWorld;
-    aircraft = level2Aircraft;
     aircraftBody = level2AircraftBody;
     levelStart = level2Start;
     levelEnd = level2End;  
     physicsWorld.gravity.set(0,-0.5,0);
-    aircraftBody.position.set(0, 30, levelStart.y);
+    aircraftBody.position.set(0, 50, levelStart.y);
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
@@ -617,20 +666,6 @@ async function initializeLevel2Scene() {
     });
     numRingsPassed = 0;
 
-    if (levelInitialize[1] === 0) {
-
-        levelInitialize[1] = 1;
-
-
-        controls = new OrbitControls(gameCamera, renderer.domElement);
-        controls.target.set(0, 0, 0);
-        controls.dampingFactor = 0.05;
-        controls.enableDamping = true;
-    }
-
-    cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
-        // color: 0xff0000,
-    });
 
     // collsion on aircraft
     aircraftBody.addEventListener("collide", function (e) {
@@ -646,19 +681,32 @@ function initializeLevel3Scene() {
     resetTimer();
     startTimer();
     dead = false;
+    if (levelComplete) {
+        try {
+            level1Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level2Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level3Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+    }
+    levelComplete = false;
 
-    mixer = level3MixerAircraft;
-    // gameScene = level3Scene;
-    gameCamera = level3Camera;
+    level3Scene.add(AircraftGLTF);
     physicsWorld = level3PhysicsWorld;
-    aircraft = level3Aircraft;
     aircraftBody = level3AircraftBody;
-    console.log(aircraft)
-    console.log(aircraftBody)
     levelStart = level3Start;
     levelEnd = level3End; 
     physicsWorld.gravity.set(0,-0.5,0);
-    aircraftBody.position.set(0, 30, levelStart.y);
+    aircraftBody.position.set(0, 50, levelStart.y);
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
@@ -670,22 +718,6 @@ function initializeLevel3Scene() {
     });
     numRingsPassed = 0;
 
-    if (levelInitialize[2] === 0) {
-
-        levelInitialize[2] = 1;
-
-
-
-        controls = new OrbitControls(gameCamera, renderer.domElement);
-        controls.target.set(0, 0, 0);
-        controls.dampingFactor = 0.05;
-        controls.enableDamping = true;
-    }
-
-    cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
-        // color: 0xff0000,
-    });
-
     //collsion on aircraft
     aircraftBody.addEventListener("collide", function (e) {
         console.log("collison occured");
@@ -696,24 +728,41 @@ function initializeLevel3Scene() {
 
 
 }
+function addCongratulationsText() {
+    const fontLoader = new FontLoader();
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+        let textGeometry;
+        let textMaterial;
 
-// function addCongratulationsText() {
-//     const fontLoader = new FontLoader();
-//     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-//         const textGeometry = new TextGeometry('Congratulations', {
-//             font: font,
-//             size: 5,
-//             height: 0.5,
-//         });
+        if (numRingsPassed === Rings.length){
+            textGeometry = new TextGeometry('!! Pass !!', {
+                font: font,
+                size: 5,
+                height: 0.5,
+            });
+            textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        } else {
+            textGeometry = new TextGeometry('!! Fail !!', {
+                font: font,
+                size: 5,
+                height: 0.5,
+            });
+            textMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        }
+        endLeveltext = new THREE.Mesh(textGeometry, textMaterial);
 
-//         const textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-//         const congratulationsText = new THREE.Mesh(textGeometry, textMaterial);
-
-//         congratulationsText.position.set(-20, 30, -180);
-
-//         level2Scene.add(congratulationsText);
-//     });
-// }
+        endLeveltext.position.set(-10, 40, levelEnd.y);
+        if (currentLevel === 1) {
+            level1Scene.add(endLeveltext);
+        }
+        if (currentLevel === 2) {
+            level2Scene.add(endLeveltext);
+        }
+        if (currentLevel === 3) {
+            level3Scene.add(endLeveltext);
+        }
+    });
+}
 
 function levelCompleted() {
     stopTimer();
@@ -730,9 +779,6 @@ function levelCompleted() {
         console.log("level complete");
         console.log(elapsedSeconds); 
     }
-
-
-
     currentLevel = 0;
     cancelAnimationFrame(animationId);
     MainMenu = true;
@@ -750,7 +796,7 @@ function checkRingCollision(planePosition, ring) {
             ring.passed = true;
             // If the distance is less than the sum of the plane's radius and the ring's radius, they overlap
             if (distance < ringRadius) {
-                numRingsPassed += 0;
+                numRingsPassed += 1;
                 console.log("Plane passed through the ring.");
             } else {
                 console.log("Plane DID NOT pass through the ring.");
