@@ -7,6 +7,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { initializeApp } from 'firebase/app'
+
+//firebase setup
+
+    const firebaseApp = initializeApp({
+
+    });
 
 // Initialization
 let MainMenu = true;
@@ -378,7 +385,7 @@ function initializeLevel1Scene() {
     physicsWorld = level1PhysicsWorld;
     aircraft = level1Aircraft;
     aircraftBody = level1AircraftBody;
-    forwardSpeed = -5
+    forwardSpeed = -5;
     levelStart = level1Start;
     levelEnd = level1End;  
     physicsWorld.gravity.set(0,-1,0);
