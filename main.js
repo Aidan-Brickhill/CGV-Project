@@ -267,9 +267,6 @@ function animate() {
           
         }
 
-
-        
-
         if (aircraft.position.z < levelEnd.y) {
             levelCompleted();
         }
@@ -650,10 +647,8 @@ function addCongratulationsText() {
     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
         let textGeometry;
         let textMaterial;
-        console.log(numRingsPassed)
-        console.log(Rings.length)
 
-        if (numRingsPassed + 6 === Rings.length){
+        if (numRingsPassed === Rings.length){
             textGeometry = new TextGeometry('!! Pass !!', {
                 font: font,
                 size: 5,
