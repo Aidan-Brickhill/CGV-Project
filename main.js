@@ -299,6 +299,7 @@ function animate() {
         if (dead) {
             if (currentLevel === 1) {
                 renderer.render(level1Scene, perspectiveCamera);
+                radarRenderer.render(level1Scene, radarCamera);
                 renderer.clearDepth();
                 renderer.render(deathScene, menuCamera);
             }
@@ -323,9 +324,11 @@ function animate() {
             }
             if (currentLevel === 3) {
                 renderer.render(level3Scene, perspectiveCamera);
+            }
         }
-        animationId = requestAnimationFrame(animate);
-    }
+        
+    animationId = requestAnimationFrame(animate);
+
 }
 }
 animate();
