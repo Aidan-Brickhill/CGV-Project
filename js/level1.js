@@ -65,7 +65,7 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 
 // Creates World
 const levelWidth=12;
-const levelLength=40;
+const levelLength=80;
 let scalar = 1;
 //  loads image textures
 let textures = {

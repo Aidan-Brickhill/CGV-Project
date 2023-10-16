@@ -18,6 +18,8 @@ let forwardSpeed = -5;
 let speed = 50;
 let dead = false;
 
+
+
 // Renderer setup
 let renderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
 renderer.setSize(innerWidth, innerHeight);
@@ -45,6 +47,39 @@ let offset = {
     x : 0,
     y : 1,
     z : 6,
+};
+
+
+// Radar setup
+// Create the radar container div
+const radarContainer = document.createElement('div');
+radarContainer.id = 'radar-container';
+radarContainer.style.position = 'absolute';
+radarContainer.style.top = '10px'; // Adjust as needed
+radarContainer.style.right = '10px'; // Adjust as needed
+radarContainer.style.width = '200px'; // Adjust as needed
+radarContainer.style.height = '200px'; // Adjust as needed
+radarContainer.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+// Create the radar canvas container div
+const radarCanvasContainer = document.createElement('div');
+radarCanvasContainer.id = 'radar-canvas-container';
+// Append the radar canvas container to the radar container
+radarContainer.appendChild(radarCanvasContainer);
+// Append the radar container to the document body or a specific container
+document.body.appendChild(radarContainer);
+
+// radarRenderer
+const radarRenderer = new THREE.WebGLRenderer({ antialias: true });
+radarRenderer.setSize(200, 200); // Adjust the size as needed
+// radarRenderer.setClearColor(0x000000, 0);
+document.getElementById('radar-canvas-container').appendChild(radarRenderer.domElement);
+
+// Radar Camera
+const radarCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+let radarOffset = {
+    x : 0,
+    y : 10,
+    z : 0,
 };
 
 const clock = new THREE.Clock();
@@ -194,6 +229,9 @@ function animate(){
         
         perspectiveCamera.position.set(aircraft.position.x, aircraft.position.y + 1 + offset.y, aircraft.position.z - 3 + offset.z);
 
+        radarCamera.position.set(aircraft.position.x, aircraft.position.y + radarOffset.y, aircraft.position.z); 
+        radarCamera.lookAt(aircraft.position.x, aircraft.position.y, aircraft.position.z);
+
         //debug (allows you to move around the scene)
         // controls.update();
         // renderer.render(gameScene, gameCamera);
@@ -228,13 +266,13 @@ function animate(){
         } else {
             if (currentLevel === 1){
                 renderer.render(level1Scene, perspectiveCamera);
+                radarRenderer.render(level1Scene, radarCamera);
             }
             if (currentLevel === 2){
                 renderer.render(level2Scene, perspectiveCamera);
             }
             if (currentLevel === 3){
                 renderer.render(level3Scene, perspectiveCamera);
-            }
         }
         animationId = requestAnimationFrame(animate);
     }
