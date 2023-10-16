@@ -149,6 +149,7 @@ const initAudio = () => {
             sound = new THREE.Audio(listener);
             sound.setBuffer(buffer);
             sound.setVolume(0.3);
+            sound.setLoop(true);
             playSound();
         });
 
@@ -467,11 +468,13 @@ window.addEventListener('keydown', (event) => {
             break;
         case 'Escape':
             if (MainMenu) {
+                pauseSound();
                 resumeTimer();
                 cancelAnimationFrame(animationId);
                 MainMenu = false;
                 requestAnimationFrame(animate);
             } else {
+                playSound();
                 pauseTimer();
                 cancelAnimationFrame(animationId);
                 MainMenu = true;
