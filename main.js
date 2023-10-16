@@ -3,16 +3,12 @@ import { startTimer, pauseTimer, resumeTimer, resetTimer, stopTimer, getElapsedS
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es'
 import CannonDebugger from 'cannon-es-debugger';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 
 // Initialization
 let MainMenu = true;
 let animationId;
-let controls;
-let levelInitialize = [0, 0, 0];
 let currentLevel = 0;
 let forwardSpeed = -5;
 let speed = 50;
@@ -38,7 +34,7 @@ import { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1Ai
 import { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End, level2Rings} from "./js/level2.js";
 import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End, level3Rings} from "./js/level3.js";
 
-let gameScene, gameCamera, physicsWorld, aircraft, aircraftBody, mixer, levelStart, levelEnd, Rings;
+let physicsWorld, aircraft, aircraftBody, mixer, levelStart, levelEnd, Rings;
 let cannonDebugger;
 let spacebarIntervalId = null;
 
@@ -289,13 +285,6 @@ function animate() {
         radarCamera.position.set(aircraft.position.x, aircraft.position.y + radarOffset.y, aircraft.position.z); 
         radarCamera.lookAt(aircraft.position.x, aircraft.position.y, aircraft.position.z);
 
-        //debug (allows you to move around the scene)
-        // controls.update();
-        // renderer.render(gameScene, gameCamera);
-
-        // debug (allows you to see cannon bodies)
-        // cannonDebugger.update();
-
         if (currentLevel>=2){
             Rings.forEach((ring) => {            
                 checkRingCollision(aircraftBody.position, ring)
@@ -524,8 +513,6 @@ function initializeLevel1Scene() {
 
 
     mixer = level1MixerAircraft;
-    // gameScene = level1Scene;
-    gameCamera = level1Camera;
     physicsWorld = level1PhysicsWorld;
     aircraft = level1Aircraft;
     aircraftBody = level1AircraftBody;
@@ -538,21 +525,6 @@ function initializeLevel1Scene() {
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     forwardSpeed = -5;
 
-
-
-    if (levelInitialize[0] === 0) {
-
-        levelInitialize[0] = 1;
-
-        controls = new OrbitControls(gameCamera, renderer.domElement);
-        controls.target.set(0, 0, 0);
-        controls.dampingFactor = 0.05;
-        controls.enableDamping = true;
-    }
-
-    cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
-        // color: 0xff0000,
-    });
 
     //collsion on aircraft
     aircraftBody.addEventListener("collide", function (e) {
@@ -590,8 +562,6 @@ async function initializeLevel2Scene() {
 
 
     mixer = level2MixerAircraft;
-    // gameScene = level2Scene;
-    gameCamera = level2Camera;
     physicsWorld = level2PhysicsWorld;
     aircraft = level2Aircraft;
     aircraftBody = level2AircraftBody;
@@ -610,20 +580,6 @@ async function initializeLevel2Scene() {
     });
     numRingsPassed = 0;
 
-    if (levelInitialize[1] === 0) {
-
-        levelInitialize[1] = 1;
-
-
-        controls = new OrbitControls(gameCamera, renderer.domElement);
-        controls.target.set(0, 0, 0);
-        controls.dampingFactor = 0.05;
-        controls.enableDamping = true;
-    }
-
-    cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
-        // color: 0xff0000,
-    });
 
     // collsion on aircraft
     aircraftBody.addEventListener("collide", function (e) {
@@ -659,8 +615,6 @@ function initializeLevel3Scene() {
     levelComplete = false;
 
     mixer = level3MixerAircraft;
-    // gameScene = level3Scene;
-    gameCamera = level3Camera;
     physicsWorld = level3PhysicsWorld;
     aircraft = level3Aircraft;
     aircraftBody = level3AircraftBody;
@@ -681,22 +635,6 @@ function initializeLevel3Scene() {
     });
     numRingsPassed = 0;
 
-    if (levelInitialize[2] === 0) {
-
-        levelInitialize[2] = 1;
-
-
-
-        controls = new OrbitControls(gameCamera, renderer.domElement);
-        controls.target.set(0, 0, 0);
-        controls.dampingFactor = 0.05;
-        controls.enableDamping = true;
-    }
-
-    cannonDebugger = new CannonDebugger(gameScene, physicsWorld, {
-        // color: 0xff0000,
-    });
-
     //collsion on aircraft
     aircraftBody.addEventListener("collide", function (e) {
         console.log("collison occured");
@@ -712,7 +650,10 @@ function addCongratulationsText() {
     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
         let textGeometry;
         let textMaterial;
-        if (numRingsPassed === Rings.length){
+        console.log(numRingsPassed)
+        console.log(Rings.length)
+
+        if (numRingsPassed + 6 === Rings.length){
             textGeometry = new TextGeometry('!! Pass !!', {
                 font: font,
                 size: 5,
@@ -757,9 +698,6 @@ function levelCompleted() {
         console.log("level complete");
         console.log(elapsedSeconds); 
     }
-
-
-
     currentLevel = 0;
     cancelAnimationFrame(animationId);
     MainMenu = true;
@@ -777,7 +715,7 @@ function checkRingCollision(planePosition, ring) {
             ring.passed = true;
             // If the distance is less than the sum of the plane's radius and the ring's radius, they overlap
             if (distance < ringRadius) {
-                numRingsPassed += 0;
+                numRingsPassed += 1;
                 console.log("Plane passed through the ring.");
             } else {
                 console.log("Plane DID NOT pass through the ring.");

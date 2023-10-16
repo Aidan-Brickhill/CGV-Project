@@ -426,31 +426,6 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
 }
 
 
-//============== Define The "Finish Line" For the Aircraft =================//
-
-let animationId;
-
-//checks to see if aircraft has passed finish line on current frame
-
-// //add congratualions text when the plane passes finish line
-// function addCongratulationsText() {
-//     const fontLoader = new FontLoader();
-//     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-//         const textGeometry = new TextGeometry('Congratulations', {
-//             font: font,
-//             size: 5,
-//             height: 0.5,
-//         });
-
-//         const textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-//         const congratulationsText = new THREE.Mesh(textGeometry, textMaterial);
-
-//         congratulationsText.position.set(-20, 30, level3End.y - 50);
-
-//         level3Scene.add(congratulationsText);
-//     });
-// }
-
 
 
 //============== Adds Fog =================//
