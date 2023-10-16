@@ -121,7 +121,7 @@ function sigmoid(x) {
 
 for (let i = -levelWidth; i <= levelWidth; i++) {
     riverAmplitude += randFloat(-levelWidth/8, levelWidth/8);
-    rampExp += randFloat(-0.3, 0.3);
+    // rampExp += randFloat(-0.3, 0.3);
     for (let j = -levelLength; j <= levelLength; j++) {
         let distanceFromRiver = Math.abs(i - (riverAmplitude * Math.sin(riverWavelength*j - riverzOffset) + riverxOffset))
         // normalise distance from river to levelwidth

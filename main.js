@@ -398,7 +398,6 @@ function initializeLevel1Scene() {
     physicsWorld = level1PhysicsWorld;
     aircraft = level1Aircraft;
     aircraftBody = level1AircraftBody;
-    forwardSpeed = -5
     levelEnd = level1End;
     aircraftBody.position.set(startPos.x, MAX_HEIGHT/2, startPos.y+3);
     physicsWorld.gravity.set(0,-0.5,0);
@@ -406,6 +405,8 @@ function initializeLevel1Scene() {
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
+    forwardSpeed = -5;
+
 
 
     if (levelInitialize[0] === 0) {
@@ -444,7 +445,6 @@ async function initializeLevel2Scene() {
     physicsWorld = level2PhysicsWorld;
     aircraft = level2Aircraft;
     aircraftBody = level2AircraftBody;
-    forwardSpeed = -5;
     levelStart = level2Start;
     levelEnd = level2End;  
     physicsWorld.gravity.set(0,-0.5,0);
@@ -452,6 +452,8 @@ async function initializeLevel2Scene() {
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
+    forwardSpeed = -5;
+
     Rings = level2Rings;
     Rings.forEach((ring) => {            
        ring.passed = false;
@@ -496,7 +498,6 @@ function initializeLevel3Scene() {
     aircraftBody = level3AircraftBody;
     console.log(aircraft)
     console.log(aircraftBody)
-    forwardSpeed = -5;
     levelStart = level3Start;
     levelEnd = level3End; 
     physicsWorld.gravity.set(0,-0.5,0);
@@ -504,6 +505,8 @@ function initializeLevel3Scene() {
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
+    forwardSpeed = -5;
+
     Rings = level3Rings;
     Rings.forEach((ring) => {            
        ring.passed = false;
@@ -567,7 +570,7 @@ function levelCompleted(){
             console.log(elapsedSeconds);
         }
     } else {
-        console.log("level complete incorrectly");
+        console.log("level complete");
         console.log(elapsedSeconds); 
     }
 
