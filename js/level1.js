@@ -331,14 +331,43 @@ function tree(height, position) {
 }
 
 // Adds light to scene
-const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
-pointLight.castShadow = true; 
-pointLight.shadow.mapSize.width = 512; 
-pointLight.shadow.mapSize.height = 512; 
-pointLight.shadow.camera.near = 0.5; 
-pointLight.shadow.camera.far = 500; 
-level1Scene.add(pointLight);
-pointLight.position.set(0, 50, startPos.y + 50);
+// Adds light to scene
+const pointLightStart = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLightStart.castShadow = true; 
+pointLightStart.shadow.mapSize.width = 512; 
+pointLightStart.shadow.mapSize.height = 512; 
+pointLightStart.shadow.camera.near = 0.5; 
+pointLightStart.shadow.camera.far = 500; 
+level1Scene.add(pointLightStart);
+pointLightStart.position.set(100, 150, startPos.y +50);
+
+const pointLightStart2 = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLightStart2.castShadow = true; 
+pointLightStart2.shadow.mapSize.width = 512; 
+pointLightStart2.shadow.mapSize.height = 512; 
+pointLightStart2.shadow.camera.near = 0.5; 
+pointLightStart2.shadow.camera.far = 500; 
+level1Scene.add(pointLightStart2);
+pointLightStart2.position.set(-100, 150, startPos.y +50);
+
+const pointLightEnd = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLightEnd.castShadow = true; 
+pointLightEnd.shadow.mapSize.width = 512; 
+pointLightEnd.shadow.mapSize.height = 512; 
+pointLightEnd.shadow.camera.near = 0.5; 
+pointLightEnd.shadow.camera.far = 500; 
+level1Scene.add(pointLightEnd);
+pointLightEnd.position.set(100, 150, level1End.y + 150);
+
+const pointLightEnd2 = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLightEnd2.castShadow = true; 
+pointLightEnd2.shadow.mapSize.width = 512; 
+pointLightEnd2.shadow.mapSize.height = 512; 
+pointLightEnd2.shadow.camera.near = 0.5; 
+pointLightEnd2.shadow.camera.far = 500; 
+level1Scene.add(pointLightEnd2);
+pointLightEnd2.position.set(-100, 150, level1End.y + 150);
+
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
 level1Scene.add(ambientLight);

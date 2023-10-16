@@ -17,6 +17,8 @@ let currentLevel = 0;
 let forwardSpeed = -5;
 let speed = 50;
 let dead = false;
+let numRingsPassed;
+
 
 // Renderer setup
 let renderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
@@ -183,7 +185,7 @@ function animate(){
 
         if(aircraft.position.z < levelEnd.y){
             levelCompleted();
-            //addCongratulationsText();
+            // addCongratulationsText();
         }
 
         physicsWorld.step(1 / 60);
@@ -582,7 +584,6 @@ function levelCompleted(){
     requestAnimationFrame(animate);
 }
 
-let numRingsPassed=0;
 function checkRingCollision(planePosition, ring) {
     // Calculate the distance between the plane and the center of the ring
     const ringPosition = ring.ringBody.position;

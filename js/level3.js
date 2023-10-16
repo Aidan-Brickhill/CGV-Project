@@ -28,27 +28,20 @@ const level3PhysicsWorld = new CANNON.World({
 });
 
 //============== SunLight ================//
-const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
-pointLight.castShadow = true; 
-pointLight.shadow.mapSize.width = 512; 
-pointLight.shadow.mapSize.height = 512; 
-pointLight.shadow.camera.near = 0.5; 
-pointLight.shadow.camera.far = 500; 
-level3Scene.add(pointLight);
-pointLight.position.set(40, 30, 40);
+// const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+// pointLight.castShadow = true; 
+// pointLight.shadow.mapSize.width = 512; 
+// pointLight.shadow.mapSize.height = 512; 
+// pointLight.shadow.camera.near = 0.5; 
+// pointLight.shadow.camera.far = 500; 
+// level3Scene.add(pointLight);
+// pointLight.position.set(40, 30, 40);
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
 level3Scene.add(ambientLight);
 
 //============== Lava Light ================//
-const lavaPointLight = new THREE.PointLight( new THREE.Color("#ff6600").convertSRGBToLinear(), 5, 300 );
-pointLight.castShadow = true; 
-pointLight.shadow.mapSize.width = 512; 
-pointLight.shadow.mapSize.height = 512; 
-pointLight.shadow.camera.near = 0.5; 
-pointLight.shadow.camera.far = 500; 
-level3Scene.add(lavaPointLight);
-pointLight.position.set(0, 0, 0);
+
 
 //============== Phyics Aircraft Global Variables ================//
 let level3AircraftBody;
@@ -435,49 +428,60 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
 
 //============== Define The "Finish Line" For the Aircraft =================//
 
-const levelCompletionThreshold = -140;
 let animationId;
 
 //checks to see if aircraft has passed finish line on current frame
-function update() {
-    animationId = requestAnimationFrame(update);
-    if (level3Aircraft.position.z < levelCompletionThreshold) {
-        // console.log("Level 3 completed");
-        addCongratulationsText();
-    }
 
-}
+// //add congratualions text when the plane passes finish line
+// function addCongratulationsText() {
+//     const fontLoader = new FontLoader();
+//     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+//         const textGeometry = new TextGeometry('Congratulations', {
+//             font: font,
+//             size: 5,
+//             height: 0.5,
+//         });
 
-update();
+//         const textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+//         const congratulationsText = new THREE.Mesh(textGeometry, textMaterial);
 
-//add congratualions text when the plane passes finish line
-function addCongratulationsText() {
-    const fontLoader = new FontLoader();
-    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-        const textGeometry = new TextGeometry('Congratulations', {
-            font: font,
-            size: 5,
-            height: 0.5,
-        });
+//         congratulationsText.position.set(-20, 30, level3End.y - 50);
 
-        const textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        const congratulationsText = new THREE.Mesh(textGeometry, textMaterial);
+//         level3Scene.add(congratulationsText);
+//     });
+// }
 
-        congratulationsText.position.set(-20, 30, -180);
 
-        level3Scene.add(congratulationsText);
-    });
-}
-
-function levelCompleted(){
-    stopTimer();
-    const elapsedSeconds = getElapsedSeconds();
-    console.log("level complete");
-    console.log(elapsedSeconds);
-}
 
 //============== Adds Fog =================//
 level3Scene.fog = new THREE.Fog(0xff7878, 0.015, 300);
+
+const lavaPointLight = new THREE.PointLight( new THREE.Color("#ff6600").convertSRGBToLinear(), 5, 300 );
+lavaPointLight.castShadow = true; 
+lavaPointLight.shadow.mapSize.width = 512; 
+lavaPointLight.shadow.mapSize.height = 512; 
+lavaPointLight.shadow.camera.near = 0.5; 
+lavaPointLight.shadow.camera.far = 500; 
+level3Scene.add(lavaPointLight);
+lavaPointLight.position.set(0, 0, 0);
+
+const lavaPointLightEnd = new THREE.PointLight( new THREE.Color("#ff6600").convertSRGBToLinear(), 5, 300 );
+lavaPointLightEnd.castShadow = true; 
+lavaPointLightEnd.shadow.mapSize.width = 512; 
+lavaPointLightEnd.shadow.mapSize.height = 512; 
+lavaPointLightEnd.shadow.camera.near = 0.5; 
+lavaPointLightEnd.shadow.camera.far = 500; 
+level3Scene.add(lavaPointLightEnd);
+lavaPointLightEnd.position.set(0, 0, level3End.y);
+
+const lavaPointLightStart = new THREE.PointLight( new THREE.Color("#ff6600").convertSRGBToLinear(), 5, 300 );
+lavaPointLightStart.castShadow = true; 
+lavaPointLightStart.shadow.mapSize.width = 512; 
+lavaPointLightStart.shadow.mapSize.height = 512; 
+lavaPointLightStart.shadow.camera.near = 0.5; 
+lavaPointLightStart.shadow.camera.far = 500; 
+level3Scene.add(lavaPointLightStart);
+lavaPointLightStart.position.set(0, 0, level3Start.y);
 
 //============== Export All Objects Of Interest =================//
 export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End, level3Rings }
