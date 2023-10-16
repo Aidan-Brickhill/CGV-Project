@@ -362,65 +362,66 @@ clouds();
 
 //============== Add Rings to The Scene =================//
 
+//plotting rings along the map
 let x;
 let y;
-let randz;
-let randy;
-let randx;
-let minDist = 30;
-let ringRadius = 3;
-const sphereRadius = 0.2;
-const numSegments = 64;
+let randomXValue;
+const numRings = 7;
+const ringDistance = 50;
+const ringRadius = 3;
+const tubeRadius = 0.2;
+const radialSegments = 8;
+const tubeSegments = 50;
 
 // Create Cannon.js bodies for the spheres and cylinders and position them accordingly
-for (let z = 0; z < 15; z++) {
+for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
+
+    // generates a random x value to place the ring
+    randomXValue =  Math.floor(Math.random() * 21) - 10;
+    
+    // create the CANNON BODY with a torus shape
+    
+
+    // set the x and z coords of the ring 
+    const ringX = randomXValue - ringRadius;
+    const ringZ = ringNumber * (-ringDistance) + level3Start.y - 30;
 
 
-    const torusBody = new CANNON.Body({
-        mass: 1,
-        type: CANNON.Body.STATIC
-    });
+    // look at all bodies around the ring and find the biggest height among the hexagons and assign that to the y value of the ring
+    let maxHeight = -Infinity;
+    const radiusThreshold = 7;
+    for (let i = 0; i < level3PhysicsWorld.bodies.length; i++) {
+        const body = level3PhysicsWorld.bodies[i];
+        const distance = Math.sqrt(
+            Math.pow(body.position.x - ringX, 2) + Math.pow(body.position.z - ringZ, 2)
+        );
 
-    // Generate random coords for position of rings
-    randz = Math.floor(Math.random() * 21) - 40;
-    randy = Math.floor(Math.random() * 21) + 20;
-    randx = Math.floor(Math.random() * 21) - 10;
-
-    for (let i = 0; i < numSegments; i++) {
-        const angle = (i / numSegments) * Math.PI * 2;
-
-        x = Math.cos(angle) * ringRadius; // Adjust position to match the torus
-        y = Math.sin(angle) * ringRadius; // Adjust position to match the torus
-
-        // Create a sphere
-        const sphereShape = new CANNON.Sphere(sphereRadius);
-        const sphereBody = new CANNON.Body({ mass: 1 });
-        sphereBody.addShape(sphereShape);
-        sphereBody.position.set(x, y, 0);
-
-
-        // Add both sphere and cylinder bodies to the torusBody
-        torusBody.addShape(sphereShape, new CANNON.Vec3(x + randx, y + randy, z * -randz - minDist));
-
+        if (distance <= radiusThreshold) {
+            if (body.boundingRadius > maxHeight) {
+                maxHeight = body.boundingRadius;
+            }
+        }
     }
 
-    // Add the torusBody to the Cannon.js world
-    level3PhysicsWorld.addBody(torusBody);
-    await import('./ring.js').then(({ Ring }) => {
+    // set the y coord of the ring 
+    const ringY = (maxHeight * scalar)/2 + ringRadius;
 
-        const ring = new Ring({
+    // create a ring and its mesh and add it to the scene
+    let ring;
+    await import('./ring.js').then(({ Ring }) => {
+        ring = new Ring({
             ringRadius: ringRadius,
-            tubeRadius: sphereRadius,
+            tubeRadius: tubeRadius,
             hexColour: 0xFFD700,
             position: {
-                x: x + randx - ringRadius,
-                y: y + randy + sphereRadius,
-                z: z * -randz - minDist
+                x: ringX,
+                y: ringY,
+                z: ringZ
             },
         });
         ring.castShadow = true;
         level3Scene.add(ring);
-
+        level3PhysicsWorld.addBody(ring.ringBody);
     }).catch(error => {
         console.log('Error loading Ring class:', error);
     });

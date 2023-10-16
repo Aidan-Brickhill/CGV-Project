@@ -19,7 +19,10 @@ const level2PhysicsWorld = new CANNON.World({
 });
 level2PhysicsWorld.broadphase = new CANNON.SAPBroadphase(level2PhysicsWorld); 
 level2PhysicsWorld.solver = new CANNON.GSSolver(); 
-
+level2PhysicsWorld.solver.iterations = 10;
+level2PhysicsWorld.timing = {
+    fixedTimeStep: 1 / 30, // Adjust the time step as needed
+};
 // INITALIZE 
 let level2AircraftBody;
 let level2AircraftVehicle;
@@ -43,6 +46,7 @@ level2Scene.add(ambientLight);
 level2AircraftBody = new CANNON.Body({
     mass: 5,
     shape: new CANNON.Box(new CANNON.Vec3(0.75/5, 0.85/5, 3/5)),
+    type: CANNON.Body.DYNAMIC,
 });
 level2AircraftBody.addShape(new CANNON.Box(
     new CANNON.Vec3(3.15/5, 0.9/5, 0.8/5)),
@@ -52,6 +56,7 @@ level2AircraftVehicle = new CANNON.RigidVehicle({
     chassisBody: level2AircraftBody,
 });
 level2AircraftVehicle.addToWorld(level2PhysicsWorld);
+
 let glftLoader = new GLTFLoader();
 glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     level2Aircraft = gltfScene.scene;
@@ -211,7 +216,7 @@ function cannonHexGeometry(height, position,) {
     // Create a Cannon.js Body for the hexagonal prism
     const hexagonalPrismBody = new CANNON.Body({
         type: CANNON.Body.STATIC,
-        mass: 0 // Set mass to 0 for a static body
+        mass: 0, // Set mass to 0 for a static body
     });
 
     hexagonalPrismBody.addShape(hexagonalPrismShape);
@@ -225,7 +230,6 @@ function cannonHexGeometry(height, position,) {
 
     // Add the hexagonal prism to the Cannon.js world
     level2PhysicsWorld.addBody(hexagonalPrismBody);
-
 }
 
 function tileToPosition(tileX, tileY) {
@@ -314,92 +318,75 @@ function tree(height, position) {
 //plotting rings along the map
 let x;
 let y;
-let randz;
-let randy;
-let randx;
-let minDist = 30;
-let ringRadius = 3;
-const sphereRadius = 0.2;
-const numSegments = 64;
+let randomXValue;
+const numRings = 7;
+const ringDistance = 50;
+const ringRadius = 3;
+const tubeRadius = 0.2;
+const radialSegments = 8;
+const tubeSegments = 50;
+let Rings = [];
+
 // Create Cannon.js bodies for the spheres and cylinders and position them accordingly
-for (let z = 0; z < 15; z++) {
+for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
+
+    // generates a random x value to place the ring
+    randomXValue =  Math.floor(Math.random() * 21) - 10;
+    
+    // create the CANNON BODY with a torus shape
+    
+    // set the x and z coords of the ring 
+    const ringX = randomXValue - ringRadius;
+    const ringZ = ringNumber * (-ringDistance) + level2Start.y - 30;
 
 
-    const torusBody = new CANNON.Body({
-        mass: 1,
-        type: CANNON.Body.STATIC
-    });
+    // look at all bodies around the ring and find the biggest height among the hexagons and assign that to the y value of the ring
+    let maxHeight = -Infinity;
+    const radiusThreshold = 7;
+    for (let i = 0; i < level2PhysicsWorld.bodies.length; i++) {
+        const body = level2PhysicsWorld.bodies[i];
+        const distance = Math.sqrt(
+            Math.pow(body.position.x - ringX, 2) + Math.pow(body.position.z - ringZ, 2)
+        );
 
-    // Generate random coords for position of rings
-    randz = Math.floor(Math.random() *21) -40;
-    randy =  Math.floor(Math.random() * 21) + 20;
-    randx =  Math.floor(Math.random() * 21) - 10;
-
-    for (let i = 0; i < numSegments; i++) {
-        const angle = (i / numSegments) * Math.PI * 2;
-
-        x = Math.cos(angle) * ringRadius; // Adjust position to match the torus
-        y = Math.sin(angle) * ringRadius; // Adjust position to match the torus
-
-        // Create a sphere
-        const sphereShape = new CANNON.Sphere(sphereRadius);
-        const sphereBody = new CANNON.Body({ mass: 1 });
-        sphereBody.addShape(sphereShape);
-        sphereBody.position.set(x, y, 0);
-     
-
-        // Add both sphere and cylinder bodies to the torusBody
-        torusBody.addShape(sphereShape, new CANNON.Vec3(x + randx, y + randy, z * -randz - minDist));
+        if (distance <= radiusThreshold) {
+            if (body.boundingRadius > maxHeight) {
+                maxHeight = body.boundingRadius;
+            }
+        }
     }
-    
-    // Add the torusBody to the Cannon.js world
-    level2PhysicsWorld.addBody(torusBody);
 
-    torusBody.addEventListener("collide", function (e) {
-        console.log("ring collision");
-    });
+    // set the y coord of the ring 
+    const ringY = (maxHeight * scalar)/2 + ringRadius;
 
-    const timeStep = 1 / 60; // Adjust this according to your needs
-    level2PhysicsWorld.step(timeStep);
-    level2PhysicsWorld.fixedStep();
-
-    
-
+    // create a ring and its mesh and add it to the scene
+    let ring;
     await import('./ring.js').then(({ Ring }) => {
-
-        const ring = new Ring({
+        ring = new Ring({
             ringRadius: ringRadius,
-            tubeRadius: sphereRadius,
+            tubeRadius: tubeRadius,
             hexColour: 0xFFD700,
             position: {
-                x: x + randx - ringRadius,
-                y: y + randy + sphereRadius,
-                z: z * -randz - minDist
+                x: ringX,
+                y: ringY,
+                z: ringZ
             },
         });
         ring.castShadow = true;
         level2Scene.add(ring);
+        level2PhysicsWorld.addBody(ring.ringBody);
+
+        Rings.push(ring);
 
     }).catch(error => {
         console.log('Error loading Ring class:', error);
     });
 }
 
-level2PhysicsWorld.addEventListener('collide', function (event) {
-    const bodyA = event.bodyA;
-    const bodyB = event.bodyB;
-  
-    // Check if either bodyA or bodyB is your static body (groundBody)
-    if (bodyA === torusBody || bodyB === torusBody) {
-      // This means your static body is touching something
-      console.log('Static body is touching another object.');
-    }
-  });
-
-
+console.log(Rings.length)
 
 // level2Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
-export { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End }
+export { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End, Rings}
 
 
 
