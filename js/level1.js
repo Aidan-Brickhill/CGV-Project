@@ -13,11 +13,9 @@ const level1PhysicsWorld = new CANNON.World({
 level1PhysicsWorld.broadphase = new CANNON.SAPBroadphase(level1PhysicsWorld); 
 level1PhysicsWorld.solver = new CANNON.GSSolver(); 
 
-// INITALIZE 
+// INITIALIZE 
 let level1AircraftBody;
 let level1AircraftVehicle;
-
-
 
 // Creates Aircraft + Loads model ====================================================
 level1AircraftBody = new CANNON.Body({

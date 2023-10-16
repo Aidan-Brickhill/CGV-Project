@@ -6,6 +6,8 @@ import * as CANNON from 'cannon-es';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; 
 
 // Audio Functionality
 let audioContext;
@@ -109,25 +111,41 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 const radarContainer = document.createElement('div');
 radarContainer.id = 'radar-container';
 radarContainer.style.position = 'absolute';
-radarContainer.style.bottom = '10px'; 
-radarContainer.style.right = '10px'; 
-radarContainer.style.width = '200px'; 
-radarContainer.style.height = '200px'; 
+radarContainer.style.bottom = '140px'; // Adjust as needed
+radarContainer.style.right = '140px'; // Adjust as needed
+radarContainer.style.width = '200px'; // Adjust as needed
+radarContainer.style.height = '200px'; // Adjust as needed
 radarContainer.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-radarContainer.style.clipPath = 'polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)';
+
+// Apply circular clip path
+//idk why its centered at 75% but thats the sweet spot, must be related to width and height somehow
+radarContainer.style.clipPath = 'ellipse(75% 75% at 75% 75%)'; 
+
+// Create the radar canvas container div
 const radarCanvasContainer = document.createElement('div');
 radarCanvasContainer.id = 'radar-canvas-container';
+
+// Append the radar canvas container to the radar container
 radarContainer.appendChild(radarCanvasContainer);
+
+// Append the radar container to the document body or a specific container
 document.body.appendChild(radarContainer);
 
-// Mini Map Renderer Setup
-const radarRenderer = new THREE.WebGLRenderer({ antialias: true });
-radarRenderer.setSize(200, 200);
+
+// radarRenderer
+const radarRenderer = new THREE.WebGLRenderer({ antialias: false });
+radarRenderer.setSize(300, 300); // Adjust the size as needed
+// radarRenderer.setClearColor(0x000000, 0);
 document.getElementById('radar-canvas-container').appendChild(radarRenderer.domElement);
 
-// Camera for the Mini Map
+
+// Radar Camera
 const radarCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-let radarOffset = {x : 0,y : 30,z : 0};
+let radarOffset = {
+    x : 0,
+    y : 12,
+    z : 0,
+};
 
 // Makes the render scene bright
 const brightnessShader = {
@@ -171,12 +189,15 @@ let currentLevel = 0;
 // Used for the boost functionality
 let spacebarIntervalId = null;
 // Used for the movement
-let forwardSpeed = -5;
+const speedValue = -8;
+let forwardSpeed = speedValue;
 let speed = 50;
 // Used to check if the user has crashed or not
 let dead = false;
 // Counts the number of rings flown through
 let numRingsGoneThrough;
+// used to show the pass or fail text at the end of the game
+let endLeveltext;
 
 // Setups the mini map attributes for each level
 const composerLevel1 = new EffectComposer(radarRenderer);
@@ -324,7 +345,7 @@ function animate() {
                 clearInterval(spacebarIntervalId);
                 spacebarIntervalId = null;
             }
-            if (forwardSpeed < -5.5 && !keys.spacebar.pressed) {
+            if (forwardSpeed < speedValue - 0.5 && !keys.spacebar.pressed) {
                 forwardSpeed += 0.5;
             }
 
@@ -362,7 +383,7 @@ function animate() {
         }       
 
         // Update the Physics world
-        physicsWorld.step(1 / 60);
+        // physicsWorld.step(1 / 60);
         physicsWorld.fixedStep();
 
         // Update the graphics location according to the physics location
@@ -583,8 +604,7 @@ window.addEventListener('keyup', (event) => {
     }
 });
 
-// used to show the pass or fail text at the end of the game
-let endLeveltext;
+
 
 function initializeLevel1Scene() {
     // timer logic
@@ -612,11 +632,11 @@ function initializeLevel1Scene() {
     level1Scene.add(AircraftGLTF);
 
     // Update body to start of level
-    aircraftBody.position.set(startPos.x, MAX_HEIGHT/2, startPos.y+3);
+    aircraftBody.position.set(startPos.x, MAX_HEIGHT/2, startPos.y+13);
     aircraftBody.velocity.set(0, 0, 0);
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
-    forwardSpeed = -5;
+    forwardSpeed = speedValue;
 
     // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
@@ -651,12 +671,28 @@ async function initializeLevel2Scene() {
     // Add the model to the scene
     level2Scene.add(AircraftGLTF);
 
+    // Find a suitable place for the aircraft to be placed
+    let maxHeight = -Infinity;
+    const radiusThreshold = 15;
+    for (let i = 0; i < physicsWorld.bodies.length; i++) {
+        const body = physicsWorld.bodies[i];
+        const distance = Math.sqrt(
+            Math.pow(body.position.x - 0, 2) + Math.pow(body.position.z - levelStart.y, 2)
+        );
+
+        if (distance <= radiusThreshold) {
+            if (body.boundingRadius > maxHeight) {
+                maxHeight = body.boundingRadius;
+            }
+        }
+    }
+
     // Update body to start of level
-    aircraftBody.position.set(0, 50, levelStart.y);
+    aircraftBody.position.set(0, maxHeight+8, levelStart.y);
     aircraftBody.velocity.set(0, 0, 0); 
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
-    forwardSpeed = -5;
+    forwardSpeed = speedValue;
 
     // Reset Rings
     Rings = level2Rings;
@@ -700,12 +736,28 @@ function initializeLevel3Scene() {
     // Add the model to the scene
     level3Scene.add(AircraftGLTF);
 
+    // Find a suitable place for the aircraft to be placed
+    const radiusThreshold = 15;
+    let maxHeight = -Infinity;
+    for (let i = 0; i < physicsWorld.bodies.length; i++) {
+        const body = physicsWorld.bodies[i];
+        const distance = Math.sqrt(
+            Math.pow(body.position.x - 0, 2) + Math.pow(body.position.z - levelStart.y, 2)
+        );
+
+        if (distance <= radiusThreshold) {
+            if (body.boundingRadius > maxHeight) {
+                maxHeight = body.boundingRadius;
+            }
+        }
+    }
+
     // Update body to start of level
-    aircraftBody.position.set(0, 50, levelStart.y);
+    aircraftBody.position.set(0, maxHeight+8, levelStart.y);
     aircraftBody.velocity.set(0, 0, 0);
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
-    forwardSpeed = -5;
+    forwardSpeed = speedValue;
 
     // Reset Rings
     Rings = level3Rings;

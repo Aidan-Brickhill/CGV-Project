@@ -1,7 +1,5 @@
 //imports
 import * as THREE from 'three';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { BoxGeometry } from 'three';
@@ -343,7 +341,7 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
 
 
 //============== Adds Fog =================//
-level3Scene.fog = new THREE.Fog(0xff7878, 0.015, 300);
+// level3Scene.fog = new THREE.Fog(0xff7878, 0.015, 300);
 
 const lavaPointLight = new THREE.PointLight( new THREE.Color("#ff6600").convertSRGBToLinear(), 5, 300 );
 lavaPointLight.castShadow = true; 
