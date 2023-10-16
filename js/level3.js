@@ -10,7 +10,7 @@ import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.
 
 //============== Change Map Size ================//
 const levelWidth = 7;
-const levelLength = 65;
+const levelLength = 60;
 
 
 //============== Debugging Camera - FreeCam ================//
@@ -66,33 +66,6 @@ level3AircraftVehicle = new CANNON.RigidVehicle({
 })
 
 level3AircraftVehicle.addToWorld(level3PhysicsWorld); //add aircraft physics body to physics world
-
-
-//============== Aircraft Model Initialisation =================//
-
-let level3Aircraft;
-let level3MixerAircraft;
-let glftLoader = new GLTFLoader();
-glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => { //Load model design for aircraft
-    level3Aircraft = gltfScene.scene;
-    level3Scene.add(level3Aircraft); //add model to the world
-    level3Aircraft.rotation.y = Math.PI;
-
-    level3Aircraft.traverse(function (node) {
-        if (node.isMesh) {
-            node.castShadow = true;
-        }
-    });
-
-    const clips = gltfScene.animations;
-    level3MixerAircraft = new THREE.AnimationMixer(level3Aircraft);
-
-    clips.forEach(function (clip) {
-        const action = level3MixerAircraft.clipAction(clip);
-        action.play();
-    });
-
-});
 
 
 //============== Define All The Textures In Map =================//
@@ -309,50 +282,6 @@ function cannonHexGeometry(height, position,) {
     level3PhysicsWorld.addBody(hexagonalPrismBody);
 
 }
-
-//============== Add Clouds To The Scene =================//
-
-function clouds() {
-let geo = new THREE.SphereGeometry(0, 0, 0); 
-let count = Math.floor(Math.pow(Math.random(), 0.45) * 4);
-
-for(let i = 0; i < count; i++) {
-    const puff1 = new THREE.SphereGeometry(1.2, 7, 7);
-    const puff2 = new THREE.SphereGeometry(1.5, 7, 7);
-    const puff3 = new THREE.SphereGeometry(0.9, 7, 7);
-
-    puff1.translate(-1.85, Math.random() * 0.3, 0);
-    puff2.translate(0,     Math.random() * 0.3, 0);
-    puff3.translate(1.85,  Math.random() * 0.3, 0);
-
-    const cloudGeo = mergeBufferGeometries([puff1, puff2, puff3]);
-    cloudGeo.translate( 
-    Math.random() * 20 - 10, 
-    Math.random() * 7 + 7, 
-    Math.random() * 20 - 10
-    );
-    cloudGeo.rotateY(Math.random() * Math.PI * 2);
-
-    geo = mergeBufferGeometries([geo, cloudGeo]);
-}
-    const mesh = new THREE.Mesh(
-        geo,
-        new THREE.MeshStandardMaterial({
-        // envMap: envmap, 
-        envMapIntensity: 0.75, 
-        flatShading: true,
-        // transparent: true,
-        // opacity: 0.85,
-        })
-    );
-
-    level3Scene.add(mesh);
-}
-
-clouds();
-
-
-
 //============== Add Rings to The Scene =================//
 
 //plotting rings along the map
@@ -459,4 +388,4 @@ level3Scene.add(lavaPointLightStart);
 lavaPointLightStart.position.set(0, 0, level3Start.y);
 
 //============== Export All Objects Of Interest =================//
-export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End, level3Rings }
+export { level3Scene, level3Camera, level3PhysicsWorld, level3AircraftBody, level3Start, level3End, level3Rings }

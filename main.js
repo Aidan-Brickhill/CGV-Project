@@ -1,6 +1,7 @@
 // IMPORTS
 import { startTimer, pauseTimer, resumeTimer, resetTimer, stopTimer, getElapsedSeconds } from './js/timer.js';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es'
 import CannonDebugger from 'cannon-es-debugger';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
@@ -25,14 +26,14 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.outputColorSpac = THREE.sRGBEncoding;
 renderer.useLegacyLights = true;
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.BasicShadowMap;
 document.body.appendChild(renderer.domElement);
 
 //imports from other levels
 import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
-import { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody, level1MixerAircraft,  startPos,MAX_HEIGHT, level1End} from "./js/level1.js";
-import { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End, level2Rings} from "./js/level2.js";
-import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End, level3Rings} from "./js/level3.js";
+import { level1Scene, level1Camera, level1PhysicsWorld,  level1AircraftBody,   startPos,MAX_HEIGHT, level1End} from "./js/level1.js";
+import { level2Scene, level2Camera, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings} from "./js/level2.js";
+import { level3Scene, level3Camera, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings} from "./js/level3.js";
 
 let physicsWorld, aircraft, aircraftBody, mixer, levelStart, levelEnd, Rings;
 let cannonDebugger;
@@ -46,6 +47,31 @@ let offset = {
     y: 1,
     z: 6,
 };
+
+let glftLoader = new GLTFLoader();
+let AircraftGLTF;
+let AircraftMIXER;
+glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
+    AircraftGLTF = gltfScene.scene;
+
+
+    AircraftGLTF.rotation.y = Math.PI;
+    
+    AircraftGLTF.traverse(function(node) {
+        if (node.isMesh){
+            node.castShadow = true;
+        }
+    });
+
+    const clips = gltfScene.animations;
+    AircraftMIXER = new THREE.AnimationMixer(AircraftGLTF);
+
+    clips.forEach(function(clip) {
+        const action = AircraftMIXER.clipAction(clip);
+        action.play();
+    });
+
+});
 
 
 // Radar setup
@@ -154,8 +180,8 @@ function animate() {
         animationId = requestAnimationFrame(animate);
 
     } else {
-        if (mixer) {
-            mixer.update(clock.getDelta());
+        if (AircraftMIXER) {
+            AircraftMIXER.update(clock.getDelta());
         }
 
         let force = new CANNON.Vec3(0, 0, 0);
@@ -234,14 +260,14 @@ function animate() {
                 forwardSpeed += 0.5;
             }
 
-            aircraft.quaternion.z = aircraftBody.quaternion.x;
-            aircraft.quaternion.x = -aircraftBody.quaternion.z;
-            aircraft.quaternion.y = 1;
+            AircraftGLTF.quaternion.z = aircraftBody.quaternion.x;
+            AircraftGLTF.quaternion.x = -aircraftBody.quaternion.z;
+            AircraftGLTF.quaternion.y = 1;
 
         } else {
-            aircraft.quaternion.z = aircraftBody.quaternion.x;
-            aircraft.quaternion.x = -aircraftBody.quaternion.z;
-            aircraft.quaternion.y = 1;
+            AircraftGLTF.quaternion.z = aircraftBody.quaternion.x;
+            AircraftGLTF.quaternion.x = -aircraftBody.quaternion.z;
+            AircraftGLTF.quaternion.y = 1;
         }
 
         force.x = xresponseModulator * (vxf - vxi) / mass;
@@ -267,27 +293,27 @@ function animate() {
           
         }
 
-        if (aircraft.position.z < levelEnd.y) {
+        if (aircraftBody.position.z < levelEnd.y) {
             levelCompleted();
         }
 
         physicsWorld.step(1 / 60);
         physicsWorld.fixedStep();
-        aircraft.position.x = aircraftBody.position.x;
-        aircraft.position.y = aircraftBody.position.y - (1 / 5);
-        aircraft.position.z = aircraftBody.position.z;
+        AircraftGLTF.position.x = aircraftBody.position.x;
+        AircraftGLTF.position.y = aircraftBody.position.y - (1 / 5);
+        AircraftGLTF.position.z = aircraftBody.position.z;
         
-        perspectiveCamera.position.set(aircraft.position.x, aircraft.position.y + 1 + offset.y, aircraft.position.z - 3 + offset.z);
+        perspectiveCamera.position.set(aircraftBody.position.x, aircraftBody.position.y + 1 + offset.y, aircraftBody.position.z - 3 + offset.z);
 
-        radarCamera.position.set(aircraft.position.x, aircraft.position.y + radarOffset.y, aircraft.position.z); 
-        radarCamera.lookAt(aircraft.position.x, aircraft.position.y, aircraft.position.z);
+        radarCamera.position.set(aircraftBody.position.x, aircraftBody.position.y + radarOffset.y, aircraftBody.position.z); 
+        radarCamera.lookAt(aircraftBody.position.x, aircraftBody.position.y, aircraftBody.position.z);
 
         if (currentLevel>=2){
             Rings.forEach((ring) => {            
                 checkRingCollision(aircraftBody.position, ring)
             });
 
-            if (aircraft.position.z < Rings[Rings.length - 1].ringBody.position.z && !levelComplete) {
+            if (aircraftBody.position.z < Rings[Rings.length - 1].ringBody.position.z && !levelComplete) {
                 levelComplete = true;
                 addCongratulationsText();
 
@@ -508,12 +534,11 @@ function initializeLevel1Scene() {
     }
     levelComplete = false;
 
-
-    mixer = level1MixerAircraft;
     physicsWorld = level1PhysicsWorld;
-    aircraft = level1Aircraft;
     aircraftBody = level1AircraftBody;
     levelEnd = level1End;
+    level1Scene.add(AircraftGLTF);
+
     aircraftBody.position.set(startPos.x, MAX_HEIGHT/2, startPos.y+3);
     physicsWorld.gravity.set(0,-0.5,0);
     // aircraftBody.position.set(0, 30, levelStart.y);
@@ -557,15 +582,13 @@ async function initializeLevel2Scene() {
     }
     levelComplete = false;
 
-
-    mixer = level2MixerAircraft;
+    level2Scene.add(AircraftGLTF);
     physicsWorld = level2PhysicsWorld;
-    aircraft = level2Aircraft;
     aircraftBody = level2AircraftBody;
     levelStart = level2Start;
     levelEnd = level2End;  
     physicsWorld.gravity.set(0,-0.5,0);
-    aircraftBody.position.set(0, 30, levelStart.y);
+    aircraftBody.position.set(0, 50, levelStart.y);
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
@@ -611,16 +634,13 @@ function initializeLevel3Scene() {
     }
     levelComplete = false;
 
-    mixer = level3MixerAircraft;
+    level3Scene.add(AircraftGLTF);
     physicsWorld = level3PhysicsWorld;
-    aircraft = level3Aircraft;
     aircraftBody = level3AircraftBody;
-    console.log(aircraft)
-    console.log(aircraftBody)
     levelStart = level3Start;
     levelEnd = level3End; 
     physicsWorld.gravity.set(0,-0.5,0);
-    aircraftBody.position.set(0, 30, levelStart.y);
+    aircraftBody.position.set(0, 50, levelStart.y);
     aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
