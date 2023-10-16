@@ -81,15 +81,18 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 const radarContainer = document.createElement('div');
 radarContainer.id = 'radar-container';
 radarContainer.style.position = 'absolute';
-radarContainer.style.bottom = '200px'; // Adjust as needed
-radarContainer.style.right = '200px'; // Adjust as needed
+radarContainer.style.bottom = '140px'; // Adjust as needed
+radarContainer.style.right = '140px'; // Adjust as needed
 radarContainer.style.width = '200px'; // Adjust as needed
 radarContainer.style.height = '200px'; // Adjust as needed
 radarContainer.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+// Apply circular clip path
+radarContainer.style.clipPath = 'ellipse(75% 75% at 75% 75%)'; //idk why its centered at 75% but thats the sweet spot, must be related to width and height somehow
 // Apply a hexagonal mask using clip-path
 // radarContainer.style.clipPath = 'polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)';
 // Adjust the size and position of the hexagonal mask
-radarContainer.style.clipPath = 'polygon(20% 0, 80% 0, 100% 50%, 80% 100%, 20% 100%, 0 50%)';
+// radarContainer.style.clipPath = 'polygon(20% 0, 80% 0, 100% 50%, 80% 100%, 20% 100%, 0 50%)';
+
 
 // Create the radar canvas container div
 const radarCanvasContainer = document.createElement('div');
@@ -116,8 +119,8 @@ document.body.appendChild(radarContainer);
 
 
 // radarRenderer
-const radarRenderer = new THREE.WebGLRenderer({ antialias: true });
-radarRenderer.setSize(200, 200); // Adjust the size as needed
+const radarRenderer = new THREE.WebGLRenderer({ antialias: false });
+radarRenderer.setSize(300, 300); // Adjust the size as needed
 // radarRenderer.setClearColor(0x000000, 0);
 document.getElementById('radar-canvas-container').appendChild(radarRenderer.domElement);
 
@@ -126,7 +129,7 @@ document.getElementById('radar-canvas-container').appendChild(radarRenderer.domE
 const radarCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 let radarOffset = {
     x : 0,
-    y : 30,
+    y : 12,
     z : 0,
 };
 
