@@ -28,7 +28,7 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.outputColorSpac = THREE.sRGBEncoding;
 renderer.useLegacyLights = true;
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.BasicShadowMap;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 //imports from other levels
@@ -47,7 +47,7 @@ let thirdPerson = true;
 let offset = {
     x: 0,
     y: 1,
-    z: 6,
+    z: 7,
 };
 
 let glftLoader = new GLTFLoader();
@@ -81,13 +81,16 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 const radarContainer = document.createElement('div');
 radarContainer.id = 'radar-container';
 radarContainer.style.position = 'absolute';
-radarContainer.style.bottom = '10px'; // Adjust as needed
-radarContainer.style.right = '10px'; // Adjust as needed
+radarContainer.style.bottom = '200px'; // Adjust as needed
+radarContainer.style.right = '200px'; // Adjust as needed
 radarContainer.style.width = '200px'; // Adjust as needed
 radarContainer.style.height = '200px'; // Adjust as needed
 radarContainer.style.backgroundColor = 'rgba(0, 0, 0, 0)';
 // Apply a hexagonal mask using clip-path
-radarContainer.style.clipPath = 'polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)';
+// radarContainer.style.clipPath = 'polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)';
+// Adjust the size and position of the hexagonal mask
+radarContainer.style.clipPath = 'polygon(20% 0, 80% 0, 100% 50%, 80% 100%, 20% 100%, 0 50%)';
+
 // Create the radar canvas container div
 const radarCanvasContainer = document.createElement('div');
 radarCanvasContainer.id = 'radar-canvas-container';
@@ -123,7 +126,7 @@ document.getElementById('radar-canvas-container').appendChild(radarRenderer.domE
 const radarCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 let radarOffset = {
     x : 0,
-    y : 15,
+    y : 30,
     z : 0,
 };
 
@@ -217,6 +220,8 @@ function animate() {
 
         renderer.autoClear = false;
         renderer.clear();
+        document.getElementById('radar-canvas-container').style.display="none";
+        radarRenderer.clear();
 
         // controls.update();
         //This line loads the Main Menu as the active scene at first, active scene gets updated on click
@@ -231,6 +236,7 @@ function animate() {
             AircraftMIXER.update(clock.getDelta());
         }
 
+
         let force = new CANNON.Vec3(0, 0, 0);
         const xresponseModulator = 1.5;
         const yresponseModulator = 1.25;
@@ -242,7 +248,7 @@ function animate() {
         let vxf = 0;
         let vyf = 0;
 
-        const ceiling1 = MAX_HEIGHT/2 + 100;
+        const ceiling1 = MAX_HEIGHT/1.5;
 
         // // Update the physics worlds
         if (!dead) {
@@ -377,11 +383,13 @@ function animate() {
             }
             if (currentLevel === 2) {
                 renderer.render(level2Scene, perspectiveCamera);
+                radarRenderer.render(level2Scene, radarCamera);
                 renderer.clearDepth();
                 renderer.render(deathScene, menuCamera);
             }
             if (currentLevel === 3) {
                 renderer.render(level3Scene, perspectiveCamera);
+                radarRenderer.render(level3Scene, radarCamera);
                 renderer.clearDepth();
                 renderer.render(deathScene, menuCamera);
             }
@@ -410,11 +418,47 @@ function animate() {
             }
             if (currentLevel === 2) {
                 renderer.render(level2Scene, perspectiveCamera);
+                // radarContainer.appendChild(redTriangle);
+
+                const composer = new EffectComposer(radarRenderer);
+
+                // Create a RenderPass for the main scene
+                const radarRenderPass = new RenderPass(level2Scene, radarCamera);
+                composer.addPass(radarRenderPass);
+
+                const brightnessPass = new ShaderPass(brightnessShader);
+                brightnessPass.uniforms.brightness.value = 10.0; // Adjust brightness value as needed
+                composer.addPass(brightnessPass);
+
+                // Set the order in which passes are executed
+                composer.renderToScreen = true;
+
+                // In your animate loop, render the composer
+                composer.render();
             }
             if (currentLevel === 3) {
                 renderer.render(level3Scene, perspectiveCamera);
+                // radarContainer.appendChild(redTriangle);
+
+                const composer = new EffectComposer(radarRenderer);
+
+                // Create a RenderPass for the main scene
+                const radarRenderPass = new RenderPass(level3Scene, radarCamera);
+                composer.addPass(radarRenderPass);
+
+                const brightnessPass = new ShaderPass(brightnessShader);
+                brightnessPass.uniforms.brightness.value = 10.0; // Adjust brightness value as needed
+                composer.addPass(brightnessPass);
+
+                // Set the order in which passes are executed
+                composer.renderToScreen = true;
+
+                // In your animate loop, render the composer
+                composer.render();
             }
         }
+    document.getElementById('radar-canvas-container').style.display="flex";
+
 
     animationId = requestAnimationFrame(animate);
 
@@ -526,7 +570,7 @@ window.addEventListener('keydown', (event) => {
                 thirdPerson = true;
                 offset.x = 0;
                 offset.y = 1;
-                offset.z = 6;
+                offset.z = 7;
             }
             break;
         case 'Escape':
