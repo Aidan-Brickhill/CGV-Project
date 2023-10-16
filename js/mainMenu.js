@@ -13,6 +13,8 @@ const menuScene = new THREE.Scene();
 menuScene.background = new THREE.Color("#FFEECC");
 const buttonScene = new THREE.Scene();
 const deathScene = new THREE.Scene();
+menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 100);
+
 
 // Adds light to scene
 const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );

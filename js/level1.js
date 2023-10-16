@@ -1,10 +1,9 @@
 // IMPORTS
-import { startTimer, stopTimer, getElapsedSeconds } from './timer.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
-import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
+import { randFloat } from 'three/src/math/MathUtils';
 
 // SCENE CAMERA, used for debugging only
 const level1Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -65,9 +64,9 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 // ====================================================
 
 // Creates World
-const levelWidth=10;
-const levelLength=40;
-let scalar = 1.5;
+const levelWidth=12;
+const levelLength=80;
+let scalar = 1;
 //  loads image textures
 let textures = {
     dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
@@ -92,26 +91,57 @@ const DIRT_HEIGHT = MAX_HEIGHT * 0.7;
 const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
-const simplex = new SimplexNoise();
 
-const level1Start = tileToPosition(levelWidth  * scalar,levelLength  * scalar);
-const level1End = tileToPosition(-levelWidth  * scalar,-levelLength  * scalar);
+// for(let i = -levelWidth-Buffer; i <= levelWidth + Buffer; i++) { //horizontal - x
+//     for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
+//         let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
+//         if (i >= -levelWidth && i <= levelWidth ){
+//             noise = Math.pow(noise, 1.5);
+//             // function to create hexagonal prisms, both scene and cannon boides
+//             makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
+//         } else {
+//             makeHex(noise*MAX_HEIGHT_BARRIER, tileToPosition(i,j))
+//         }
+//     } 
+// }
 
-const Buffer = 3 //sets the cliffs on the sides of the map
-const MAX_HEIGHT_BARRIER = 50;
+// Define terrain generation parameters
+const initRiverAmplitude = levelWidth/2; 
+let riverAmplitude = initRiverAmplitude; // larger value is bigger amplitude
+let riverWavelength = 0.25; // larger value is smaller wavelength
+const riverxOffset = 0; 
+const riverzOffset = 0;
+const ravineScale = 1; // fraction of ravine taken up by blocks less than full size
+const heightRenderBound = 0.93;
 
-for(let i = -levelWidth-Buffer; i <= levelWidth + Buffer; i++) { //horizontal - x
-    for(let j = -levelLength; j <= levelLength; j++) { //forwards - z
-        let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
-        if (i >= -levelWidth && i <= levelWidth ){
-            noise = Math.pow(noise, 1.5);
-            // function to create hexagonal prisms, both scene and cannon boides
-            makeHex(noise*MAX_HEIGHT, tileToPosition(i,j))
-        } else {
-            makeHex(noise*MAX_HEIGHT_BARRIER, tileToPosition(i,j))
-        }
-    } 
-}
+let rampExp = 2.5;
+function sigmoid(x) {
+    return 1 / (1 + Math.E**(-(x-0.25)*Math.E**rampExp));
+};
+
+for (let i = -levelWidth; i <= levelWidth; i++) {
+    riverAmplitude += randFloat(-levelWidth/8, levelWidth/8);
+    rampExp += randFloat(-0.1, 0.1);
+    for (let j = -levelLength; j <= levelLength; j++) {
+        let distanceFromRiver = Math.abs(i - (riverAmplitude * Math.sin(riverWavelength*j - riverzOffset) + riverxOffset))
+        // normalise distance from river to levelwidth
+        distanceFromRiver = (distanceFromRiver/(levelWidth+riverAmplitude));
+        
+        // sigmoid curve
+        let hexHeight = MAX_HEIGHT * sigmoid(distanceFromRiver);
+        hexHeight /= ravineScale;
+        if (hexHeight > MAX_HEIGHT) hexHeight = MAX_HEIGHT;
+        
+        // Generate hexagon at the calculated height
+        const position = tileToPosition(i, j);
+        if (hexHeight <= MAX_HEIGHT*heightRenderBound) makeHex(hexHeight, position);
+    }
+}  
+
+//  Set aricraft position to start of canyon AT LOW POINT
+let startPos = tileToPosition(Math.floor(initRiverAmplitude * Math.sin(riverWavelength * levelLength)), levelLength*scalar);
+let level1End = tileToPosition(Math.floor(initRiverAmplitude * Math.sin(riverWavelength * levelLength)), -levelLength*scalar);
+level1AircraftBody.position.set(startPos.x, MAX_HEIGHT/2, startPos.y+3);
 
 // creates the water
 let seaMesh = new THREE.Mesh(
@@ -301,16 +331,45 @@ function tree(height, position) {
 }
 
 // Adds light to scene
-const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
-pointLight.castShadow = true; 
-pointLight.shadow.mapSize.width = 512; 
-pointLight.shadow.mapSize.height = 512; 
-pointLight.shadow.camera.near = 0.5; 
-pointLight.shadow.camera.far = 500; 
-level1Scene.add(pointLight);
-pointLight.position.set(0, 50, level1Start.y + 50);
+// Adds light to scene
+const pointLightStart = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLightStart.castShadow = true; 
+pointLightStart.shadow.mapSize.width = 512; 
+pointLightStart.shadow.mapSize.height = 512; 
+pointLightStart.shadow.camera.near = 0.5; 
+pointLightStart.shadow.camera.far = 500; 
+level1Scene.add(pointLightStart);
+pointLightStart.position.set(100, 150, startPos.y +50);
+
+const pointLightStart2 = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLightStart2.castShadow = true; 
+pointLightStart2.shadow.mapSize.width = 512; 
+pointLightStart2.shadow.mapSize.height = 512; 
+pointLightStart2.shadow.camera.near = 0.5; 
+pointLightStart2.shadow.camera.far = 500; 
+level1Scene.add(pointLightStart2);
+pointLightStart2.position.set(-100, 150, startPos.y +50);
+
+const pointLightEnd = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLightEnd.castShadow = true; 
+pointLightEnd.shadow.mapSize.width = 512; 
+pointLightEnd.shadow.mapSize.height = 512; 
+pointLightEnd.shadow.camera.near = 0.5; 
+pointLightEnd.shadow.camera.far = 500; 
+level1Scene.add(pointLightEnd);
+pointLightEnd.position.set(100, 150, level1End.y + 150);
+
+const pointLightEnd2 = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+pointLightEnd2.castShadow = true; 
+pointLightEnd2.shadow.mapSize.width = 512; 
+pointLightEnd2.shadow.mapSize.height = 512; 
+pointLightEnd2.shadow.camera.near = 0.5; 
+pointLightEnd2.shadow.camera.far = 500; 
+level1Scene.add(pointLightEnd2);
+pointLightEnd2.position.set(-100, 150, level1End.y + 150);
+
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
 level1Scene.add(ambientLight);
     
-export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody,  level1MixerAircraft, level1Start, level1End}
+export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody,  level1MixerAircraft, startPos, MAX_HEIGHT, level1End}
