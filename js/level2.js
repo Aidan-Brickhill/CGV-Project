@@ -81,8 +81,8 @@ glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
 // ====================================================
 
 // Creates World
-const levelWidth=10;
-const levelLength=30;
+const levelWidth=7;
+const levelLength=35;
 let scalar = 2;
 //  loads image textures
 let textures = {
@@ -325,7 +325,7 @@ const ringRadius = 3;
 const tubeRadius = 0.2;
 const radialSegments = 8;
 const tubeSegments = 50;
-let Rings = [];
+let level2Rings = [];
 
 // Create Cannon.js bodies for the spheres and cylinders and position them accordingly
 for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
@@ -376,17 +376,16 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
         level2Scene.add(ring);
         level2PhysicsWorld.addBody(ring.ringBody);
 
-        Rings.push(ring);
+        level2Rings.push(ring);
 
     }).catch(error => {
         console.log('Error loading Ring class:', error);
     });
 }
 
-console.log(Rings.length)
 
 // level2Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
-export { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End, Rings}
+export { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End, level2Rings}
 
 
 

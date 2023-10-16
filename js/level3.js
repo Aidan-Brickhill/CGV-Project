@@ -363,6 +363,8 @@ clouds();
 //============== Add Rings to The Scene =================//
 
 //plotting rings along the map
+
+//plotting rings along the map
 let x;
 let y;
 let randomXValue;
@@ -372,6 +374,7 @@ const ringRadius = 3;
 const tubeRadius = 0.2;
 const radialSegments = 8;
 const tubeSegments = 50;
+let level3Rings = [];
 
 // Create Cannon.js bodies for the spheres and cylinders and position them accordingly
 for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
@@ -381,7 +384,6 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
     
     // create the CANNON BODY with a torus shape
     
-
     // set the x and z coords of the ring 
     const ringX = randomXValue - ringRadius;
     const ringZ = ringNumber * (-ringDistance) + level3Start.y - 30;
@@ -422,10 +424,14 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
         ring.castShadow = true;
         level3Scene.add(ring);
         level3PhysicsWorld.addBody(ring.ringBody);
+
+        level3Rings.push(ring);
+
     }).catch(error => {
         console.log('Error loading Ring class:', error);
     });
 }
+
 
 //============== Define The "Finish Line" For the Aircraft =================//
 
@@ -474,4 +480,4 @@ function levelCompleted(){
 level3Scene.fog = new THREE.Fog(0xff7878, 0.015, 300);
 
 //============== Export All Objects Of Interest =================//
-export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End }
+export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End, level3Rings }
