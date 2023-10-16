@@ -18,6 +18,9 @@ let forwardSpeed = -5;
 let speed = 50;
 let dead = false;
 let numRingsPassed;
+let levelComplete = false;
+let endLeveltext;
+
 
 // Renderer setup
 let renderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
@@ -264,11 +267,15 @@ function animate() {
             if (aircraftBody.position.x < levelEnd.x){
                 aircraftBody.position.x = levelEnd.x;
             }
+
+          
         }
+
+
+        
 
         if (aircraft.position.z < levelEnd.y) {
             levelCompleted();
-            // addCongratulationsText();
         }
 
         physicsWorld.step(1 / 60);
@@ -293,6 +300,12 @@ function animate() {
             Rings.forEach((ring) => {            
                 checkRingCollision(aircraftBody.position, ring)
             });
+
+            if (aircraft.position.z < Rings[Rings.length - 1].ringBody.position.z && !levelComplete) {
+                levelComplete = true;
+                addCongratulationsText();
+
+            }
         }
 
         //renders the scene
@@ -326,7 +339,7 @@ function animate() {
                 renderer.render(level3Scene, perspectiveCamera);
             }
         }
-        
+
     animationId = requestAnimationFrame(animate);
 
 }
@@ -358,7 +371,7 @@ function onMouseDown(event) {
 
         if (MainMenu) {
             if (selectedObject.name === "level1") {
-                stopSound();
+                pauseSound();
                 currentLevel = 1;
                 cancelAnimationFrame(animationId);
                 initializeLevel1Scene();
@@ -367,7 +380,7 @@ function onMouseDown(event) {
                 requestAnimationFrame(animate);
             }
             if (selectedObject.name === "level2") {
-                stopSound();
+                pauseSound();
                 cancelAnimationFrame(animationId);
                 initializeLevel2Scene();
                 MainMenu = false;
@@ -375,7 +388,7 @@ function onMouseDown(event) {
                 requestAnimationFrame(animate);
             }
             if (selectedObject.name === "level3") {
-                stopSound();
+                pauseSound();
                 cancelAnimationFrame(animationId);
                 initializeLevel3Scene();
                 MainMenu = false;
@@ -383,6 +396,8 @@ function onMouseDown(event) {
                 requestAnimationFrame(animate);
 
             }
+        } else {
+            playSound();
         }
     }
 }
@@ -488,6 +503,25 @@ function initializeLevel1Scene() {
     resetTimer();
     startTimer();
     dead = false;
+    if (levelComplete) {
+        try {
+            level1Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level2Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level3Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+    }
+    levelComplete = false;
+
 
     mixer = level1MixerAircraft;
     // gameScene = level1Scene;
@@ -535,6 +569,25 @@ async function initializeLevel2Scene() {
     dead = false;
     resetTimer();
     startTimer();
+    if (levelComplete) {
+        try {
+            level1Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level2Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level3Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+    }
+    levelComplete = false;
+
 
     mixer = level2MixerAircraft;
     // gameScene = level2Scene;
@@ -586,6 +639,24 @@ function initializeLevel3Scene() {
     resetTimer();
     startTimer();
     dead = false;
+    if (levelComplete) {
+        try {
+            level1Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level2Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level3Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+    }
+    levelComplete = false;
 
     mixer = level3MixerAircraft;
     // gameScene = level3Scene;
@@ -636,24 +707,40 @@ function initializeLevel3Scene() {
 
 
 }
+function addCongratulationsText() {
+    const fontLoader = new FontLoader();
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+        let textGeometry;
+        let textMaterial;
+        if (numRingsPassed === Rings.length){
+            textGeometry = new TextGeometry('!! Pass !!', {
+                font: font,
+                size: 5,
+                height: 0.5,
+            });
+            textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        } else {
+            textGeometry = new TextGeometry('!! Fail !!', {
+                font: font,
+                size: 5,
+                height: 0.5,
+            });
+            textMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        }
+        endLeveltext = new THREE.Mesh(textGeometry, textMaterial);
 
-// function addCongratulationsText() {
-//     const fontLoader = new FontLoader();
-//     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-//         const textGeometry = new TextGeometry('Congratulations', {
-//             font: font,
-//             size: 5,
-//             height: 0.5,
-//         });
-
-//         const textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-//         const congratulationsText = new THREE.Mesh(textGeometry, textMaterial);
-
-//         congratulationsText.position.set(-20, 30, -180);
-
-//         level2Scene.add(congratulationsText);
-//     });
-// }
+        endLeveltext.position.set(-10, 40, levelEnd.y);
+        if (currentLevel === 1) {
+            level1Scene.add(endLeveltext);
+        }
+        if (currentLevel === 2) {
+            level2Scene.add(endLeveltext);
+        }
+        if (currentLevel === 3) {
+            level3Scene.add(endLeveltext);
+        }
+    });
+}
 
 function levelCompleted() {
     stopTimer();

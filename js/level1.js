@@ -331,7 +331,6 @@ function tree(height, position) {
 }
 
 // Adds light to scene
-// Adds light to scene
 const pointLightStart = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
 pointLightStart.castShadow = true; 
 pointLightStart.shadow.mapSize.width = 512; 
