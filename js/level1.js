@@ -117,12 +117,14 @@ const riverzOffset = 0;
 const ravineScale = 1; // fraction of ravine taken up by blocks less than full size
 const heightRenderBound = 0.93;
 
+let rampExp = 2.5;
 function sigmoid(x) {
-    return 1 / (1 + Math.E**(-(x-0.25)*Math.E**2.5));
+    return 1 / (1 + Math.E**(-(x-0.25)*Math.E**rampExp));
 };
 
 for (let i = -levelWidth; i <= levelWidth; i++) {
-    riverAmplitude += randFloat(-levelWidth/50, levelWidth/50);
+    riverAmplitude += randFloat(-levelWidth/8, levelWidth/8);
+    rampExp += randFloat(-0.3, 0.3);
     for (let j = -levelLength; j <= levelLength; j++) {
         let distanceFromRiver = Math.abs(i - (riverAmplitude * Math.sin(riverWavelength*j - riverzOffset) + riverxOffset))
         // normalise distance from river to levelwidth
