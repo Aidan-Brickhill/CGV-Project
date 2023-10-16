@@ -111,18 +111,16 @@ let riverAmplitude = initRiverAmplitude; // larger value is bigger amplitude
 let riverWavelength = 0.25; // larger value is smaller wavelength
 const riverxOffset = 0; 
 const riverzOffset = 0;
-const ravineScale = 1; // fraction of ravine taken up by blocks less than full size
-const heightRenderBound = 0.93;
-
+const ravineScale = 0.9; // fraction of ravine taken up by blocks less than full size
+const period = Math.round((2 * Math.PI) / riverWavelength);
 let rampExp = 2.5;
 function sigmoid(x) {
     return 1 / (1 + Math.E**(-(x-0.25)*Math.E**rampExp));
 };
 
-for (let i = -levelWidth; i <= levelWidth; i++) {
-    riverAmplitude += randFloat(-levelWidth/8, levelWidth/8);
-    rampExp += randFloat(-0.1, 0.1);
-    for (let j = -levelLength; j <= levelLength; j++) {
+for (let j = -levelLength; j <= levelLength; j++) {
+    // riverAmplitude += randFloat(-0.1*riverAmplitude, 0.1*riverAmplitude);
+    for (let i = -levelWidth; i <= levelWidth; i++) {
         let distanceFromRiver = Math.abs(i - (riverAmplitude * Math.sin(riverWavelength*j - riverzOffset) + riverxOffset))
         // normalise distance from river to levelwidth
         distanceFromRiver = (distanceFromRiver/(levelWidth+riverAmplitude));
@@ -130,11 +128,11 @@ for (let i = -levelWidth; i <= levelWidth; i++) {
         // sigmoid curve
         let hexHeight = MAX_HEIGHT * sigmoid(distanceFromRiver);
         hexHeight /= ravineScale;
-        if (hexHeight > MAX_HEIGHT) hexHeight = MAX_HEIGHT;
+        if (hexHeight > MAX_HEIGHT) continue;
         
         // Generate hexagon at the calculated height
         const position = tileToPosition(i, j);
-        if (hexHeight <= MAX_HEIGHT*heightRenderBound) makeHex(hexHeight, position);
+        makeHex(hexHeight, position);
     }
 }  
 

@@ -4,9 +4,9 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es'
 import CannonDebugger from 'cannon-es-debugger';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 
 // Initialization
 let MainMenu = true;
@@ -48,24 +48,41 @@ let offset = {
     z: 6,
 };
 
-
 // Radar setup
 // Create the radar container div
 const radarContainer = document.createElement('div');
 radarContainer.id = 'radar-container';
 radarContainer.style.position = 'absolute';
-radarContainer.style.top = '10px'; // Adjust as needed
+radarContainer.style.bottom = '10px'; // Adjust as needed
 radarContainer.style.right = '10px'; // Adjust as needed
 radarContainer.style.width = '200px'; // Adjust as needed
 radarContainer.style.height = '200px'; // Adjust as needed
 radarContainer.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+// Apply a hexagonal mask using clip-path
+radarContainer.style.clipPath = 'polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)';
 // Create the radar canvas container div
 const radarCanvasContainer = document.createElement('div');
 radarCanvasContainer.id = 'radar-canvas-container';
+
+// Create the red triangle div
+const redTriangle = document.createElement('div');
+redTriangle.style.width = '0';
+redTriangle.style.height = '0';
+redTriangle.style.borderLeft = '10px solid transparent';
+redTriangle.style.borderRight = '10px solid transparent';
+redTriangle.style.borderBottom = '20px solid red';
+redTriangle.style.position = 'absolute';
+redTriangle.style.top = '52%';
+redTriangle.style.left = '50%';
+redTriangle.style.transform = 'translate(-50%, -50%) rotate(180deg)';
+
 // Append the radar canvas container to the radar container
 radarContainer.appendChild(radarCanvasContainer);
+
+
 // Append the radar container to the document body or a specific container
 document.body.appendChild(radarContainer);
+
 
 // radarRenderer
 const radarRenderer = new THREE.WebGLRenderer({ antialias: true });
@@ -73,13 +90,39 @@ radarRenderer.setSize(200, 200); // Adjust the size as needed
 // radarRenderer.setClearColor(0x000000, 0);
 document.getElementById('radar-canvas-container').appendChild(radarRenderer.domElement);
 
+
 // Radar Camera
-const radarCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const radarCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 let radarOffset = {
     x : 0,
-    y : 10,
+    y : 15,
     z : 0,
 };
+
+// to make render scene bright
+const brightnessShader = {
+    uniforms: {
+      "tDiffuse": { value: null },
+      "brightness": { value: 1.0 } // Adjust brightness value as needed
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float brightness;
+      varying vec2 vUv;
+      void main() {
+        vec4 color = texture2D(tDiffuse, vUv);
+        color.rgb *= brightness; // Adjust brightness
+        gl_FragColor = color;
+      }
+    `
+  };
 
 const clock = new THREE.Clock();
 const raycaster = new THREE.Raycaster();
@@ -317,7 +360,24 @@ function animate() {
         } else {
             if (currentLevel === 1) {
                 renderer.render(level1Scene, perspectiveCamera);
-                radarRenderer.render(level1Scene, radarCamera);
+
+                // radarContainer.appendChild(redTriangle);
+
+                const composer = new EffectComposer(radarRenderer);
+
+                // Create a RenderPass for the main scene
+                const radarRenderPass = new RenderPass(level1Scene, radarCamera);
+                composer.addPass(radarRenderPass);
+
+                const brightnessPass = new ShaderPass(brightnessShader);
+                brightnessPass.uniforms.brightness.value = 10.0; // Adjust brightness value as needed
+                composer.addPass(brightnessPass);
+
+                // Set the order in which passes are executed
+                composer.renderToScreen = true;
+
+                // In your animate loop, render the composer
+                composer.render();
             }
             if (currentLevel === 2) {
                 renderer.render(level2Scene, perspectiveCamera);
