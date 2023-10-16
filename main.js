@@ -30,7 +30,7 @@ document.body.appendChild(renderer.domElement);
 
 //imports from other levels
 import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
-import { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody,  level1MixerAircraft, level1Start, level1End} from "./js/level1.js";
+import { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody,  level1MixerAircraft, level1Start, level1End, MAX_HEIGHT} from "./js/level1.js";
 import { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End, level2Rings} from "./js/level2.js";
 import { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End, level3Rings} from "./js/level3.js";
 
