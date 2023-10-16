@@ -8,11 +8,14 @@ import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.
 const menuCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 menuCamera.position.set(0, 10, 0);
 
+
 // SCENE INITIALISATION
 const menuScene = new THREE.Scene();
 menuScene.background = new THREE.Color("#FFEECC");
 const buttonScene = new THREE.Scene();
 const deathScene = new THREE.Scene();
+menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
+
 
 // Adds light to scene
 const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
