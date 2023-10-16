@@ -13,11 +13,6 @@ const levelWidth = 7;
 const levelLength = 60;
 
 
-//============== Debugging Camera - FreeCam ================//
-const level3Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-level3Camera.position.set(-17, 31, 33);
-
-
 //============== Scene and background colour ================//
 const level3Scene = new THREE.Scene();
 level3Scene.background = new THREE.Color("#800000");
@@ -27,20 +22,10 @@ const level3PhysicsWorld = new CANNON.World({
     gravity: new CANNON.Vec3(0, 0, 0),
 });
 
-//============== SunLight ================//
-// const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
-// pointLight.castShadow = true; 
-// pointLight.shadow.mapSize.width = 512; 
-// pointLight.shadow.mapSize.height = 512; 
-// pointLight.shadow.camera.near = 0.5; 
-// pointLight.shadow.camera.far = 500; 
-// level3Scene.add(pointLight);
-// pointLight.position.set(40, 30, 40);
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
 level3Scene.add(ambientLight);
 
-//============== Lava Light ================//
 
 
 //============== Phyics Aircraft Global Variables ================//
@@ -388,4 +373,4 @@ level3Scene.add(lavaPointLightStart);
 lavaPointLightStart.position.set(0, 0, level3Start.y);
 
 //============== Export All Objects Of Interest =================//
-export { level3Scene, level3Camera, level3PhysicsWorld, level3AircraftBody, level3Start, level3End, level3Rings }
+export { level3Scene, level3PhysicsWorld, level3AircraftBody, level3Start, level3End, level3Rings }

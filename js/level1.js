@@ -4,10 +4,6 @@ import * as CANNON from 'cannon-es';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 import { randFloat } from 'three/src/math/MathUtils';
 
-// SCENE CAMERA, used for debugging only
-const level1Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-level1Camera.position.set(-17,31,33);
-
 // SCENE + PHYSICS INITIALISATION
 const level1Scene = new THREE.Scene();
 level1Scene.background = new THREE.Color("#FFEECC");
@@ -307,4 +303,4 @@ pointLightEnd2.position.set(-100, 150, level1End.y + 150);
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
 level1Scene.add(ambientLight);
     
-export { level1Scene, level1Camera, level1PhysicsWorld, level1AircraftBody,  startPos, MAX_HEIGHT, level1End}
+export { level1Scene,  level1PhysicsWorld, level1AircraftBody,  startPos, MAX_HEIGHT, level1End}

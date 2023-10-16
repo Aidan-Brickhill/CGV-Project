@@ -7,9 +7,6 @@ import { BoxGeometry } from 'three';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 
-// SCENE CAMERA, used for debugging only
-const level2Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-level2Camera.position.set(-17,31,33);
 
 // SCENE + PHYSICS INITIALISATION
 const level2Scene = new THREE.Scene();
@@ -349,7 +346,7 @@ pointLightEnd2.position.set(-100, 150, level2End.y +150);
 
 
 // level2Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
-export { level2Scene, level2Camera, level2PhysicsWorld, level2AircraftBody, level2Start, level2End, level2Rings}
+export { level2Scene, level2PhysicsWorld, level2AircraftBody, level2Start, level2End, level2Rings}
 
 
 

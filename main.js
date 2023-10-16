@@ -1,164 +1,13 @@
-// IMPORTS
+// IMPORTS 
 import { startTimer, pauseTimer, resumeTimer, resetTimer, stopTimer, getElapsedSeconds } from './js/timer.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import * as CANNON from 'cannon-es'
-import CannonDebugger from 'cannon-es-debugger';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as CANNON from 'cannon-es';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 
-// Initialization
-let MainMenu = true;
-let animationId;
-let currentLevel = 0;
-let forwardSpeed = -5;
-let speed = 50;
-let dead = false;
-let numRingsPassed;
-let levelComplete = false;
-let endLeveltext;
-
-
-// Renderer setup
-let renderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
-renderer.setSize(innerWidth, innerHeight);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.outputColorSpac = THREE.sRGBEncoding;
-renderer.useLegacyLights = true;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
-
-//imports from other levels
-import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
-import { level1Scene, level1Camera, level1PhysicsWorld,  level1AircraftBody,   startPos,MAX_HEIGHT, level1End} from "./js/level1.js";
-import { level2Scene, level2Camera, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings} from "./js/level2.js";
-import { level3Scene, level3Camera, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings} from "./js/level3.js";
-
-let physicsWorld, aircraft, aircraftBody, mixer, levelStart, levelEnd, Rings;
-let cannonDebugger;
-let spacebarIntervalId = null;
-
-//3rd/1st person camera
-const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-let thirdPerson = true;
-let offset = {
-    x: 0,
-    y: 1,
-    z: 7,
-};
-
-let glftLoader = new GLTFLoader();
-let AircraftGLTF;
-let AircraftMIXER;
-glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
-    AircraftGLTF = gltfScene.scene;
-
-
-    AircraftGLTF.rotation.y = Math.PI;
-    
-    AircraftGLTF.traverse(function(node) {
-        if (node.isMesh){
-            node.castShadow = true;
-        }
-    });
-
-    const clips = gltfScene.animations;
-    AircraftMIXER = new THREE.AnimationMixer(AircraftGLTF);
-
-    clips.forEach(function(clip) {
-        const action = AircraftMIXER.clipAction(clip);
-        action.play();
-    });
-
-});
-
-
-// Radar setup
-// Create the radar container div
-const radarContainer = document.createElement('div');
-radarContainer.id = 'radar-container';
-radarContainer.style.position = 'absolute';
-radarContainer.style.bottom = '200px'; // Adjust as needed
-radarContainer.style.right = '200px'; // Adjust as needed
-radarContainer.style.width = '200px'; // Adjust as needed
-radarContainer.style.height = '200px'; // Adjust as needed
-radarContainer.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-// Apply a hexagonal mask using clip-path
-// radarContainer.style.clipPath = 'polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)';
-// Adjust the size and position of the hexagonal mask
-radarContainer.style.clipPath = 'polygon(20% 0, 80% 0, 100% 50%, 80% 100%, 20% 100%, 0 50%)';
-
-// Create the radar canvas container div
-const radarCanvasContainer = document.createElement('div');
-radarCanvasContainer.id = 'radar-canvas-container';
-
-// Create the red triangle div
-const redTriangle = document.createElement('div');
-redTriangle.style.width = '0';
-redTriangle.style.height = '0';
-redTriangle.style.borderLeft = '10px solid transparent';
-redTriangle.style.borderRight = '10px solid transparent';
-redTriangle.style.borderBottom = '20px solid red';
-redTriangle.style.position = 'absolute';
-redTriangle.style.top = '52%';
-redTriangle.style.left = '50%';
-redTriangle.style.transform = 'translate(-50%, -50%) rotate(180deg)';
-
-// Append the radar canvas container to the radar container
-radarContainer.appendChild(radarCanvasContainer);
-
-
-// Append the radar container to the document body or a specific container
-document.body.appendChild(radarContainer);
-
-
-// radarRenderer
-const radarRenderer = new THREE.WebGLRenderer({ antialias: true });
-radarRenderer.setSize(200, 200); // Adjust the size as needed
-// radarRenderer.setClearColor(0x000000, 0);
-document.getElementById('radar-canvas-container').appendChild(radarRenderer.domElement);
-
-
-// Radar Camera
-const radarCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-let radarOffset = {
-    x : 0,
-    y : 30,
-    z : 0,
-};
-
-// to make render scene bright
-const brightnessShader = {
-    uniforms: {
-      "tDiffuse": { value: null },
-      "brightness": { value: 1.0 } // Adjust brightness value as needed
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D tDiffuse;
-      uniform float brightness;
-      varying vec2 vUv;
-      void main() {
-        vec4 color = texture2D(tDiffuse, vUv);
-        color.rgb *= brightness; // Adjust brightness
-        gl_FragColor = color;
-      }
-    `
-  };
-
-const clock = new THREE.Clock();
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
+// Audio Functionality
 let audioContext;
 let audioLoader;
 let listener;
@@ -211,48 +60,211 @@ const initAudio = () => {
 };
 
 initAudio();
-// Angle for rotating camera
-let cameraRotationCounter = 2 * Math.PI / 10000;
-function animate() {
-    if (MainMenu) {
-        raycaster.setFromCamera(mouse, menuCamera);
-        menuScene.rotateY(cameraRotationCounter);
 
-        renderer.autoClear = false;
-        renderer.clear();
+//imports from other levels
+import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
+import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End} from "./js/level1.js";
+import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings} from "./js/level2.js";
+import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings} from "./js/level3.js";
+
+// Variables Used for actual level being displayed (takes in the ones from the above imports)
+let physicsWorld,  aircraftBody,levelStart, levelEnd, Rings;
+
+// Main Renderer Setup
+let mainRenderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
+mainRenderer.setSize(innerWidth, innerHeight);
+mainRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+mainRenderer.outputColorSpac = THREE.sRGBEncoding;
+mainRenderer.useLegacyLights = true;
+mainRenderer.shadowMap.enabled = true;
+mainRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(mainRenderer.domElement);
+
+// Camera for the levels (can be third person or first person depending on offset)
+const aircraftCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+let isThirdPersonActive = true;
+let thirdPersonOffset = {x: 0,y: 1,z: 7};
+
+// Setup for the Aircraft Asset
+let AircraftGLTF;
+let AircraftMIXER;
+let glftLoader = new GLTFLoader();
+glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
+    AircraftGLTF = gltfScene.scene;
+    AircraftGLTF.rotation.y = Math.PI;    
+    AircraftGLTF.traverse(function(node) {
+        if (node.isMesh){
+            node.castShadow = true;
+        }
+    });
+    const clips = gltfScene.animations;
+    AircraftMIXER = new THREE.AnimationMixer(AircraftGLTF);
+    clips.forEach(function(clip) {
+        const action = AircraftMIXER.clipAction(clip);
+        action.play();
+    });
+});
+
+// Mini Map Element added to html page
+const radarContainer = document.createElement('div');
+radarContainer.id = 'radar-container';
+radarContainer.style.position = 'absolute';
+radarContainer.style.bottom = '10px'; 
+radarContainer.style.right = '10px'; 
+radarContainer.style.width = '200px'; 
+radarContainer.style.height = '200px'; 
+radarContainer.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+radarContainer.style.clipPath = 'polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)';
+const radarCanvasContainer = document.createElement('div');
+radarCanvasContainer.id = 'radar-canvas-container';
+radarContainer.appendChild(radarCanvasContainer);
+document.body.appendChild(radarContainer);
+
+// Mini Map Renderer Setup
+const radarRenderer = new THREE.WebGLRenderer({ antialias: true });
+radarRenderer.setSize(200, 200);
+document.getElementById('radar-canvas-container').appendChild(radarRenderer.domElement);
+
+// Camera for the Mini Map
+const radarCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+let radarOffset = {x : 0,y : 30,z : 0};
+
+// Makes the render scene bright
+const brightnessShader = {
+    uniforms: {
+      "tDiffuse": { value: null },
+      "brightness": { value: 1.0 }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float brightness;
+      varying vec2 vUv;
+      void main() {
+        vec4 color = texture2D(tDiffuse, vUv);
+        color.rgb *= brightness; // Adjust brightness
+        gl_FragColor = color;
+      }
+    `
+};
+
+// Setup the clock for the aircraft mixer
+const clock = new THREE.Clock();
+// Setup the Ray Caster for the Main Menu Functionality and the vector for the mouse coords
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+// Stores the animation Id
+let animationId;
+// Checks if the level was completed (used to remove pass/fail text)
+let levelComplete = false;
+// Used to either render the menu or the level
+let MainMenu = true;
+// Stores an int holding the current level number
+let currentLevel = 0;
+// Used for the boost functionality
+let spacebarIntervalId = null;
+// Used for the movement
+let forwardSpeed = -5;
+let speed = 50;
+// Used to check if the user has crashed or not
+let dead = false;
+// Counts the number of rings flown through
+let numRingsGoneThrough;
+
+// Setups the mini map attributes for each level
+const composerLevel1 = new EffectComposer(radarRenderer);
+const radarRenderPassLevel1 = new RenderPass(level1Scene, radarCamera);
+composerLevel1.addPass(radarRenderPassLevel1);
+const brightnessPassLevel1 = new ShaderPass(brightnessShader);
+brightnessPassLevel1.uniforms.brightness.value = 10.0;
+composerLevel1.addPass(brightnessPassLevel1);
+composerLevel1.renderToScreen = true;
+
+const composerLevel2 = new EffectComposer(radarRenderer);
+const radarRenderPassLevel2 = new RenderPass(level2Scene, radarCamera);
+composerLevel2.addPass(radarRenderPassLevel2);
+const brightnessPassLevel2 = new ShaderPass(brightnessShader);
+brightnessPassLevel2.uniforms.brightness.value = 10.0;
+composerLevel2.addPass(brightnessPassLevel2);
+composerLevel2.renderToScreen = true;
+
+const composerLevel3 = new EffectComposer(radarRenderer);
+const radarRenderPassLevel3 = new RenderPass(level3Scene, radarCamera);
+composerLevel3.addPass(radarRenderPassLevel3);
+const brightnessPassLevel3 = new ShaderPass(brightnessShader);
+brightnessPassLevel3.uniforms.brightness.value = 10.0;
+composerLevel3.addPass(brightnessPassLevel3);
+composerLevel3.renderToScreen = true;
+
+// Used to animate the scenes
+function animate() {
+    // Render the menu scene
+    if (MainMenu) {
+
+        // Set up raycaster
+        raycaster.setFromCamera(mouse, menuCamera);
+        // Rotate the scene
+        menuScene.rotateY(2 * Math.PI / 10000);
+
+        // Clear both renderers and hide the mini map renderer element
+        mainRenderer.autoClear = false;
+        mainRenderer.clear();
         document.getElementById('radar-canvas-container').style.display="none";
         radarRenderer.clear();
 
-        // controls.update();
-        //This line loads the Main Menu as the active scene at first, active scene gets updated on click
-        renderer.render(menuScene, menuCamera);
-        renderer.clearDepth();
-        renderer.render(buttonScene, menuCamera);
+        // Render the buttons and the menu scene
+        mainRenderer.render(menuScene, menuCamera);
+        mainRenderer.clearDepth();
+        mainRenderer.render(buttonScene, menuCamera);
 
+        // Animate
         animationId = requestAnimationFrame(animate);
 
     } else {
+
+        // show the renderer elemnt
+        document.getElementById('radar-canvas-container').style.display="flex";
+
+        // Call the function when the aircraft reaches the end of the Scene
+        if (aircraftBody.position.z < levelEnd.y) {
+            levelCompleted();
+        }
+
+        if (currentLevel>=2){
+            // If you pass the last ring, display the text and state level is complete
+            if (aircraftBody.position.z < Rings[Rings.length - 1].ringBody.position.z && !levelComplete) {
+                levelComplete = true;
+                addEndLeveltext();
+            }
+        }        
+
+        // Animate the Aircraft Model
         if (AircraftMIXER) {
             AircraftMIXER.update(clock.getDelta());
         }
 
+        // Move the aircraft forward
+        aircraftBody.velocity.z = forwardSpeed;
 
-        let force = new CANNON.Vec3(0, 0, 0);
+        // Initialise variables for movement
         const xresponseModulator = 1.5;
         const yresponseModulator = 1.25;
-        aircraftBody.velocity.z = forwardSpeed;
-        const mass = 1;
-
         let vxi = aircraftBody.velocity.x;
         let vyi = aircraftBody.velocity.y;
         let vxf = 0;
         let vyf = 0;
+        let force = new CANNON.Vec3(0, 0, 0);
 
-        const ceiling1 = MAX_HEIGHT/1.5;
-
-        // // Update the physics worlds
+        // If the aircraft HAS NOT crashed
         if (!dead) {
-
+            // moves left
             if (keys.a.pressed) {
                 if (aircraftBody.quaternion.z <= 0.2) {
                     aircraftBody.quaternion.z += 0.02;
@@ -264,6 +276,7 @@ function animate() {
                     aircraftBody.quaternion.z -= 0.02;
                 }
             }
+            // moves right
             if (keys.d.pressed) {
                 if (aircraftBody.quaternion.z >= -0.2) {
                     aircraftBody.quaternion.z -= 0.02;
@@ -275,6 +288,7 @@ function animate() {
                     aircraftBody.quaternion.z += 0.02;
                 }
             }
+            // moves up
             if (keys.w.pressed) {
                 if (aircraftBody.quaternion.x <= 0.1) {
                     aircraftBody.quaternion.x += 0.02;
@@ -286,6 +300,7 @@ function animate() {
                     aircraftBody.quaternion.x -= 0.02;
                 }
             }
+            //moves down
             if (keys.s.pressed) {
                 if (aircraftBody.quaternion.x >= -0.1) {
                     aircraftBody.quaternion.x -= 0.02;
@@ -298,7 +313,7 @@ function animate() {
                     aircraftBody.quaternion.x += 0.02;
                 }
             }
-
+            // boost 
             if (keys.spacebar.pressed) {
                 if (!spacebarIntervalId) {
                     spacebarIntervalId = setInterval(() => {
@@ -313,166 +328,113 @@ function animate() {
                 forwardSpeed += 0.5;
             }
 
+            // Update the rotations
             AircraftGLTF.quaternion.z = aircraftBody.quaternion.x;
             AircraftGLTF.quaternion.x = -aircraftBody.quaternion.z;
             AircraftGLTF.quaternion.y = 1;
-
         } else {
+            // If the aircraft HAS crashed
             AircraftGLTF.quaternion.z = aircraftBody.quaternion.x;
             AircraftGLTF.quaternion.x = -aircraftBody.quaternion.z;
             AircraftGLTF.quaternion.y = 1;
         }
 
-        force.x = xresponseModulator * (vxf - vxi) / mass;
-        force.y = yresponseModulator * (vyf - vyi) / mass;
+        // Update the forces and apply it to the body
+        force.x = xresponseModulator * (vxf - vxi);
+        force.y = yresponseModulator * (vyf - vyi);
         aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
 
-        // invisible ceiling
+        // Setup the boarders depending on the either ceilings or walls
         if (currentLevel == 1) {
-            if (aircraftBody.position.y > ceiling1) {
-                aircraftBody.position.y = ceiling1;
+            // Ceiling
+            if (aircraftBody.position.y > MAX_HEIGHT/1.5) {
+                aircraftBody.position.y = MAX_HEIGHT/1.5;
                 aircraftBody.velocity.y = 0;
             }
         } else {
-            // boarders for sides of the map
+            // Walls
             if (aircraftBody.position.x > levelStart.x){
                 aircraftBody.position.x = levelStart.x;
             }
-
             if (aircraftBody.position.x < levelEnd.x){
                 aircraftBody.position.x = levelEnd.x;
-            }
+            }          
+        }       
 
-          
-        }
-
-        if (aircraftBody.position.z < levelEnd.y) {
-            levelCompleted();
-        }
-
+        // Update the Physics world
         physicsWorld.step(1 / 60);
         physicsWorld.fixedStep();
+
+        // Update the graphics location according to the physics location
         AircraftGLTF.position.x = aircraftBody.position.x;
         AircraftGLTF.position.y = aircraftBody.position.y - (1 / 5);
         AircraftGLTF.position.z = aircraftBody.position.z;
         
-        perspectiveCamera.position.set(aircraftBody.position.x, aircraftBody.position.y + 1 + offset.y, aircraftBody.position.z - 3 + offset.z);
+        // Update the aircraft cameras location based on the aircraft
+        aircraftCamera.position.set(aircraftBody.position.x, aircraftBody.position.y + 1 + thirdPersonOffset.y, aircraftBody.position.z - 3 + thirdPersonOffset.z);
 
+        // Update the mini map cameras location based on the aircraft
         radarCamera.position.set(aircraftBody.position.x, aircraftBody.position.y + radarOffset.y, aircraftBody.position.z); 
         radarCamera.lookAt(aircraftBody.position.x, aircraftBody.position.y, aircraftBody.position.z);
 
+        // If the level is not the first one
         if (currentLevel>=2){
+            // Check for ring collison (aka flyingbthrough the ring)
             Rings.forEach((ring) => {            
                 checkRingCollision(aircraftBody.position, ring)
-            });
-
-            if (aircraftBody.position.z < Rings[Rings.length - 1].ringBody.position.z && !levelComplete) {
-                levelComplete = true;
-                addCongratulationsText();
-
-            }
+            });            
         }
 
-        //renders the scene
+        // If the aircaft has crashed render the scene with the death scene
         if (dead) {
             if (currentLevel === 1) {
-                renderer.render(level1Scene, perspectiveCamera);
+                mainRenderer.render(level1Scene, aircraftCamera);
                 radarRenderer.render(level1Scene, radarCamera);
-                renderer.clearDepth();
-                renderer.render(deathScene, menuCamera);
+                mainRenderer.clearDepth();
+                mainRenderer.render(deathScene, menuCamera);
             }
             if (currentLevel === 2) {
-                renderer.render(level2Scene, perspectiveCamera);
+                mainRenderer.render(level2Scene, aircraftCamera);
                 radarRenderer.render(level2Scene, radarCamera);
-                renderer.clearDepth();
-                renderer.render(deathScene, menuCamera);
+                mainRenderer.clearDepth();
+                mainRenderer.render(deathScene, menuCamera);
             }
             if (currentLevel === 3) {
-                renderer.render(level3Scene, perspectiveCamera);
+                mainRenderer.render(level3Scene, aircraftCamera);
                 radarRenderer.render(level3Scene, radarCamera);
-                renderer.clearDepth();
-                renderer.render(deathScene, menuCamera);
+                mainRenderer.clearDepth();
+                mainRenderer.render(deathScene, menuCamera);
             }
 
         } else {
+        // If the aircaft has not crashed render the scene without the death scene
             if (currentLevel === 1) {
-                renderer.render(level1Scene, perspectiveCamera);
-
-                // radarContainer.appendChild(redTriangle);
-
-                const composer = new EffectComposer(radarRenderer);
-
-                // Create a RenderPass for the main scene
-                const radarRenderPass = new RenderPass(level1Scene, radarCamera);
-                composer.addPass(radarRenderPass);
-
-                const brightnessPass = new ShaderPass(brightnessShader);
-                brightnessPass.uniforms.brightness.value = 10.0; // Adjust brightness value as needed
-                composer.addPass(brightnessPass);
-
-                // Set the order in which passes are executed
-                composer.renderToScreen = true;
-
-                // In your animate loop, render the composer
-                composer.render();
+                mainRenderer.render(level1Scene, aircraftCamera);
+                composerLevel1.render();
             }
             if (currentLevel === 2) {
-                renderer.render(level2Scene, perspectiveCamera);
-                // radarContainer.appendChild(redTriangle);
-
-                const composer = new EffectComposer(radarRenderer);
-
-                // Create a RenderPass for the main scene
-                const radarRenderPass = new RenderPass(level2Scene, radarCamera);
-                composer.addPass(radarRenderPass);
-
-                const brightnessPass = new ShaderPass(brightnessShader);
-                brightnessPass.uniforms.brightness.value = 10.0; // Adjust brightness value as needed
-                composer.addPass(brightnessPass);
-
-                // Set the order in which passes are executed
-                composer.renderToScreen = true;
-
-                // In your animate loop, render the composer
-                composer.render();
+                mainRenderer.render(level2Scene, aircraftCamera);
+                composerLevel2.render();
             }
             if (currentLevel === 3) {
-                renderer.render(level3Scene, perspectiveCamera);
-                // radarContainer.appendChild(redTriangle);
-
-                const composer = new EffectComposer(radarRenderer);
-
-                // Create a RenderPass for the main scene
-                const radarRenderPass = new RenderPass(level3Scene, radarCamera);
-                composer.addPass(radarRenderPass);
-
-                const brightnessPass = new ShaderPass(brightnessShader);
-                brightnessPass.uniforms.brightness.value = 10.0; // Adjust brightness value as needed
-                composer.addPass(brightnessPass);
-
-                // Set the order in which passes are executed
-                composer.renderToScreen = true;
-
-                // In your animate loop, render the composer
-                composer.render();
+                mainRenderer.render(level3Scene, aircraftCamera);
+                composerLevel3.render();
             }
         }
-    document.getElementById('radar-canvas-container').style.display="flex";
-
-
-    animationId = requestAnimationFrame(animate);
-
-}
+        
+        // Animate
+        animationId = requestAnimationFrame(animate);
+    }
 }
 animate();
 
 //Event listeners
-//checks which button is presssed in main menu
+//  Checks which button is presssed in main menu
 window.addEventListener('mousedown', onMouseDown, false);
 
 function onMouseDown(event) {
+
     // Calculate normalized mouse coordinates
-    
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
@@ -486,9 +448,7 @@ function onMouseDown(event) {
     if (intersects.length > 0) {
         const selectedObject = intersects[0].object;
 
-        // You can now work with the selected object
-        console.log('Selected object:', selectedObject);
-
+        // Handles logic on main menu screen
         if (MainMenu) {
             if (selectedObject.name === "level1") {
                 pauseSound();
@@ -514,15 +474,15 @@ function onMouseDown(event) {
                 MainMenu = false;
                 currentLevel = 3;
                 requestAnimationFrame(animate);
-
             }
         } else {
+            currentLevel = 0;
             playSound();
         }
     }
 }
 
-//struct to track key inputs
+// Struct to track key inputs
 const keys = {
     a: {
         pressed: false
@@ -541,7 +501,8 @@ const keys = {
         intervalId: null,
     },
 }
-//onpress of a key
+
+// Onpress of a key
 window.addEventListener('keydown', (event) => {
     switch (event.code) {
         //left
@@ -561,19 +522,21 @@ window.addEventListener('keydown', (event) => {
             keys.s.pressed = true;
             break;
         case 'KeyP':
-            if (thirdPerson) {
-                thirdPerson = false;
-                offset.x = 0;
-                offset.y = 0;
-                offset.z = 0;
+            // changes perspective of camera
+            if (isThirdPersonActive) {
+                isThirdPersonActive = false;
+                thirdPersonOffset.x = 0;
+                thirdPersonOffset.y = 0;
+                thirdPersonOffset.z = 0;
             } else {
-                thirdPerson = true;
-                offset.x = 0;
-                offset.y = 1;
-                offset.z = 7;
+                isThirdPersonActive = true;
+                thirdPersonOffset.x = 0;
+                thirdPersonOffset.y = 1;
+                thirdPersonOffset.z = 7;
             }
             break;
         case 'Escape':
+            // handles game pasuing and music playing
             if (MainMenu) {
                 pauseSound();
                 resumeTimer();
@@ -587,14 +550,13 @@ window.addEventListener('keydown', (event) => {
                 MainMenu = true;
                 requestAnimationFrame(animate);
             }
-
             break;
         case 'Space':
             keys.spacebar.pressed = true;
             break;
 
     }
-})
+});
 
 //realeas of a key
 window.addEventListener('keyup', (event) => {
@@ -619,101 +581,92 @@ window.addEventListener('keyup', (event) => {
             keys.spacebar.pressed = false;
             break;
     }
-})
+});
+
+// used to show the pass or fail text at the end of the game
+let endLeveltext;
 
 function initializeLevel1Scene() {
+    // timer logic
     resetTimer();
     startTimer();
+    // reset dead variable
     dead = false;
+    // try remove the end level text if possible
     if (levelComplete) {
         try {
             level1Scene.remove(endLeveltext);
         } catch {
             console.log("wrong level");
         }
-        try {
-            level2Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-        try {
-            level3Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
     }
+    // Reset level complet variable
     levelComplete = false;
 
+    // reassign globals
     physicsWorld = level1PhysicsWorld;
+    physicsWorld.gravity.set(0,-0.5,0);
     aircraftBody = level1AircraftBody;
     levelEnd = level1End;
+    // Add the model to the scene
     level1Scene.add(AircraftGLTF);
 
+    // Update body to start of level
     aircraftBody.position.set(startPos.x, MAX_HEIGHT/2, startPos.y+3);
-    physicsWorld.gravity.set(0,-0.5,0);
-    // aircraftBody.position.set(0, 30, levelStart.y);
-    aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
+    aircraftBody.velocity.set(0, 0, 0);
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     forwardSpeed = -5;
 
-
-    //collsion on aircraft
+    // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
-        console.log("collison occured");
         physicsWorld.gravity.set(0, -9.8, 0);
         dead = true;
     });
-
-
-
 }
 
 async function initializeLevel2Scene() {
-    dead = false;
+    // timer logic
     resetTimer();
     startTimer();
+    // reset dead variable
+    dead = false;
+    // try remove the end level text if possible
     if (levelComplete) {
-        try {
-            level1Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
         try {
             level2Scene.remove(endLeveltext);
         } catch {
             console.log("wrong level");
         }
-        try {
-            level3Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
     }
+    // Reset level complet variable
     levelComplete = false;
 
-    level2Scene.add(AircraftGLTF);
+    // reassign globals
     physicsWorld = level2PhysicsWorld;
+    physicsWorld.gravity.set(0,-0.5,0);
     aircraftBody = level2AircraftBody;
     levelStart = level2Start;
     levelEnd = level2End;  
-    physicsWorld.gravity.set(0,-0.5,0);
+    // Add the model to the scene
+    level2Scene.add(AircraftGLTF);
+
+    // Update body to start of level
     aircraftBody.position.set(0, 50, levelStart.y);
-    aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
+    aircraftBody.velocity.set(0, 0, 0); 
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     forwardSpeed = -5;
 
+    // Reset Rings
     Rings = level2Rings;
     Rings.forEach((ring) => {
         ring.passed = false;
     });
-    numRingsPassed = 0;
+    numRingsGoneThrough = 0;
 
-
-    // collsion on aircraft
+    // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
-        console.log("collison occured");
         physicsWorld.gravity.set(0, -9.8, 0);
         dead = true;
     });
@@ -722,63 +675,60 @@ async function initializeLevel2Scene() {
 
 
 function initializeLevel3Scene() {
+    // timer logic
     resetTimer();
     startTimer();
+    // reset dead variable
     dead = false;
+    // try remove the end level text if possible
     if (levelComplete) {
-        try {
-            level1Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-        try {
-            level2Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
         try {
             level3Scene.remove(endLeveltext);
         } catch {
             console.log("wrong level");
         }
     }
+    // Reset level complet variable
     levelComplete = false;
 
-    level3Scene.add(AircraftGLTF);
+    // reassign globals
     physicsWorld = level3PhysicsWorld;
+    physicsWorld.gravity.set(0,-0.5,0);
     aircraftBody = level3AircraftBody;
     levelStart = level3Start;
-    levelEnd = level3End; 
-    physicsWorld.gravity.set(0,-0.5,0);
+    levelEnd = level3End;  
+    // Add the model to the scene
+    level3Scene.add(AircraftGLTF);
+
+    // Update body to start of level
     aircraftBody.position.set(0, 50, levelStart.y);
-    aircraftBody.velocity.set(0, 0, 0); // Set to zero to stop any motion
+    aircraftBody.velocity.set(0, 0, 0);
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     forwardSpeed = -5;
 
+    // Reset Rings
     Rings = level3Rings;
     Rings.forEach((ring) => {
         ring.passed = false;
     });
-    numRingsPassed = 0;
+    numRingsGoneThrough = 0;
 
-    //collsion on aircraft
+    // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
-        console.log("collison occured");
         physicsWorld.gravity.set(0, -9.8, 0);
         dead = true;
     });
-
-
-
 }
-function addCongratulationsText() {
+
+// Adds the text to the scene at the end of the level
+function addEndLeveltext() {
     const fontLoader = new FontLoader();
     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
         let textGeometry;
         let textMaterial;
 
-        if (numRingsPassed === Rings.length){
+        if (numRingsGoneThrough === Rings.length){
             textGeometry = new TextGeometry('!! Pass !!', {
                 font: font,
                 size: 5,
@@ -808,11 +758,12 @@ function addCongratulationsText() {
     });
 }
 
+// Level Complete logic
 function levelCompleted() {
     stopTimer();
     const elapsedSeconds = getElapsedSeconds();
     if (currentLevel != 1) {
-        if (numRingsPassed != Rings.length) {
+        if (numRingsGoneThrough != Rings.length) {
             console.log("level complete incorrectly");
             console.log(elapsedSeconds);
         } else {
@@ -823,12 +774,13 @@ function levelCompleted() {
         console.log("level complete");
         console.log(elapsedSeconds); 
     }
-    currentLevel = 0;
     cancelAnimationFrame(animationId);
     MainMenu = true;
+    currentLevel = 0;
     requestAnimationFrame(animate);
 }
 
+// Check if the aircraft flies through the ring
 function checkRingCollision(planePosition, ring) {
     // Calculate the distance between the plane and the center of the ring
     const ringPosition = ring.ringBody.position;
@@ -840,7 +792,7 @@ function checkRingCollision(planePosition, ring) {
             ring.passed = true;
             // If the distance is less than the sum of the plane's radius and the ring's radius, they overlap
             if (distance < ringRadius) {
-                numRingsPassed += 1;
+                numRingsGoneThrough += 1;
                 console.log("Plane passed through the ring.");
             } else {
                 console.log("Plane DID NOT pass through the ring.");
