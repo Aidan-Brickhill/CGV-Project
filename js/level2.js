@@ -309,24 +309,28 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
     });
     
     // Calculate the center position of the torus based on its parameters
-    const centerX = ringX; // Use the x-coordinate of the ring's position
-    const centerY = ringY; // Use the y-coordinate of the ring's position
-    const centerZ = ringZ; // Use the z-coordinate of the ring's position
+    // const centerX = ringX; // Use the x-coordinate of the ring's position
+    // const centerY = ringY; // Use the y-coordinate of the ring's position
+    // const centerZ = ringZ; // Use the z-coordinate of the ring's position
 
-    
-    const radius = ringRadius + 2*tubeRadius; // Use the torus radius as the distance from the center
+    // const radius = ringRadius + 2*tubeRadius; // Use the torus radius as the distance from the center
+    // for (let i = 0; i < level2NumRingLights; i++) {
+    //     const angle = (i / level2NumRingLights) * Math.PI * 2; // Evenly distribute the lights around the torus
+    //     const x = centerX + Math.cos(angle) * radius;
+    //     const y = centerY;
+    //     const z = centerZ + Math.sin(angle) * radius;
 
-    for (let i = 0; i < level2NumRingLights; i++) {
-        const angle = (i / level2NumRingLights) * Math.PI * 2; // Evenly distribute the lights around the torus
-        const x = centerX + Math.cos(angle) * radius;
-        const y = centerY;
-        const z = centerZ + Math.sin(angle) * radius;
+    //     const ringLight = new THREE.PointLight(hexColour, 10, 10); // Emissive color, intensity, and distance
+    //     ringLight.position.set(x, y, z);
+    //     level2Scene.add(ringLight);
+    //     level2RingLights.push(ringLight);
+    // }
 
-        const ringLight = new THREE.PointLight(hexColour, 10, 10); // Emissive color, intensity, and distance
-        ringLight.position.set(x, y, z);
-        level2Scene.add(ringLight);
-        level2RingLights.push(ringLight);
-    }
+    const ringLight = new THREE.PointLight(hexColour, 10, 10); // Emissive color, intensity, and distance
+    ringLight.position.set(ringX, ringY, ringZ);
+    level2Scene.add(ringLight);
+    level2RingLights.push(ringLight);
+
 
 }
 
