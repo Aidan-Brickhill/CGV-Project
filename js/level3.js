@@ -280,6 +280,8 @@ const tubeRadius = 0.2;
 const radialSegments = 8;
 const tubeSegments = 50;
 let level3Rings = [];
+let level3RingLights = [];
+const level3NumRingLights = 3; // Number of lights
 
 // Create Cannon.js bodies for the spheres and cylinders and position them accordingly
 for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
@@ -312,14 +314,14 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
 
     // set the y coord of the ring 
     const ringY = (maxHeight * scalar)/2 + ringRadius;
-
+    const hexColour = 0xFFD700;
     // create a ring and its mesh and add it to the scene
     let ring;
     await import('./ring.js').then(({ Ring }) => {
         ring = new Ring({
             ringRadius: ringRadius,
             tubeRadius: tubeRadius,
-            hexColour: 0xFFD700,
+            hexColour: hexColour,
             position: {
                 x: ringX,
                 y: ringY,
@@ -335,6 +337,26 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
     }).catch(error => {
         console.log('Error loading Ring class:', error);
     });
+
+    // Calculate the center position of the torus based on its parameters
+    const centerX = ringX; // Use the x-coordinate of the ring's position
+    const centerY = ringY; // Use the y-coordinate of the ring's position
+    const centerZ = ringZ; // Use the z-coordinate of the ring's position
+
+    
+    const radius = ringRadius + 2*tubeRadius; // Use the torus radius as the distance from the center
+
+    for (let i = 0; i < level3NumRingLights; i++) {
+        const angle = (i / level3NumRingLights) * Math.PI * 2; // Evenly distribute the lights around the torus
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY;
+        const z = centerZ + Math.sin(angle) * radius;
+
+        const ringLight = new THREE.PointLight(hexColour, 10, 10); // Emissive color, intensity, and distance
+        ringLight.position.set(x, y, z);
+        level3Scene.add(ringLight);
+        level3RingLights.push(ringLight);
+    }
 }
 
 
@@ -371,4 +393,4 @@ level3Scene.add(lavaPointLightStart);
 lavaPointLightStart.position.set(0, 0, level3Start.y);
 
 //============== Export All Objects Of Interest =================//
-export { level3Scene, level3PhysicsWorld, level3AircraftBody, level3Start, level3End, level3Rings }
+export { level3Scene, level3PhysicsWorld, level3AircraftBody, level3Start, level3End, level3Rings, level3RingLights, level3NumRingLights }
