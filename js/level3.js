@@ -1,7 +1,5 @@
 //imports
 import * as THREE from 'three';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { BoxGeometry } from 'three';
@@ -10,12 +8,7 @@ import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.
 
 //============== Change Map Size ================//
 const levelWidth = 7;
-const levelLength = 65;
-
-
-//============== Debugging Camera - FreeCam ================//
-const level3Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-level3Camera.position.set(-17, 31, 33);
+const levelLength = 60;
 
 
 //============== Scene and background colour ================//
@@ -27,20 +20,10 @@ const level3PhysicsWorld = new CANNON.World({
     gravity: new CANNON.Vec3(0, 0, 0),
 });
 
-//============== SunLight ================//
-// const pointLight = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
-// pointLight.castShadow = true; 
-// pointLight.shadow.mapSize.width = 512; 
-// pointLight.shadow.mapSize.height = 512; 
-// pointLight.shadow.camera.near = 0.5; 
-// pointLight.shadow.camera.far = 500; 
-// level3Scene.add(pointLight);
-// pointLight.position.set(40, 30, 40);
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
 level3Scene.add(ambientLight);
 
-//============== Lava Light ================//
 
 
 //============== Phyics Aircraft Global Variables ================//
@@ -66,33 +49,6 @@ level3AircraftVehicle = new CANNON.RigidVehicle({
 })
 
 level3AircraftVehicle.addToWorld(level3PhysicsWorld); //add aircraft physics body to physics world
-
-
-//============== Aircraft Model Initialisation =================//
-
-let level3Aircraft;
-let level3MixerAircraft;
-let glftLoader = new GLTFLoader();
-glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => { //Load model design for aircraft
-    level3Aircraft = gltfScene.scene;
-    level3Scene.add(level3Aircraft); //add model to the world
-    level3Aircraft.rotation.y = Math.PI;
-
-    level3Aircraft.traverse(function (node) {
-        if (node.isMesh) {
-            node.castShadow = true;
-        }
-    });
-
-    const clips = gltfScene.animations;
-    level3MixerAircraft = new THREE.AnimationMixer(level3Aircraft);
-
-    clips.forEach(function (clip) {
-        const action = level3MixerAircraft.clipAction(clip);
-        action.play();
-    });
-
-});
 
 
 //============== Define All The Textures In Map =================//
@@ -309,50 +265,6 @@ function cannonHexGeometry(height, position,) {
     level3PhysicsWorld.addBody(hexagonalPrismBody);
 
 }
-
-//============== Add Clouds To The Scene =================//
-
-function clouds() {
-let geo = new THREE.SphereGeometry(0, 0, 0); 
-let count = Math.floor(Math.pow(Math.random(), 0.45) * 4);
-
-for(let i = 0; i < count; i++) {
-    const puff1 = new THREE.SphereGeometry(1.2, 7, 7);
-    const puff2 = new THREE.SphereGeometry(1.5, 7, 7);
-    const puff3 = new THREE.SphereGeometry(0.9, 7, 7);
-
-    puff1.translate(-1.85, Math.random() * 0.3, 0);
-    puff2.translate(0,     Math.random() * 0.3, 0);
-    puff3.translate(1.85,  Math.random() * 0.3, 0);
-
-    const cloudGeo = mergeBufferGeometries([puff1, puff2, puff3]);
-    cloudGeo.translate( 
-    Math.random() * 20 - 10, 
-    Math.random() * 7 + 7, 
-    Math.random() * 20 - 10
-    );
-    cloudGeo.rotateY(Math.random() * Math.PI * 2);
-
-    geo = mergeBufferGeometries([geo, cloudGeo]);
-}
-    const mesh = new THREE.Mesh(
-        geo,
-        new THREE.MeshStandardMaterial({
-        // envMap: envmap, 
-        envMapIntensity: 0.75, 
-        flatShading: true,
-        // transparent: true,
-        // opacity: 0.85,
-        })
-    );
-
-    level3Scene.add(mesh);
-}
-
-clouds();
-
-
-
 //============== Add Rings to The Scene =================//
 
 //plotting rings along the map
@@ -426,35 +338,10 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
 }
 
 
-//============== Define The "Finish Line" For the Aircraft =================//
-
-let animationId;
-
-//checks to see if aircraft has passed finish line on current frame
-
-// //add congratualions text when the plane passes finish line
-// function addCongratulationsText() {
-//     const fontLoader = new FontLoader();
-//     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-//         const textGeometry = new TextGeometry('Congratulations', {
-//             font: font,
-//             size: 5,
-//             height: 0.5,
-//         });
-
-//         const textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-//         const congratulationsText = new THREE.Mesh(textGeometry, textMaterial);
-
-//         congratulationsText.position.set(-20, 30, level3End.y - 50);
-
-//         level3Scene.add(congratulationsText);
-//     });
-// }
-
 
 
 //============== Adds Fog =================//
-level3Scene.fog = new THREE.Fog(0xff7878, 0.015, 300);
+// level3Scene.fog = new THREE.Fog(0xff7878, 0.015, 300);
 
 const lavaPointLight = new THREE.PointLight( new THREE.Color("#ff6600").convertSRGBToLinear(), 5, 300 );
 lavaPointLight.castShadow = true; 
@@ -484,4 +371,4 @@ level3Scene.add(lavaPointLightStart);
 lavaPointLightStart.position.set(0, 0, level3Start.y);
 
 //============== Export All Objects Of Interest =================//
-export { level3Scene, level3Camera, level3PhysicsWorld, level3Aircraft, level3AircraftBody, level3MixerAircraft, level3Start, level3End, level3Rings }
+export { level3Scene, level3PhysicsWorld, level3AircraftBody, level3Start, level3End, level3Rings }

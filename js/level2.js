@@ -7,9 +7,6 @@ import { BoxGeometry } from 'three';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 
-// SCENE CAMERA, used for debugging only
-const level2Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-level2Camera.position.set(-17,31,33);
 
 // SCENE + PHYSICS INITIALISATION
 const level2Scene = new THREE.Scene();
@@ -26,10 +23,6 @@ level2PhysicsWorld.timing = {
 // INITALIZE 
 let level2AircraftBody;
 let level2AircraftVehicle;
-let level2Aircraft;
-let level2MixerAircraft;
-
-
 
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
 level2Scene.add(ambientLight);
@@ -48,33 +41,11 @@ level2AircraftVehicle = new CANNON.RigidVehicle({
     chassisBody: level2AircraftBody,
 });
 level2AircraftVehicle.addToWorld(level2PhysicsWorld);
-
-let glftLoader = new GLTFLoader();
-glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
-    level2Aircraft = gltfScene.scene;
-    level2Scene.add(level2Aircraft);
-    level2Aircraft.rotation.y = Math.PI;
-    
-    level2Aircraft.traverse(function(node) {
-        if (node.isMesh){
-            node.castShadow = true;
-        }
-    });
-
-    const clips = gltfScene.animations;
-    level2MixerAircraft = new THREE.AnimationMixer(level2Aircraft);
-
-    clips.forEach(function(clip) {
-        const action = level2MixerAircraft.clipAction(clip);
-        action.play();
-    });
-    
-});
 // ====================================================
 
 // Creates World
 const levelWidth=7;
-const levelLength=65;
+const levelLength=60;
 let scalar = 2;
 //  loads image textures
 let textures = {
@@ -253,45 +224,6 @@ function stone(height, position) {
     return geo;
 }
   
-// function clouds() {
-// let geo = new THREE.SphereGeometry(0, 0, 0); 
-// let count = Math.floor(Math.pow(Math.random(), 0.45) * 4);
-
-// for(let i = 0; i < count; i++) {
-//     const puff1 = new THREE.SphereGeometry(1.2, 7, 7);
-//     const puff2 = new THREE.SphereGeometry(1.5, 7, 7);
-//     const puff3 = new THREE.SphereGeometry(0.9, 7, 7);
-    
-//     puff1.translate(-1.85, Math.random() * 0.3, 0);
-//     puff2.translate(0,     Math.random() * 0.3, 0);
-//     puff3.translate(1.85,  Math.random() * 0.3, 0);
-
-//     const cloudGeo = mergeBufferGeometries([puff1, puff2, puff3]);
-//     cloudGeo.translate( 
-//     Math.random() * 20 - 10, 
-//     Math.random() * 7 + 7, 
-//     Math.random() * 20 - 10
-//     );
-//     cloudGeo.rotateY(Math.random() * Math.PI * 2);
-
-//     geo = mergeBufferGeometries([geo, cloudGeo]);
-// }
-//     const mesh = new THREE.Mesh(
-//         geo,
-//         new THREE.MeshStandardMaterial({
-//         // envMap: envmap, 
-//         envMapIntensity: 0.75, 
-//         flatShading: true,
-//         // transparent: true,
-//         // opacity: 0.85,
-//         })
-//     );
-    
-//     level2Scene.add(mesh);
-// }
-
-// clouds();
-
 function tree(height, position) {
     const treeHeight = Math.random() * 1 + 1.25;
     
@@ -414,7 +346,7 @@ pointLightEnd2.position.set(-100, 150, level2End.y +150);
 
 
 // level2Scene.fog = new THREE.Fog( 0xffffff, 0.015, 100 );
-export { level2Scene, level2Camera, level2PhysicsWorld, level2Aircraft, level2AircraftBody, level2MixerAircraft, level2Start, level2End, level2Rings}
+export { level2Scene, level2PhysicsWorld, level2AircraftBody, level2Start, level2End, level2Rings}
 
 
 

@@ -1,13 +1,8 @@
 // IMPORTS
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 import { randFloat } from 'three/src/math/MathUtils';
-
-// SCENE CAMERA, used for debugging only
-const level1Camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-level1Camera.position.set(-17,31,33);
 
 // SCENE + PHYSICS INITIALISATION
 const level1Scene = new THREE.Scene();
@@ -18,13 +13,9 @@ const level1PhysicsWorld = new CANNON.World({
 level1PhysicsWorld.broadphase = new CANNON.SAPBroadphase(level1PhysicsWorld); 
 level1PhysicsWorld.solver = new CANNON.GSSolver(); 
 
-// INITALIZE 
+// INITIALIZE 
 let level1AircraftBody;
 let level1AircraftVehicle;
-let level1Aircraft;
-let level1MixerAircraft;
-
-
 
 // Creates Aircraft + Loads model ====================================================
 level1AircraftBody = new CANNON.Body({
@@ -40,32 +31,11 @@ level1AircraftVehicle = new CANNON.RigidVehicle({
     chassisBody: level1AircraftBody,
 });
 level1AircraftVehicle.addToWorld(level1PhysicsWorld);
-let glftLoader = new GLTFLoader();
-glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
-    level1Aircraft = gltfScene.scene;
-    level1Scene.add(level1Aircraft);
-    level1Aircraft.rotation.y = Math.PI;
-    
-    level1Aircraft.traverse(function(node) {
-        if (node.isMesh){
-            node.castShadow = true;
-        }
-    });
-
-    const clips = gltfScene.animations;
-    level1MixerAircraft = new THREE.AnimationMixer(level1Aircraft);
-
-    clips.forEach(function(clip) {
-        const action = level1MixerAircraft.clipAction(clip);
-        action.play();
-    });
-    
-});
 // ====================================================
 
 // Creates World
 const levelWidth=12;
-const levelLength=80;
+const levelLength=75;
 let scalar = 1;
 //  loads image textures
 let textures = {
@@ -111,18 +81,16 @@ let riverAmplitude = initRiverAmplitude; // larger value is bigger amplitude
 let riverWavelength = 0.25; // larger value is smaller wavelength
 const riverxOffset = 0; 
 const riverzOffset = 0;
-const ravineScale = 1; // fraction of ravine taken up by blocks less than full size
-const heightRenderBound = 0.93;
-
+const ravineScale = 0.9; // fraction of ravine taken up by blocks less than full size
+const period = Math.round((2 * Math.PI) / riverWavelength);
 let rampExp = 2.5;
 function sigmoid(x) {
     return 1 / (1 + Math.E**(-(x-0.25)*Math.E**rampExp));
 };
 
-for (let i = -levelWidth; i <= levelWidth; i++) {
-    riverAmplitude += randFloat(-levelWidth/8, levelWidth/8);
-    rampExp += randFloat(-0.1, 0.1);
-    for (let j = -levelLength; j <= levelLength; j++) {
+for (let j = -levelLength; j <= levelLength; j++) {
+    // riverAmplitude += randFloat(-0.1*riverAmplitude, 0.1*riverAmplitude);
+    for (let i = -levelWidth; i <= levelWidth; i++) {
         let distanceFromRiver = Math.abs(i - (riverAmplitude * Math.sin(riverWavelength*j - riverzOffset) + riverxOffset))
         // normalise distance from river to levelwidth
         distanceFromRiver = (distanceFromRiver/(levelWidth+riverAmplitude));
@@ -130,11 +98,11 @@ for (let i = -levelWidth; i <= levelWidth; i++) {
         // sigmoid curve
         let hexHeight = MAX_HEIGHT * sigmoid(distanceFromRiver);
         hexHeight /= ravineScale;
-        if (hexHeight > MAX_HEIGHT) hexHeight = MAX_HEIGHT;
+        if (hexHeight > MAX_HEIGHT) continue;
         
         // Generate hexagon at the calculated height
         const position = tileToPosition(i, j);
-        if (hexHeight <= MAX_HEIGHT*heightRenderBound) makeHex(hexHeight, position);
+        makeHex(hexHeight, position);
     }
 }  
 
@@ -276,44 +244,6 @@ function stone(height, position) {
     return geo;
 }
   
-// function clouds() {
-// let geo = new THREE.SphereGeometry(0, 0, 0); 
-// let count = Math.floor(Math.pow(Math.random(), 0.45) * 4);
-
-// for(let i = 0; i < count; i++) {
-//     const puff1 = new THREE.SphereGeometry(1.2, 7, 7);
-//     const puff2 = new THREE.SphereGeometry(1.5, 7, 7);
-//     const puff3 = new THREE.SphereGeometry(0.9, 7, 7);
-    
-//     puff1.translate(-1.85, Math.random() * 0.3, 0);
-//     puff2.translate(0,     Math.random() * 0.3, 0);
-//     puff3.translate(1.85,  Math.random() * 0.3, 0);
-
-//     const cloudGeo = mergeBufferGeometries([puff1, puff2, puff3]);
-//     cloudGeo.translate( 
-//     Math.random() * 20 - 10, 
-//     Math.random() * 7 + 7, 
-//     Math.random() * 20 - 10
-//     );
-//     cloudGeo.rotateY(Math.random() * Math.PI * 2);
-
-//     geo = mergeBufferGeometries([geo, cloudGeo]);
-// }
-//     const mesh = new THREE.Mesh(
-//         geo,
-//         new THREE.MeshStandardMaterial({
-//         // envMap: envmap, 
-//         envMapIntensity: 0.75, 
-//         flatShading: true,
-//         // transparent: true,
-//         // opacity: 0.85,
-//         })
-//     );
-    
-//     level1Scene.add(mesh);
-// }
-
-// clouds();
 
 function tree(height, position) {
     const treeHeight = Math.random() * 1 + 1.25;
@@ -330,7 +260,6 @@ function tree(height, position) {
     return mergeBufferGeometries([geo, geo2, geo3]);
 }
 
-// Adds light to scene
 // Adds light to scene
 const pointLightStart = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
 pointLightStart.castShadow = true; 
@@ -372,4 +301,4 @@ pointLightEnd2.position.set(-100, 150, level1End.y + 150);
 const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertSRGBToLinear(), 0.5);
 level1Scene.add(ambientLight);
     
-export { level1Scene, level1Camera, level1PhysicsWorld, level1Aircraft, level1AircraftBody,  level1MixerAircraft, startPos, MAX_HEIGHT, level1End}
+export { level1Scene,  level1PhysicsWorld, level1AircraftBody,  startPos, MAX_HEIGHT, level1End}
