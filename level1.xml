@@ -1,0 +1,25 @@
+<level>
+    <id>1</id>
+    <times>
+        <entry>
+            <username>User1</username>
+            <time>100.0</time>
+        </entry>
+        <entry>
+            <username>User2</username>
+            <time>110.0</time>
+        </entry>
+        <entry>
+            <username>User3</username>
+            <time>120.0</time>
+        </entry>
+        <entry>
+            <username>User4</username>
+            <time>130.0</time>
+        </entry>
+        <entry>
+            <username>User5</username>
+            <time>140.0</time>
+        </entry>
+    </times>
+</level>

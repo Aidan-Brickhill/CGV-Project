@@ -7,13 +7,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; // Import TextGeometry
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-import { initializeApp } from 'firebase/app'
-
-//firebase setup
-
-    const firebaseApp = initializeApp({
-
-    });
+//import * as xml2js from 'xml2js';
 
 // Initialization
 let MainMenu = true;
@@ -665,6 +659,8 @@ function initializeLevel3Scene() {
 function levelCompleted() {
     stopTimer();
     const elapsedSeconds = getElapsedSeconds();
+    const username = "Mike";
+    updateAndSaveLevelTime(levelId,username,elapsedSeconds);
     if (currentLevel != 1) {
         if (numRingsPassed != Rings.length) {
             console.log("level complete incorrectly");
@@ -704,5 +700,52 @@ function checkRingCollision(planePosition, ring) {
             }
         }
     }
+}
+
+function updateAndSaveLevelTime(levelId, username, elapsedSeconds) {
+    const xmlData = readXMLFile(); // Implement a function to read XML data from a file
+
+    // Parse the XML data
+    xml2js.parseString(xmlData, (err, result) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+
+        // Find the level node or create a new one
+        let levelNode = result.level;
+        if (!levelNode) {
+            levelNode = {
+                id: levelId,
+                times: {
+                    entry: [],
+                },
+            };
+            result.level = levelNode;
+        }
+
+        // Add the new time entry
+        const newTimeEntry = {
+            username: username,
+            time: elapsedSeconds,
+        };
+
+        levelNode.times.entry.push(newTimeEntry);
+
+        // Sort the times in ascending order
+        levelNode.times.entry.sort((a, b) => a.time - b.time);
+
+        // Keep only the top 5 times
+        if (levelNode.times.entry.length > 5) {
+            levelNode.times.entry.pop();
+        }
+
+        // Convert the updated data back to XML
+        const builder = new xml2js.Builder();
+        const updatedXML = builder.buildObject(result);
+
+        // Save the updated XML data back to the file
+        saveXMLFile(updatedXML); // Implement a function to save the XML data to a file
+    });
 }
 
