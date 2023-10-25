@@ -145,13 +145,13 @@ initPlaneAudio('../Assets/Sound/planeAudio.mp3');
 initGameOverSound('../Assets/Sound/gameOver.mp3');
 
 //imports from other levels
-import { menuScene, menuCamera } from "./js/mainMenu.js";
-import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End } from "./js/level1.js";
-import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings } from "./js/level2.js";
-import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings } from "./js/level3.js";
+import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
+import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End} from "./js/level1.js";
+import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings, level2RingLights, level2NumRingLights} from "./js/level2.js";
+import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings, level3RingLights, level3NumRingLights} from "./js/level3.js";
 
 // Variables Used for actual level being displayed (takes in the ones from the above imports)
-let physicsWorld, aircraftBody, levelStart, levelEnd, Rings;
+let physicsWorld,  aircraftBody,levelStart, levelEnd, Rings, RingLights, NumRingLights;
 
 // Main Renderer Setup
 let mainRenderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
@@ -628,7 +628,7 @@ const composerLevel2 = new EffectComposer(radarRenderer);
 const radarRenderPassLevel2 = new RenderPass(level2Scene, radarCamera);
 composerLevel2.addPass(radarRenderPassLevel2);
 const brightnessPassLevel2 = new ShaderPass(brightnessShader);
-brightnessPassLevel2.uniforms.brightness.value = 10.0;
+brightnessPassLevel2.uniforms.brightness.value = 7.0;
 composerLevel2.addPass(brightnessPassLevel2);
 composerLevel2.renderToScreen = true;
 
@@ -643,6 +643,12 @@ composerLevel3.renderToScreen = true;
 window.addEventListener("resize", () => {
     mainRenderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+//  parameters for level3 Ring movement
+let level3RingMovementCounter = 0;
+let level3RingMovementDirection = 1;
+const level3RingMovementBound = 30;
+const level3RingMovementDelta = 0.15;
 
 // Used to animate the scenes
 function animate() {
@@ -826,9 +832,22 @@ function animate() {
         // If the level is not the first one
         if (currentLevel >= 2) {
             // Check for ring collison (aka flyingbthrough the ring)
-            Rings.forEach((ring) => {
-                checkRingCollision(aircraftBody.position, ring)
+            Rings.forEach((ring, index) => {            
+                checkRingCollision(aircraftBody.position, ring, RingLights, index, NumRingLights)
+            });            
+        }
+
+        if (currentLevel == 3) {
+            if (level3RingMovementCounter >= level3RingMovementBound) {
+                level3RingMovementCounter = 0;
+                level3RingMovementDirection *= -1;
+            }
+            // Move Rings
+            Rings.forEach((ring, index) => {            
+                moveRing(ring, RingLights, index, NumRingLights);
             });
+            
+            level3RingMovementCounter++;
         }
 
         // If the aircaft has crashed render the scene with the death scene
@@ -1202,12 +1221,21 @@ async function initializeLevel2Scene() {
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     forwardSpeed = speedValue;
 
+    const hexColour = 0xFFD700;
     // Reset Rings
     Rings = level2Rings;
     Rings.forEach((ring) => {
         ring.passed = false;
+        ring.ring.material.color.set(hexColour);
     });
     numRingsGoneThrough = 0;
+
+    RingLights = level2RingLights;
+    NumRingLights = level2NumRingLights
+
+    RingLights.forEach((ringLight) => {
+        ringLight.color.set(hexColour);
+    });
 
     // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
@@ -1262,12 +1290,21 @@ async function initializeLevel3Scene() {
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     forwardSpeed = speedValue;
 
+    const hexColour = 0xFFD700;
     // Reset Rings
     Rings = level3Rings;
     Rings.forEach((ring) => {
         ring.passed = false;
+        ring.ring.material.color.set(hexColour);
     });
     numRingsGoneThrough = 0;
+
+    RingLights = level3RingLights;
+    NumRingLights = level3NumRingLights
+
+    RingLights.forEach((ringLight) => {
+        ringLight.color.set(hexColour);
+    });
 
     // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
@@ -1423,23 +1460,56 @@ function updateLeaderboard() {
 }
 
 // Check if the aircraft flies through the ring
-function checkRingCollision(planePosition, ring) {
+function checkRingCollision(planePosition, ring, RingLights,  index, numRingLights) {
     // Calculate the distance between the plane and the center of the ring
     const ringPosition = ring.ringBody.position;
     const ringRadius = 3;
     const distance = planePosition.distanceTo(ringPosition);
 
+    // NumRingLights is lights per ring
     if (!ring.passed) {
         if (Math.abs(planePosition.z - ringPosition.z) <= 1) {
             ring.passed = true;
+
+            if (index - 1 >= 0) {
+                for (let i = (index-1)*numRingLights; i < (index)*numRingLights; i++) {
+                    RingLights[i].intensity = 0;
+                }
+            }
+
+            if (numRingLights*(index + 1) < RingLights.length) {
+                for (let i = (index+1)*numRingLights; i < (index+2)*numRingLights; i++) {
+                    RingLights[i].intensity = 10;
+                }
+            }
+
             // If the distance is less than the sum of the plane's radius and the ring's radius, they overlap
             if (distance < ringRadius) {
                 numRingsGoneThrough += 1;
+                const successGreen = 0x39FF14;
+                ring.ring.material.color.set(successGreen);
+                for (let i = index*numRingLights; i < (index+1)*numRingLights; i++) {
+                    RingLights[i].color.set(successGreen);
+                }
                 console.log("Plane passed through the ring.");
             } else {
+                const failureRed = 0xE10027;
+                ring.ring.material.color.set(failureRed);
+                for (let i = index*numRingLights; i < (index+1)*numRingLights; i++) {
+                    RingLights[i].color.set(failureRed);
+                }
                 console.log("Plane DID NOT pass through the ring.");
             }
         }
     }
 }
 
+function moveRing(ring, RingLights, index, numRingLights) {
+    ring.updateXPosition(level3RingMovementDelta*level3RingMovementDirection);
+    // NumRingLights is lights per ring
+    for(let i = index*numRingLights; i < (index+1)*numRingLights; i++) {
+        const currentLightPosition = RingLights[i].position.clone();
+        currentLightPosition.x += level3RingMovementDelta*level3RingMovementDirection; // Update the x-component of the position
+        RingLights[i].position.copy(currentLightPosition);
+    }
+};
