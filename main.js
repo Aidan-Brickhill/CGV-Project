@@ -216,6 +216,21 @@ document.body.appendChild(radarContainer);
 // ================================================================================================
 // =============================== PAUSE MAIN MENU ================================================
 // ================================================================================================
+
+const ExitButtonLevel = document.createElement('button');
+ExitButtonLevel.innerText = 'Pause';
+ExitButtonLevel.classList.add('button-74');
+ExitButtonLevel.style.position = 'absolute';
+ExitButtonLevel.style.left = '1%';
+ExitButtonLevel.style.top = '1%';
+ExitButtonLevel.style.justifyContent = 'center';
+
+ExitButtonLevel.style.display = 'none';
+
+
+
+document.body.appendChild(ExitButtonLevel);
+
 let pauseMainMenuShowing = false;
 
 // Create the main pauseMainMenu container
@@ -502,8 +517,8 @@ credit1.style.textAlign = "center";
 credit1.innerHTML = 'CREDITS<br>'+
                     'Plane model retrieved from SketchFab<br>Model Creator: AntijnvanderGun<br><br>' +
                    'World Creation Tutorial from Youtube by<br>Channel: Irradiance<br><br>' +
-                   'Audio Retrieved from Youtube<br>Main Menu Audio: Crossy Road OST: Blues Theme/Crossy Road Castle theme<br>Link: <a href="https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D">https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D</a><br>' +
-                   'Audio Retrieved from Youtube<br>Game Over Sound: Game Over Sound Effect by PureL - 5th Root<br>Link: <a href="https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A">https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A</a><br>' +
+                   'Audio Retrieved from Youtube<br>Main Menu Audio: Crossy Road OST: Blues Theme/Crossy Road Castle theme<br>Link: <a href="https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D">https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D</a><br><br>' +
+                   'Audio Retrieved from Youtube<br>Game Over Sound: Game Over Sound Effect by PureL - 5th Root<br>Link: <a href="https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A">https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A</a><br><' +
                    'Audio Retrieved from Youtube<br>Plane Audio: Airplane Propeller sound 10 hours | White noise | Relaxing sound | Sleep, Study, Meditation by White Noise Tranquility<br>Link: <a href="https://www.youtube.com/watch?v=IQj6URITLgs">https://www.youtube.com/watch?v=IQj6URITLgs</a><br><br>'+
                    'Textures Retrieved from<br><a href="https://stock.adobe.com/za/search?k=lava+texture">https://stock.adobe.com/za/search?k=lava+texture</a><br>' +
                    'Textures Retrieved from<br><a href="https://www.freepik.com/free-photos-vectors/dirt-texture">https://www.freepik.com/free-photos-vectors/dirt-texture</a><br><br>';
@@ -953,6 +968,7 @@ deathMainMenu.addEventListener('click', function() {
         pauseMainMenu.style.display = 'none';
         deathButtons.style.display = 'none';
         mainMenuButtons.style.display = 'flex';
+        ExitButtonLevel.style.display = 'none';
         pauseMainMenuShowing = false;
         dead=false;
     }  
@@ -1131,6 +1147,7 @@ window.addEventListener('keydown', (event) => {
                     resumeTimer();
                     pauseMainMenuShowing = false;
                     pauseMainMenu.style.display = 'none';
+                    ExitButtonLevel.blur();
                     requestAnimationFrame(animate); 
                 } else {
                     if (menuMusic && menuMusic.isPlaying) menuMusic.setVolume(0.7);
@@ -1140,6 +1157,7 @@ window.addEventListener('keydown', (event) => {
                     pauseMainMenu.style.display = 'flex';
                     pauseMainMenuShowing = true;                    
                     cancelAnimationFrame(animationId);
+                    ExitButtonLevel.blur();
                     leaderBoardText.style.display = 'none';
                     leaderBoardAddDiv.style.display = 'none';
                 }
@@ -1149,6 +1167,32 @@ window.addEventListener('keydown', (event) => {
             keys.spacebar.pressed = true;
             break;
 
+    }
+});
+
+ExitButtonLevel.addEventListener('click', function() {
+    if (!MainMenu && !dead){
+        if (pauseMainMenuShowing) {
+            if (menuMusic && menuMusic.isPlaying) menuMusic.setVolume(0.2);
+            if (planeAudio && !planeAudio.isPlaying) playSound(planeAudio);
+
+            resumeTimer();
+            pauseMainMenuShowing = false;
+            pauseMainMenu.style.display = 'none';
+            ExitButtonLevel.blur();
+            requestAnimationFrame(animate); 
+        } else {
+            if (menuMusic && menuMusic.isPlaying) menuMusic.setVolume(0.7);
+            if (planeAudio && planeAudio.isPlaying) pauseSound(planeAudio);
+
+            pauseTimer();
+            pauseMainMenu.style.display = 'flex';
+            pauseMainMenuShowing = true;                    
+            cancelAnimationFrame(animationId);
+            ExitButtonLevel.blur();
+            leaderBoardText.style.display = 'none';
+            leaderBoardAddDiv.style.display = 'none';
+        }
     }
 });
 
@@ -1180,6 +1224,7 @@ window.addEventListener('keyup', (event) => {
 
 
 async function initializeLevel1Scene() {
+
     await setLoading();
     // timer logic
     resetTimer();
@@ -1190,6 +1235,7 @@ async function initializeLevel1Scene() {
     dead = false;
     // Reset level complet variable
     levelComplete = false;
+    ExitButtonLevel.style.display = 'flex';
 
     // reassign globals
     physicsWorld = level1PhysicsWorld;
@@ -1208,6 +1254,7 @@ async function initializeLevel1Scene() {
 
     // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
+        ExitButtonLevel.style.display = 'none';
         physicsWorld.gravity.set(0, -9.8, 0);
         dead = true;
     });
@@ -1226,6 +1273,7 @@ async function initializeLevel2Scene() {
     // try remove the end level text if possible
     // Reset level complet variable
     levelComplete = false;
+    ExitButtonLevel.style.display = 'flex';
 
     // reassign globals
     physicsWorld = level2PhysicsWorld;
@@ -1277,6 +1325,7 @@ async function initializeLevel2Scene() {
 
     // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
+        ExitButtonLevel.style.display = 'none';
         physicsWorld.gravity.set(0, -9.8, 0);
         dead = true;
     });
@@ -1295,6 +1344,7 @@ async function initializeLevel3Scene() {
     // try remove the end level text if possible
     // Reset level complet variable
     levelComplete = false;
+    ExitButtonLevel.style.display = 'flex';
 
     // reassign globals
     physicsWorld = level3PhysicsWorld;
@@ -1346,6 +1396,7 @@ async function initializeLevel3Scene() {
 
     // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
+        ExitButtonLevel.style.display = 'none';
         physicsWorld.gravity.set(0, -9.8, 0);
         dead = true;
     });
@@ -1494,6 +1545,7 @@ mainMenuButton.addEventListener('click', function() {
         pauseMainMenu.style.display = 'none';
         leaderBoardAddDiv.style.display = 'none';
         mainMenuButtons.style.display = 'flex';
+        ExitButtonLevel.style.display = 'none';
         pauseMainMenuShowing = false;
     }
 });
