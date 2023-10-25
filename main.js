@@ -487,8 +487,9 @@ mainMenuButtons.appendChild(Level1Button);
 mainMenuButtons.appendChild(Level2Button);
 mainMenuButtons.appendChild(Level3Button);
 
-
 document.body.appendChild(mainMenuButtons);
+
+
 
 // ================================================================================================
 // ================================================================================================
