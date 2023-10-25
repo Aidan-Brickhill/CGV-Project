@@ -278,6 +278,7 @@ function createLeaderboardEntryContainer(number,username, time) {
 let leaderBoardText;
 let leaderBoardInput;
 let leaderBoardButton;
+let leaderBoardHeader;
 
 async function createLeaderboard() {
 
@@ -301,6 +302,14 @@ async function createLeaderboard() {
     leaderBoardButton.style.margin = '4px 10px';
     leaderBoardButton.disabled = true;
 
+    leaderBoardHeader = document.createElement('img');
+    leaderBoardHeader.src = 'Assets/leaderboard.png';
+    leaderBoardHeader.style.margin = '4px 4px 10px';
+    leaderBoardHeader.style.width = '200px'
+    leaderBoardHeader.style.height = 'auto';
+    
+
+    leaderboardDiv.appendChild(leaderBoardHeader);
     leaderboardDiv.appendChild(leaderBoardButton);
     leaderboardDiv.appendChild(leaderBoardText);
     leaderboardDiv.appendChild(leaderBoardInput);
@@ -480,7 +489,8 @@ const wastedImage = document.createElement('img');
 wastedImage.src = 'Assets/wasted.png';
 wastedImage.style.width = '200px'; 
 wastedImage.style.height = 'auto'; 
-deathDiv.appendChild(wastedImage); 
+deathDiv.appendChild(wastedImage);
+ 
 
 const deathRestart = document.createElement('button');
 deathRestart.innerText = 'Restart';
