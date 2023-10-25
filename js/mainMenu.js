@@ -256,4 +256,4 @@ function createButton(text, name, backgroundColor, textColour, x, y, z) {
     return button;
 }
 
-export {menuScene, menuCamera,deathScene}
+export {menuScene, menuCamera}

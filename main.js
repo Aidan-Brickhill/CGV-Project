@@ -6,8 +6,6 @@ import * as CANNON from 'cannon-es';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
 
@@ -145,7 +143,7 @@ initPlaneAudio('../Assets/Sound/planeAudio.mp3');
 initGameOverSound('../Assets/Sound/gameOver.mp3');
 
 //imports from other levels
-import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
+import { menuScene, menuCamera} from "./js/mainMenu.js";
 import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End} from "./js/level1.js";
 import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings, level2RingLights, level2NumRingLights} from "./js/level2.js";
 import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings, level3RingLights, level3NumRingLights} from "./js/level3.js";
@@ -366,36 +364,6 @@ async function createLeaderboard() {
     }); 
 }
 
-
-//add the leaderboard to the pause menu
-// pauseMainMenu.appendChild(leaderboardDiv);
-
-
-//Leaderboard database functions
-
-// function createUserContainer(username, time) {
-//     const container = document.createElement('div');
-//     container.classList.add('user-data-container');
-
-//     const usernameLabel = document.createElement('label');
-//     usernameLabel.textContent = 'Username: ';
-//     container.appendChild(usernameLabel);
-
-//     const usernameText = document.createElement('span');
-//     usernameText.textContent = username;
-//     container.appendChild(usernameText);
-
-//     const timeLabel = document.createElement('label');
-//     timeLabel.textContent = 'Time: ';
-//     container.appendChild(timeLabel);
-
-//     const timeText = document.createElement('span');
-//     timeText.textContent = time;
-//     container.appendChild(timeText);
-
-//     return container;
-// }
-
 // BUTTON DIV ======================================================
 const buttonsDiv = document.createElement('div');
 buttonsDiv.style.flex = '1';
@@ -414,6 +382,12 @@ mainMenuButton.innerText = 'Main Menu';
 mainMenuButton.classList.add('button-74');
 mainMenuButton.style.margin = '4px 10px'; // Add horizontal margin to the button
 
+const retryButton = document.createElement('button');
+retryButton.innerText = 'Retry';
+retryButton.classList.add('button-74');
+retryButton.style.margin = '4px 10px';
+
+buttonsDiv.appendChild(retryButton);
 buttonsDiv.appendChild(nextLevelButton);
 buttonsDiv.appendChild(mainMenuButton);
 // ================================================================
@@ -481,11 +455,19 @@ Level3Button.style.margin = '10px 10px';
 Level3Button.style.fontSize = '24px';
 Level3Button.style.padding = '20px 30px';
 
+const creditButton = document.createElement('button');
+creditButton.innerText = 'Credits';
+creditButton.classList.add('button-74');
+creditButton.style.margin = '10px 10px';
+creditButton.style.fontSize = '24px';
+creditButton.style.padding = '20px 30px';
+
 mainMenuButtons.appendChild(logoImg);
 mainMenuButtons.appendChild(headingDiv);
 mainMenuButtons.appendChild(Level1Button);
 mainMenuButtons.appendChild(Level2Button);
 mainMenuButtons.appendChild(Level3Button);
+mainMenuButtons.appendChild(creditButton);
 
 
 document.body.appendChild(mainMenuButtons);
@@ -494,6 +476,66 @@ document.body.appendChild(mainMenuButtons);
 // ================================================================================================
 // ================================================================================================
 
+// CREDITS
+// Create a div for the popup
+const popupDiv = document.createElement('div');
+popupDiv.id = 'popupDiv';
+popupDiv.style.position = 'absolute';
+popupDiv.style.left = '50%';
+popupDiv.style.top = '50%';
+popupDiv.style.transform = 'translate(-50%, -50%)';
+popupDiv.style.width = '60vw';
+popupDiv.style.height = '80vh';
+popupDiv.style.backgroundColor = '#fbeee0';
+popupDiv.style.border = '2px solid #422800';
+popupDiv.style.borderRadius = '5%';
+popupDiv.style.display = 'flex';
+popupDiv.style.flexDirection = 'column';
+popupDiv.style.justifyContent = 'center';
+popupDiv.style.alignItems = 'center';
+popupDiv.style.padding = '1rem';
+popupDiv.style.overflow = "auto";
+
+popupDiv.style.paddingBottom = "1vh";
+
+const credit1 = document.createElement('label');
+credit1.style.justifyContent = "center";
+credit1.style.display = "flex";
+credit1.style.flexDirection = "column";
+credit1.style.textAlign = "center";
+credit1.innerHTML = 'CREDITS<br>'+
+                    'Plane model retrieved from SketchFab<br>Model Creator: AntijnvanderGun<br><br>' +
+                   'World Creation Tutorial from Youtube by<br>Channel: Irradiance<br><br>' +
+                   'Audio Retrieved from Youtube<br>Main Menu Audio: Crossy Road OST: Blues Theme/Crossy Road Castle theme<br>Link: <a href="https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D">https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D</a><br><br>' +
+                   'Audio Retrieved from Youtube<br>Game Over Sound: Game Over Sound Effect by PureL - 5th Root<br>Link: <a href="https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A">https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A</a><br><br>' +
+                   'Audio Retrieved from Youtube<br>Plane Audio: Airplane Propeller sound 10 hours | White noise | Relaxing sound | Sleep, Study, Meditation by White Noise Tranquility<br>Link: <a href="https://www.youtube.com/watch?v=IQj6URITLgs">https://www.youtube.com/watch?v=IQj6URITLgs</a><br>'+
+                   'Textures Retrieved from<br><a href="https://stock.adobe.com/za/search?k=lava+texture">https://stock.adobe.com/za/search?k=lava+texture</a><br><br>' +
+                   'Textures Retrieved from<br><a href="https://www.freepik.com/free-photos-vectors/dirt-texture">https://www.freepik.com/free-photos-vectors/dirt-texture</a><br><br>';
+credit1.style.fontSize = '20px';
+
+popupDiv.appendChild(credit1);
+
+// Create an exit button
+const exitButton = document.createElement('button');
+exitButton.innerText = 'Return';
+exitButton.classList.add('button-74');
+exitButton.style.fontSize = '16px';
+exitButton.style.padding = '10px 20px';
+exitButton.style.cursor = 'pointer';
+exitButton.style.alignSelf = 'center';
+
+exitButton.style.marginTop = '20px';
+exitButton.addEventListener('click', function() {
+    document.body.removeChild(popupDiv); // Remove the popup on clicking the exit button
+});
+
+// Append the text input and exit button to the popup div
+popupDiv.appendChild(exitButton);
+
+// Add an event listener to the creditButton to show the popup
+creditButton.addEventListener('click', function() {
+    document.body.appendChild(popupDiv); // Add the popup to the document body on clicking the credit button
+});
 // ================================================================================================
 // =============================== DEATH BUTTONS ================================================
 // ================================================================================================
@@ -1394,6 +1436,27 @@ leaderBoardButton.addEventListener('click', function() {
         });
 });
 
+retryButton.addEventListener('click', async function() {
+    if (pauseMainMenuShowing){
+        cancelAnimationFrame(animationId);
+        MainMenu = false;
+        currentLevel = finishedLevel;
+        if (finishedLevel===1){
+            await initializeLevel1Scene();
+        } else if (finishedLevel===2) {
+            await initializeLevel2Scene();
+        } else if (finishedLevel===3) {
+            await initializeLevel3Scene();
+        }
+        pauseMainMenu.style.display = 'none';
+        leaderBoardAddDiv.style.display = 'none';
+        pauseMainMenuShowing = false;
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+            doneLoading();
+          }, 100);
+    } 
+});
 
 nextLevelButton.addEventListener('click', async function() {
     if (pauseMainMenuShowing){
