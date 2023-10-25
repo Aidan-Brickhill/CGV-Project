@@ -392,6 +392,110 @@ buttonsDiv.appendChild(retryButton);
 buttonsDiv.appendChild(nextLevelButton);
 buttonsDiv.appendChild(mainMenuButton);
 buttonsDiv.appendChild(controlsButton);
+
+
+
+const popupDivControls = document.createElement('div');
+popupDivControls.id = 'popupDiv';
+popupDivControls.style.position = 'absolute';
+popupDivControls.style.left = '50%';
+popupDivControls.style.top = '50%';
+popupDivControls.style.transform = 'translate(-50%, -50%)';
+popupDivControls.style.width = '60vw';
+popupDivControls.style.height = '80vh';
+popupDivControls.style.backgroundColor = '#fbeee0';
+popupDivControls.style.border = '2px solid #422800';
+popupDivControls.style.borderRadius = '5%';
+popupDivControls.style.display = 'flex';
+popupDivControls.style.flexDirection = 'column';
+popupDivControls.style.justifyContent = 'center';
+popupDivControls.style.alignItems = 'center';
+popupDivControls.style.padding = '1rem';
+popupDivControls.style.overflow = "auto";
+popupDivControls.style.paddingBottom = "1vh";
+
+// ADD IMAGES HERE
+const sectionsContainer = document.createElement('div');
+sectionsContainer.style.display = 'flex';
+
+
+// Create a div for the first section
+const section1 = document.createElement('div');
+section1.style.display = 'flex';
+section1.style.flexDirection = 'column';
+section1.style.alignItems = 'center'; // Align items to the center
+section1.style.textAlign = 'center';
+
+// Create a div for the second section
+const section2 = document.createElement('div');
+section2.style.display = 'flex';
+section2.style.flexDirection = 'column';
+section2.style.alignItems = 'center'; // Align items to the center
+section2.style.textAlign = 'center';
+
+// Create the first image for the first section
+const moveImage = document.createElement('img');
+moveImage.src = 'Assets/move.png'; 
+moveImage.alt = 'Image Description'; 
+moveImage.style.width = '300px'; 
+moveImage.style.height = 'auto';
+
+// Create the second image for the first section
+const accelerateImage = document.createElement('img');
+accelerateImage.src = 'Assets/accelerate.png'; 
+accelerateImage.alt = 'Image Description';
+accelerateImage.style.width = '300px'; 
+accelerateImage.style.height = 'auto'; 
+
+// Create the first image for the second section
+const escImage = document.createElement('img');
+escImage.src = 'Assets/pause.png'; 
+escImage.alt = 'Image Description'; 
+escImage.style.width = '300px'; 
+escImage.style.height = 'auto'; 
+
+// Create the second image for the second section
+const perspectiveImage = document.createElement('img');
+perspectiveImage.src = 'Assets/perspective.png'; 
+perspectiveImage.alt = 'Image Description'; 
+perspectiveImage.style.width = '300px'; 
+perspectiveImage.style.height = 'auto'; 
+
+// Append images to their respective sections
+section1.appendChild(moveImage);
+section1.appendChild(accelerateImage);
+
+section2.appendChild(escImage);
+section2.appendChild(perspectiveImage);
+
+sectionsContainer.appendChild(section1);
+sectionsContainer.appendChild(section2);
+// Append sections to the popupDivControls
+popupDivControls.appendChild(sectionsContainer);
+
+
+
+
+// Create an exit button
+const exitButtonControls = document.createElement('button');
+exitButtonControls.innerText = 'Return';
+exitButtonControls.classList.add('button-74');
+exitButtonControls.style.fontSize = '16px';
+exitButtonControls.style.padding = '10px 20px';
+exitButtonControls.style.cursor = 'pointer';
+exitButtonControls.style.alignSelf = 'center';
+exitButtonControls.style.marginTop = '20px';
+exitButtonControls.addEventListener('click', function() {
+    document.body.removeChild(popupDivControls); // Remove the popup on clicking the exit button
+});
+
+// Append the text input and exit button to the popup div
+popupDivControls.appendChild(exitButtonControls);
+
+// Add an event listener to the creditButton to show the popup
+controlsButton.addEventListener('click', function() {
+    document.body.appendChild(popupDivControls); // Add the popup to the document body on clicking the credit button
+});
 // ================================================================
 
 
