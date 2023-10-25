@@ -61,20 +61,23 @@ let textures = {
     stone: await new THREE.TextureLoader().loadAsync("./Assets/lava/stone.jpg"),
 };
 
-const textureTypes = ["lavaRock", "volcanicDirt", "crackedGround", "ashRock", "stone"];
-const wraps = [2, 6, 8, 9, 10];
+const textureTypes = ["lavaRock", "volcanicDirt", "crackedGround", "ashRock", "stone", "lava"];
+const wraps = [2, 6, 8, 9, 10, 40];
 for (let i = 0; i < textureTypes.length; i++) {
     const texture = textures[textureTypes[i]];
 
     // For example, change the repeat values of the texture
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, wraps[i]); // Adjust as needed
+    texture.repeat.set(1, wraps[i]);
+    if (textureTypes[i] == "lava") {
+        texture.repeat.set(wraps[i], 5*wraps[i]);
+    }
 }
 
 //============== Initialise All Individual Objects =================//
 
-let stoneGeo = new BoxGeometry(0, 0, 0);
+let stoneGeo = new BoxGeometry( 0, 0, 0);
 let dirtGeo = new BoxGeometry(0, 0, 0);
 let dirt2Geo = new BoxGeometry(0, 0, 0);
 let sandGeo = new BoxGeometry(0, 0, 0);
@@ -111,15 +114,15 @@ for(let i = -levelWidth-Buffer; i <= levelWidth + Buffer; i++) { //horizontal - 
 //============== Create The Lave Ground - Note: Lava Is Callled seaMesh =================//
 
 let seaMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(300, 300, MAX_HEIGHT * 0.2, 50),
+    new THREE.PlaneGeometry(60, 300, 1, 1),
     new THREE.MeshPhysicalMaterial({
         map: textures.lava, // Set the lava texture as the map
         emissive: new THREE.Color("#FF5733").convertSRGBToLinear(), // Emissive color
-        emissiveIntensity: 0, // Adjust intensity
+        emissiveIntensity: 0.8, // Adjust intensity
         ior: 1.4,
         transmission: 1,
         thickness: 1.5,
-        envMapIntensity: 0.2,
+        envMapIntensity: 0.1,
         roughness: 0.8,
         metalness: 0.1,
     })
@@ -127,39 +130,38 @@ let seaMesh = new THREE.Mesh(
 
 //============== Add Point Lights Under The Lava To Make The Lava Give Off Light =================//
 
-// // Define the number of point lights and their spacing
-// const numLightsX = 1; // Number of lights along the X-axis
-// const numLightsZ = 25; // Number of lights along the Z-axis
-// const spacingX = 10; // Spacing between lights along the X-axis
-// const spacingZ = 5; // Spacing between lights along the Z-axis
+// Define the number of point lights and their spacing
+const numLightsX = 1; // Number of lights along the X-axis
+const numLightsZ = 3; // Number of lights along the Z-axis
+const spacingX = 10; // Spacing between lights along the X-axis
+const spacingZ = 400; // Spacing between lights along the Z-axis
 
-// // Create an empty array to store the point lights
-// const pointLights = [];
+// Create an empty array to store the point lights
+const pointLights = [];
 
-// // Loop to create and position the point lights
-// for (let i = 0; i < numLightsX; i++) {
-//     for (let j = 0; j < numLightsZ; j++) {
-//         const pointLight = new THREE.PointLight(0xcf1020, 2, 30); // Color, intensity, and distance
-//         const x = i * spacingX - (numLightsX / 2) * spacingX;
-//         const z = j * spacingZ - (numLightsZ / 2) * spacingZ;
+// Loop to create and position the point lights
+for (let i = 0; i < numLightsX; i++) {
+    for (let j = 0; j < numLightsZ; j++) {
+        const pointLight = new THREE.PointLight(0xcf1020, 200, 1000); // Color, intensity, and distance
+        const x = i * spacingX - (numLightsX / 2) * spacingX;
+        const z = j * spacingZ - (numLightsZ / 2) * spacingZ;
 
-//         pointLight.position.set(x, 0, z); // Position each light
-//         level3Scene.add(pointLight); // Add the light to the scene
+        pointLight.position.set(x, -700, z); // Position each light
+        level3Scene.add(pointLight); // Add the light to the scene
 
-//         pointLights.push(pointLight); // Add the light to the array for future manipulation
-//     }
-// }
+        pointLights.push(pointLight); // Add the light to the array for future manipulation
+    }
+}
 
-//add all point lights generated above to the scene
-// for (let i = 0; i < pointLights.length; i++) {
-//     level3Scene.add(pointLights[i]);
-// }
+// add all point lights generated above to the scene
+for (let i = 0; i < pointLights.length; i++) {
+    level3Scene.add(pointLights[i]);
+}
 
 //============== Position The Lava (seaMesh) =================//
-
 seaMesh.receiveShadow = true;
-seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
-seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
+seaMesh.position.set(0, 8, 0);
+seaMesh.rotateX(-Math.PI/2);
 
 //============== Define Mesh For Each Object And Add It's Texture =================//
 let stoneMesh = hexMesh(stoneGeo, textures.stone);
