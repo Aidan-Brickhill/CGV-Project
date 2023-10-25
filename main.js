@@ -145,10 +145,10 @@ initPlaneAudio('../Assets/Sound/planeAudio.mp3');
 initGameOverSound('../Assets/Sound/gameOver.mp3');
 
 //imports from other levels
-import { menuScene, menuCamera, deathScene } from "./js/mainMenu.js";
-import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End} from "./js/level1.js";
-import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings} from "./js/level2.js";
-import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings} from "./js/level3.js";
+import { menuScene, menuCamera } from "./js/mainMenu.js";
+import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End } from "./js/level1.js";
+import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings } from "./js/level2.js";
+import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings } from "./js/level3.js";
 
 // Variables Used for actual level being displayed (takes in the ones from the above imports)
 let physicsWorld, aircraftBody, levelStart, levelEnd, Rings;
@@ -793,7 +793,7 @@ function animate() {
         // Setup the boarders depending on the either ceilings or walls
         if (currentLevel === 1) {
             // Ceiling
-            if (aircraftBody.position.y > MAX_HEIGHT *10 / 1.5) {
+            if (aircraftBody.position.y > MAX_HEIGHT  / 1.5) {
                 aircraftBody.position.y = MAX_HEIGHT / 1.5;
                 aircraftBody.velocity.y = 0;
             }
@@ -1301,7 +1301,6 @@ leaderBoardButton.addEventListener('click', function() {
     } 
 
     else {
-    alert("Invalid level.");
     return; // Exit the function if the level is invalid
     }
 
@@ -1313,7 +1312,6 @@ leaderBoardButton.addEventListener('click', function() {
 
     addDoc(currentLevelCollection, data)
         .then(() => {
-        alert("Data submitted to Firestore.");
         leaderBoardAddDiv.style.display = 'none';
         createLeaderboard();
         })
