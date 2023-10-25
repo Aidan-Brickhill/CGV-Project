@@ -67,54 +67,84 @@ async function fetchTimes(levelCode) {
 let audioContext;
 let audioLoader;
 let listener;
-let sound;
+let menuMusic;
+let planeAudio;
+let gameOverSound;
+let playGameOver = true;
 audioContext = new (window.AudioContext || window.webkitAudioContext)();
 audioLoader = new THREE.AudioLoader();
 listener = new THREE.AudioListener();
 
 // Play the sound
-function playSound() {
+function playSound(sound) {
+    console.log("Played audio");
     if (sound) {
         sound.play();
     }
 }
 
 // Pause the sound
-function pauseSound() {
+function pauseSound(sound) {
     if (sound) {
-        sound.pause();
+        sound.pause(sound);
     }
 }
 
 // Stop the sound
-function stopSound() {
+function stopSound(sound) {
     if (sound) {
         sound.stop();
     }
 }
 
 // Attach audio initialization to a user gesture (e.g., button click)
-const initAudio = () => {
+const initMenuMusic = (path) => {
     audioContext.resume().then(() => {
-        console.log("tried to play audio");
+        console.log("Set up menu music");
 
         // Audio context has been resumed, you can load and play audio here
-        audioLoader.load('../Assets/Sound/menuSong.mp3', function (buffer) {
-            sound = new THREE.Audio(listener);
-            sound.setBuffer(buffer);
-            sound.setVolume(0.7);
-            sound.setLoop(true);
-            playSound();
+        audioLoader.load(path, function (buffer) {
+            menuMusic = new THREE.Audio(listener);
+            menuMusic.setBuffer(buffer);
+            menuMusic.setVolume(0.7);
+            menuMusic.setLoop(true);
+            playSound(menuMusic);
         });
-
-        // const soundSource = new THREE.PositionalAudio(listener);
-        // soundSource.setBuffer(sound);
-        // soundSource.setVolume(1);
-        // soundSource.setRefDistance(0); // Set reference distance for positional audio
-        // soundSource.play();
     });
 };
-initAudio();
+
+// Attach audio initialization to a user gesture (e.g., button click)
+const initPlaneAudio = (path) => {
+    audioContext.resume().then(() => {
+        console.log("Set up plane audio");
+
+        // Audio context has been resumed, you can load and play audio here
+        audioLoader.load(path, function (buffer) {
+            planeAudio = new THREE.Audio(listener);
+            planeAudio.setBuffer(buffer);
+            planeAudio.setVolume(0.7);
+            planeAudio.setLoop(true);
+        });
+    });
+};
+// Attach audio initialization to a user gesture (e.g., button click)
+const initGameOverSound = (path) => {
+    audioContext.resume().then(() => {
+        console.log("Set up plane audio");
+
+        // Audio context has been resumed, you can load and play audio here
+        audioLoader.load(path, function (buffer) {
+            gameOverSound = new THREE.Audio(listener);
+            gameOverSound.setBuffer(buffer);
+            gameOverSound.setVolume(0.7);
+            gameOverSound.setLoop(false);
+        });
+    });
+};
+
+initMenuMusic('../Assets/Sound/menuSong.mp3');
+initPlaneAudio('../Assets/Sound/planeAudio.mp3');
+initGameOverSound('../Assets/Sound/gameOver.mp3');
 
 //imports from other levels
 import { menuScene, menuCamera, deathScene } from "./js/mainMenu.js";
@@ -567,6 +597,15 @@ function animate() {
     // Render the menu scene
     if (MainMenu) {
 
+        if (menuMusic) menuMusic.setVolume(0.7);
+        if (menuMusic && !menuMusic.isPlaying){
+            playSound(menuMusic);
+        }
+
+        if (planeAudio && planeAudio.isPlaying){
+            stopSound(planeAudio);
+        }
+
         // Rotate the scene
         menuScene.rotateY(2 * Math.PI / 10000);
 
@@ -741,6 +780,14 @@ function animate() {
 
         // If the aircaft has crashed render the scene with the death scene
         if (dead) {
+            if (planeAudio && planeAudio.isPlaying){
+                stopSound(planeAudio);
+            }
+            if (playGameOver){
+                playSound(gameOverSound);
+                playGameOver = false;
+            } 
+            if (menuMusic) menuMusic.setVolume(0.7);
             if (currentLevel === 1) {
                 mainRenderer.render(level1Scene, aircraftCamera);
                 radarRenderer.render(level1Scene, radarCamera);  
@@ -758,7 +805,12 @@ function animate() {
             }
 
         } else {
-            // If the aircaft has not crashed render the scene without the death scene
+            if (planeAudio && !planeAudio.isPlaying){
+                playSound(planeAudio);
+            }
+
+            menuMusic.setVolume(0.2);
+        // If the aircaft has not crashed render the scene without the death scene
             if (currentLevel === 1) {
                 mainRenderer.render(level1Scene, aircraftCamera);
                 composerLevel1.render();
