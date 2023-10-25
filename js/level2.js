@@ -266,7 +266,7 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
 
     // look at all bodies around the ring and find the biggest height among the hexagons and assign that to the y value of the ring
     let maxHeight = -Infinity;
-    const radiusThreshold = 7;
+    const radiusThreshold = 12;
     for (let i = 0; i < level2PhysicsWorld.bodies.length; i++) {
         const body = level2PhysicsWorld.bodies[i];
         const distance = Math.sqrt(
