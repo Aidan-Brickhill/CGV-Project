@@ -12,7 +12,6 @@ const level1PhysicsWorld = new CANNON.World({
 });
 level1PhysicsWorld.broadphase = new CANNON.SAPBroadphase(level1PhysicsWorld); 
 level1PhysicsWorld.solver = new CANNON.GSSolver(); 
-
 // INITIALIZE 
 let level1AircraftBody;
 let level1AircraftVehicle;
@@ -224,13 +223,13 @@ function hexMesh(geo, map) {
     //   envMap: envmap, 
       envMapIntensity: 0.135, 
       flatShading: true,
-      map
+      map: map
     });
   
     let mesh = new THREE.Mesh(geo, mat);
     mesh.castShadow = true; //default is false
     mesh.receiveShadow = true; //default
-  
+      
     return mesh;
 }
 
