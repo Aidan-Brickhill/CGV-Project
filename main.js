@@ -145,7 +145,7 @@ initPlaneAudio('../Assets/Sound/planeAudio.mp3');
 initGameOverSound('../Assets/Sound/gameOver.mp3');
 
 //imports from other levels
-import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
+import { menuScene, menuCamera } from "./js/mainMenu.js";
 import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End} from "./js/level1.js";
 import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings, level2RingLights, level2NumRingLights} from "./js/level2.js";
 import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings, level3RingLights, level3NumRingLights} from "./js/level3.js";
