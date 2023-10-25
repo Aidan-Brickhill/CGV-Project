@@ -117,10 +117,10 @@ const initAudio = () => {
 initAudio();
 
 //imports from other levels
-import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
-import { level1Scene, level1PhysicsWorld, level1AircraftBody, startPos, MAX_HEIGHT, level1End } from "./js/level1.js";
-import { level2Scene, level2PhysicsWorld, level2AircraftBody, level2Start, level2End, level2Rings } from "./js/level2.js";
-import { level3Scene, level3PhysicsWorld, level3AircraftBody, level3Start, level3End, level3Rings } from "./js/level3.js";
+import { menuScene, menuCamera, deathScene } from "./js/mainMenu.js";
+import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End} from "./js/level1.js";
+import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings} from "./js/level2.js";
+import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings} from "./js/level3.js";
 
 // Variables Used for actual level being displayed (takes in the ones from the above imports)
 let physicsWorld, aircraftBody, levelStart, levelEnd, Rings;
@@ -190,7 +190,7 @@ document.body.appendChild(radarContainer);
 // ================================================================================================
 // =============================== PAUSE MAIN MENU ================================================
 // ================================================================================================
-let pauseMainMenuShwoing = false;
+let pauseMainMenuShowing = false;
 
 // Create the main pauseMainMenu container
 const pauseMainMenu = document.createElement('div');
@@ -203,7 +203,7 @@ pauseMainMenu.style.width = '30%';
 pauseMainMenu.style.height = '75%';
 pauseMainMenu.style.backgroundColor = 'lightblue';
 pauseMainMenu.style.borderRadius = '5%';
-pauseMainMenu.style.display = 'none'; // CHANGE TO NONE
+pauseMainMenu.style.display = 'none'; 
 pauseMainMenu.style.flexDirection = 'column';
 
 // LEADERBOARD DIV ======================================================
@@ -333,7 +333,111 @@ document.body.appendChild(pauseMainMenu);
 // ================================================================================================
 // ================================================================================================
 
+// ================================================================================================
+// =============================== MAIN MENU BUTTONS ================================================
+// ================================================================================================
 
+// Create the main pauseMainMenu container
+const mainMenuButtons = document.createElement('div');
+mainMenuButtons.id = 'pauseMainMenu';
+mainMenuButtons.style.position = 'absolute';
+mainMenuButtons.style.left = '50%';
+mainMenuButtons.style.top = '50%';
+mainMenuButtons.style.transform = 'translate(-50%, -50%)'; 
+mainMenuButtons.style.width = '20%'; 
+mainMenuButtons.style.height = '50%'; 
+mainMenuButtons.style.display = 'flex';
+mainMenuButtons.style.flexDirection = 'column';
+
+// Create a div for the heading
+const headingDiv = document.createElement('div');
+headingDiv.style.fontFamily = 'Comic Sans MS'; 
+headingDiv.style.fontSize = '45px'; 
+headingDiv.style.textAlign = 'center'; 
+headingDiv.style.margin = '0 0 30px'; 
+headingDiv.innerText = 'HEXAIRBORNE'; 
+
+const Level1Button = document.createElement('button');
+Level1Button.innerText = 'Level 1';
+Level1Button.classList.add('button-74');
+Level1Button.style.margin = '10px 10px'; 
+Level1Button.style.fontSize = '24px'; 
+Level1Button.style.padding = '20px 30px'; 
+
+const Level2Button = document.createElement('button');
+Level2Button.innerText = 'Level 2';
+Level2Button.classList.add('button-74');
+Level2Button.style.margin = '10px 10px'; 
+Level2Button.style.fontSize = '24px'; 
+Level2Button.style.padding = '20px 30px';
+
+const Level3Button = document.createElement('button');
+Level3Button.innerText = 'Level 3';
+Level3Button.classList.add('button-74');
+Level3Button.style.margin = '10px 10px';
+Level3Button.style.fontSize = '24px';
+Level3Button.style.padding = '20px 30px';
+
+mainMenuButtons.appendChild(headingDiv);
+mainMenuButtons.appendChild(Level1Button);
+mainMenuButtons.appendChild(Level2Button);
+mainMenuButtons.appendChild(Level3Button);
+
+
+document.body.appendChild(mainMenuButtons);
+
+// ================================================================================================
+// ================================================================================================
+// ================================================================================================
+
+// ================================================================================================
+// =============================== DEATH BUTTONS ================================================
+// ================================================================================================
+
+// Create the main pauseMainMenu container
+const deathButtons = document.createElement('div');
+deathButtons.id = 'deathButtons';
+deathButtons.style.position = 'absolute';
+deathButtons.style.left = '50%';
+deathButtons.style.top = '50%';
+deathButtons.style.transform = 'translate(-50%, -50%)'; 
+deathButtons.style.width = '20%'; 
+deathButtons.style.height = '35%'; 
+deathButtons.style.display = 'none';
+deathButtons.style.flexDirection = 'column';
+deathButtons.style.backgroundColor = 'lightblue';
+deathButtons.style.borderRadius = '5%';
+
+const deathDiv = document.createElement('div');
+deathDiv.style.fontFamily = 'Comic Sans MS'; 
+deathDiv.style.fontSize = '60px'; 
+deathDiv.style.textAlign = 'center'; 
+deathDiv.style.margin = '10px 10px 10px'; 
+deathDiv.innerText = 'WASTED'; 
+
+const deathRestart = document.createElement('button');
+deathRestart.innerText = 'Restart';
+deathRestart.classList.add('button-74');
+deathRestart.style.margin = '10px 10px'; 
+deathRestart.style.fontSize = '24px'; 
+deathRestart.style.padding = '20px 30px'; 
+
+const deathMainMenu = document.createElement('button');
+deathMainMenu.innerText = 'Main Menu';
+deathMainMenu.classList.add('button-74');
+deathMainMenu.style.margin = '10px 10px'; 
+deathMainMenu.style.fontSize = '24px'; 
+deathMainMenu.style.padding = '20px 30px';
+
+deathButtons.appendChild(deathDiv);
+deathButtons.appendChild(deathRestart);
+deathButtons.appendChild(deathMainMenu);
+
+document.body.appendChild(deathButtons);
+
+// ================================================================================================
+// ================================================================================================
+// ================================================================================================
 // radarRenderer
 const radarRenderer = new THREE.WebGLRenderer({ antialias: false });
 radarRenderer.setSize(300, 300); // Adjust the size as needed
@@ -388,6 +492,8 @@ let levelComplete = false;
 let MainMenu = true;
 // Stores an int holding the current level number
 let currentLevel = 0;
+let finishedLevel = currentLevel;
+
 // Used for the boost functionality
 let spacebarIntervalId = null;
 // Used for the movement
@@ -436,8 +542,6 @@ function animate() {
     // Render the menu scene
     if (MainMenu) {
 
-        // Set up raycaster
-        raycaster.setFromCamera(mouse, menuCamera);
         // Rotate the scene
         menuScene.rotateY(2 * Math.PI / 10000);
 
@@ -449,8 +553,6 @@ function animate() {
 
         // Render the buttons and the menu scene
         mainRenderer.render(menuScene, menuCamera);
-        mainRenderer.clearDepth();
-        mainRenderer.render(buttonScene, menuCamera);
 
         // Animate
         animationId = requestAnimationFrame(animate);
@@ -617,21 +719,18 @@ function animate() {
         if (dead) {
             if (currentLevel === 1) {
                 mainRenderer.render(level1Scene, aircraftCamera);
-                radarRenderer.render(level1Scene, radarCamera);
-                mainRenderer.clearDepth();
-                mainRenderer.render(deathScene, menuCamera);
+                radarRenderer.render(level1Scene, radarCamera);  
+                deathButtons.style.display = 'flex';              
             }
             if (currentLevel === 2) {
                 mainRenderer.render(level2Scene, aircraftCamera);
-                radarRenderer.render(level2Scene, radarCamera);
-                mainRenderer.clearDepth();
-                mainRenderer.render(deathScene, menuCamera);
+                radarRenderer.render(level2Scene, radarCamera);  
+                deathButtons.style.display = 'flex';              
             }
             if (currentLevel === 3) {
                 mainRenderer.render(level3Scene, aircraftCamera);
                 radarRenderer.render(level3Scene, radarCamera);
-                mainRenderer.clearDepth();
-                mainRenderer.render(deathScene, menuCamera);
+                deathButtons.style.display = 'flex';              
             }
 
         } else {
@@ -656,58 +755,95 @@ function animate() {
 }
 animate();
 
-//Event listeners
-//  Checks which button is presssed in main menu
-window.addEventListener('mousedown', onMouseDown, false);
-
-function onMouseDown(event) {
-
-    // Calculate normalized mouse coordinates
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-    // Update the raycaster with the mouse position
-    raycaster.setFromCamera(mouse, menuCamera);
-
-    // Perform the raycasting
-    const intersects = raycaster.intersectObjects(buttonScene.children, true);
-
-    // Check if any objects were intersected
-    if (intersects.length > 0) {
-        const selectedObject = intersects[0].object;
-
-        // Handles logic on main menu screen
-        if (MainMenu) {
-            if (selectedObject.name === "level1") {
-                pauseSound();
-                cancelAnimationFrame(animationId);
-                initializeLevel1Scene();
-                MainMenu = false;
-                currentLevel = 1;
-                requestAnimationFrame(animate);
-            }
-            if (selectedObject.name === "level2") {
-                pauseSound();
-                cancelAnimationFrame(animationId);
-                initializeLevel2Scene();
-                MainMenu = false;
-                currentLevel = 2;
-                requestAnimationFrame(animate);
-            }
-            if (selectedObject.name === "level3") {
-                pauseSound();
-                cancelAnimationFrame(animationId);
-                initializeLevel3Scene();
-                MainMenu = false;
-                currentLevel = 3;
-                requestAnimationFrame(animate);
-            }
-        } else {
-            currentLevel = 0;
-            playSound();
-        }
+deathMainMenu.addEventListener('click', function() {
+    if (dead){
+        playSound();
+        MainMenu = true;
+        currentLevel = 0;
+        finishedLevel = currentLevel;
+        resetTimer();
+        requestAnimationFrame(animate);
+        deathButtons.style.display = 'none';
+        mainMenuButtons.style.display = 'flex';
+        pauseMainMenuShowing = false;
+    } else {
+        console.log('Do nothing')
     }
-}
+    
+});
+
+deathRestart.addEventListener('click', function() {
+    if (currentLevel === 1) {
+        pauseSound();
+        cancelAnimationFrame(animationId);
+        initializeLevel1Scene();
+        MainMenu = false;
+        currentLevel = 1;
+        finishedLevel = currentLevel;
+        deathButtons.style.display = 'none';
+        requestAnimationFrame(animate);
+    }
+    if (currentLevel === 2) {
+        pauseSound();
+        cancelAnimationFrame(animationId);
+        initializeLevel2Scene();
+        MainMenu = false;
+        currentLevel = 2;
+        finishedLevel = currentLevel;
+        deathButtons.style.display = 'none';
+        requestAnimationFrame(animate);
+    }
+    if (currentLevel === 3) {
+        pauseSound();
+        cancelAnimationFrame(animationId);
+        initializeLevel3Scene();
+        MainMenu = false;
+        currentLevel = 3;
+        finishedLevel = currentLevel;
+        deathButtons.style.display = 'none';
+        requestAnimationFrame(animate);
+    }
+});
+
+Level1Button.addEventListener('click', function() {
+    if (MainMenu) {
+        pauseSound();
+        cancelAnimationFrame(animationId);
+        initializeLevel1Scene();
+        MainMenu = false;
+        currentLevel = 1;
+        finishedLevel = currentLevel;
+        mainMenuButtons.style.display = 'none';
+        requestAnimationFrame(animate);
+    }
+});
+
+Level2Button.addEventListener('click', function() {
+    if (MainMenu) {
+        pauseSound();
+        cancelAnimationFrame(animationId);
+        initializeLevel2Scene();
+        MainMenu = false;
+        currentLevel = 2;
+        finishedLevel = currentLevel;
+        mainMenuButtons.style.display = 'none';
+        requestAnimationFrame(animate);
+    }
+});
+
+Level3Button.addEventListener('click', function() {
+    if (MainMenu) {
+        pauseSound();
+        cancelAnimationFrame(animationId);
+        initializeLevel3Scene();
+        MainMenu = false;
+        currentLevel = 3;
+        finishedLevel = currentLevel;
+        mainMenuButtons.style.display = 'none';
+        requestAnimationFrame(animate);
+    }
+});
+
 
 // Struct to track key inputs
 const keys = {
@@ -764,18 +900,20 @@ window.addEventListener('keydown', (event) => {
             break;
         case 'Escape':
             // handles game pasuing and music playing
-            if (MainMenu) {
-                pauseSound();
-                resumeTimer();
-                cancelAnimationFrame(animationId);
-                MainMenu = false;
-                requestAnimationFrame(animate);
-            } else {
-                playSound();
-                pauseTimer();
-                cancelAnimationFrame(animationId);
-                MainMenu = true;
-                requestAnimationFrame(animate);
+            if (!MainMenu && !dead){
+                if (pauseMainMenuShowing) {
+                    pauseSound();
+                    resumeTimer();
+                    pauseMainMenuShowing = false;
+                    pauseMainMenu.style.display = 'none';
+                    requestAnimationFrame(animate);
+                } else {
+                    playSound();
+                    pauseTimer();
+                    pauseMainMenu.style.display = 'flex';
+                    pauseMainMenuShowing = true;
+                    cancelAnimationFrame(animationId);
+                }
             }
             break;
         case 'Space':
@@ -939,8 +1077,6 @@ async function initializeLevel2Scene() {
     });
 }
 
-
-
 function initializeLevel3Scene() {
     // timer logic
     resetTimer();
@@ -1056,71 +1192,67 @@ function addEndLeveltext() {
 
 // Level Complete logic
 function levelCompleted() {
-    stopTimer();
-    const elapsedSeconds = getElapsedSeconds();
-    const username = "Mike";
-
-    if (currentLevel != 1) {
-        if (numRingsGoneThrough != Rings.length) {
-            console.log("level complete incorrectly");
-            console.log(elapsedSeconds);
+    if (!pauseMainMenuShowing){
+        stopTimer();
+        const elapsedSeconds = getElapsedSeconds();
+        
+        if (currentLevel != 1) {
+            if (numRingsGoneThrough != Rings.length) {
+                console.log("level complete incorrectly");
+                console.log(elapsedSeconds);
+            } else {
+                console.log("level complete correctly");
+                console.log(elapsedSeconds);
+            }
         } else {
-            console.log("level complete correctly");
-            console.log(elapsedSeconds);
+            console.log("level complete");
+            console.log(elapsedSeconds); 
         }
-    } else {
-        console.log("level complete");
-        console.log(elapsedSeconds);
+        
+        playSound();
+        pauseMainMenu.style.display = 'flex';
+        pauseMainMenuShowing = true;
+        cancelAnimationFrame(animationId);
+        currentLevel=0;
     }
-
-    playSound();
-    cancelAnimationFrame(animationId);
-    pauseMainMenu.style.display = 'flex';
-    pauseMainMenuShwoing = true;
-    // MainMenu = true;
-    // currentLevel = 0;
-    // requestAnimationFrame(animate);
+    
 }
 
-nextLevelButton.addEventListener('click', function () {
-    if (pauseMainMenuShwoing) {
+nextLevelButton.addEventListener('click', function() {
+    if (pauseMainMenuShowing){
         pauseSound();
         MainMenu = false;
-        if (currentLevel != 3) {
-            currentLevel += 1;
-            if (currentLevel === 1) {
-                currentLevel = 1;
+        if (finishedLevel !== 3){
+            finishedLevel+=1;
+            currentLevel = finishedLevel;
+            if (finishedLevel===1){
                 initializeLevel1Scene();
-            } else if (currentLevel === 1) {
-                currentLevel = 2;
+            } else if (finishedLevel===2) {
                 initializeLevel2Scene();
-            } else if (currentLevel === 2) {
-                currentLevel = 2;
+            } else if (finishedLevel===3) {
                 initializeLevel3Scene();
             }
         } else {
             currentLevel = 1;
+            finishedLevel  = currentLevel;
             initializeLevel1Scene();
         }
-        requestAnimationFrame(animate);
         pauseMainMenu.style.display = 'none';
-        pauseMainMenuShwoing = false;
-    } else {
-        console.log("Do Nothing");
-    }
+        pauseMainMenuShowing = false;
+        requestAnimationFrame(animate);
+    } 
 });
 
-mainMenuButton.addEventListener('click', function () {
-    if (pauseMainMenuShwoing) {
+mainMenuButton.addEventListener('click', function() {
+    if (pauseMainMenuShowing){
         playSound();
         MainMenu = true;
         currentLevel = 0;
         resetTimer();
         requestAnimationFrame(animate);
         pauseMainMenu.style.display = 'none';
-        pauseMainMenuShwoing = false;
-    } else {
-        console.log("Do Nothing");
+        mainMenuButtons.style.display = 'flex';
+        pauseMainMenuShowing = false;
     }
 });
 

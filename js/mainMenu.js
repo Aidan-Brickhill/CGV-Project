@@ -11,7 +11,7 @@ menuCamera.position.set(0, 10, 0);
 // SCENE INITIALISATION
 const menuScene = new THREE.Scene();
 menuScene.background = new THREE.Color("#FFEECC");
-const buttonScene = new THREE.Scene();
+// const buttonScene = new THREE.Scene();
 const deathScene = new THREE.Scene();
 menuScene.fog = new THREE.Fog( 0xffffff, 0.015, 50);
 
@@ -30,10 +30,10 @@ const ambientLight = new THREE.AmbientLight( new THREE.Color("#FFFFFF").convertS
 menuScene.add(ambientLight);
 
 
-// Create buttons
-buttonScene.add(createButton("Level 1", "level1", "#black", "#ffecd1", 0, 12, -4));
-buttonScene.add(createButton("Level 2", "level2", "#black", "#008080", 0, 10, -4));
-buttonScene.add(createButton("Level 3", "level3", "#black", "#c5832b", 0, 8, -4));
+// // Create buttons
+// buttonScene.add(createButton("Level 1", "level1", "#black", "#ffecd1", 0, 12, -4));
+// buttonScene.add(createButton("Level 2", "level2", "#black", "#008080", 0, 10, -4));
+// buttonScene.add(createButton("Level 3", "level3", "#black", "#c5832b", 0, 8, -4));
 
 /////
 deathScene.add(createButton("Wasted", "death", "#black", "#800000", 0, 10, -3));
@@ -256,4 +256,4 @@ function createButton(text, name, backgroundColor, textColour, x, y, z) {
     return button;
 }
 
-export {menuScene, menuCamera, buttonScene, deathScene}
+export {menuScene, menuCamera,deathScene}
