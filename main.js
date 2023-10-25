@@ -327,10 +327,6 @@ async function createLeaderboard() {
     leaderboardDiv.appendChild(leaderBoardText);
     leaderboardDiv.appendChild(leaderBoardAddDiv);
 
-
-
-
-
     // grab usernames and times from database
     let usernames = await fetchUsernames(levelCode);
     let times = await fetchTimes(levelCode);
@@ -383,7 +379,7 @@ mainMenuButton.classList.add('button-74');
 mainMenuButton.style.margin = '4px 10px'; // Add horizontal margin to the button
 
 const retryButton = document.createElement('button');
-retryButton.innerText = 'Retry';
+retryButton.innerText = 'Restart';
 retryButton.classList.add('button-74');
 retryButton.style.margin = '4px 10px';
 
@@ -506,10 +502,10 @@ credit1.style.textAlign = "center";
 credit1.innerHTML = 'CREDITS<br>'+
                     'Plane model retrieved from SketchFab<br>Model Creator: AntijnvanderGun<br><br>' +
                    'World Creation Tutorial from Youtube by<br>Channel: Irradiance<br><br>' +
-                   'Audio Retrieved from Youtube<br>Main Menu Audio: Crossy Road OST: Blues Theme/Crossy Road Castle theme<br>Link: <a href="https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D">https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D</a><br><br>' +
-                   'Audio Retrieved from Youtube<br>Game Over Sound: Game Over Sound Effect by PureL - 5th Root<br>Link: <a href="https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A">https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A</a><br><br>' +
-                   'Audio Retrieved from Youtube<br>Plane Audio: Airplane Propeller sound 10 hours | White noise | Relaxing sound | Sleep, Study, Meditation by White Noise Tranquility<br>Link: <a href="https://www.youtube.com/watch?v=IQj6URITLgs">https://www.youtube.com/watch?v=IQj6URITLgs</a><br>'+
-                   'Textures Retrieved from<br><a href="https://stock.adobe.com/za/search?k=lava+texture">https://stock.adobe.com/za/search?k=lava+texture</a><br><br>' +
+                   'Audio Retrieved from Youtube<br>Main Menu Audio: Crossy Road OST: Blues Theme/Crossy Road Castle theme<br>Link: <a href="https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D">https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D</a><br>' +
+                   'Audio Retrieved from Youtube<br>Game Over Sound: Game Over Sound Effect by PureL - 5th Root<br>Link: <a href="https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A">https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A</a><br>' +
+                   'Audio Retrieved from Youtube<br>Plane Audio: Airplane Propeller sound 10 hours | White noise | Relaxing sound | Sleep, Study, Meditation by White Noise Tranquility<br>Link: <a href="https://www.youtube.com/watch?v=IQj6URITLgs">https://www.youtube.com/watch?v=IQj6URITLgs</a><br><br>'+
+                   'Textures Retrieved from<br><a href="https://stock.adobe.com/za/search?k=lava+texture">https://stock.adobe.com/za/search?k=lava+texture</a><br>' +
                    'Textures Retrieved from<br><a href="https://www.freepik.com/free-photos-vectors/dirt-texture">https://www.freepik.com/free-photos-vectors/dirt-texture</a><br><br>';
 credit1.style.fontSize = '20px';
 
