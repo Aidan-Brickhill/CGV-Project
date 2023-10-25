@@ -7,26 +7,61 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; 
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
 
 
 //Firebase
-
 const firebaseConfig = {
     apiKey: "AIzaSyCpCOarVATTewDN3bF3YaLeVkPMp_UZZfo",
-    authDomain: "discordkittens-54224.firebaseapp.com", 
+    authDomain: "discordkittens-54224.firebaseapp.com",
     databaseURL: "https://discordkittens-54224-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "discordkittens-54224",
     storageBucket: "discordkittens-54224.appspot.com",
     messagingSenderId: "48267984231",
-    appId: "1:48267984231:web:800ccf6a2d0ccac55a43c2" 
-  };
-  
-  // Initialize Firebase
-  
+    appId: "1:48267984231:web:800ccf6a2d0ccac55a43c2"
+};
+
+// Initialize Firebase
+
 const app = initializeApp(firebaseConfig);
+
+const database = getFirestore(app);
+
+let levelCode = 1;
+
+async function fetchUsernames(levelCode) {
+    const collectionRef = collection(database, `level${levelCode}`);
+    const querySnapshot = await getDocs(collectionRef);
+
+    const usernames = [];
+
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        usernames.push(data.username);
+        console.log(data.username);
+    });
+
+
+    return usernames;
+
+}
+
+async function fetchTimes(levelCode) {
+    const collectionRef = collection(database, `level${levelCode}`);
+    const querySnapshot = await getDocs(collectionRef);
+
+    const times = [];
+
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        times.push(data.time);
+        console.log(data.time);
+    });
+
+    return times;
+}
 
 // Audio Functionality
 let audioContext;
@@ -83,12 +118,12 @@ initAudio();
 
 //imports from other levels
 import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
-import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End} from "./js/level1.js";
-import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings} from "./js/level2.js";
-import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings} from "./js/level3.js";
+import { level1Scene, level1PhysicsWorld, level1AircraftBody, startPos, MAX_HEIGHT, level1End } from "./js/level1.js";
+import { level2Scene, level2PhysicsWorld, level2AircraftBody, level2Start, level2End, level2Rings } from "./js/level2.js";
+import { level3Scene, level3PhysicsWorld, level3AircraftBody, level3Start, level3End, level3Rings } from "./js/level3.js";
 
 // Variables Used for actual level being displayed (takes in the ones from the above imports)
-let physicsWorld,  aircraftBody,levelStart, levelEnd, Rings;
+let physicsWorld, aircraftBody, levelStart, levelEnd, Rings;
 
 // Main Renderer Setup
 let mainRenderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
@@ -106,7 +141,7 @@ document.body.appendChild(mainRenderer.domElement);
 // Camera for the levels (can be third person or first person depending on offset)
 const aircraftCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let isThirdPersonActive = true;
-let thirdPersonOffset = {x: 0,y: 1,z: 7};
+let thirdPersonOffset = { x: 0, y: 1, z: 7 };
 
 // Setup for the Aircraft Asset
 let AircraftGLTF;
@@ -114,15 +149,15 @@ let AircraftMIXER;
 let glftLoader = new GLTFLoader();
 glftLoader.load('./Assets/stylized_ww1_plane/scene.gltf', (gltfScene) => {
     AircraftGLTF = gltfScene.scene;
-    AircraftGLTF.rotation.y = Math.PI;    
-    AircraftGLTF.traverse(function(node) {
-        if (node.isMesh){
+    AircraftGLTF.rotation.y = Math.PI;
+    AircraftGLTF.traverse(function (node) {
+        if (node.isMesh) {
             node.castShadow = true;
         }
     });
     const clips = gltfScene.animations;
     AircraftMIXER = new THREE.AnimationMixer(AircraftGLTF);
-    clips.forEach(function(clip) {
+    clips.forEach(function (clip) {
         const action = AircraftMIXER.clipAction(clip);
         action.play();
     });
@@ -140,7 +175,7 @@ radarContainer.style.backgroundColor = 'rgba(0, 0, 0, 0)';
 
 // Apply circular clip path
 //idk why its centered at 75% but thats the sweet spot, must be related to width and height somehow
-radarContainer.style.clipPath = 'ellipse(75% 75% at 75% 75%)'; 
+radarContainer.style.clipPath = 'ellipse(75% 75% at 75% 75%)';
 
 // Create the radar canvas container div
 const radarCanvasContainer = document.createElement('div');
@@ -163,9 +198,9 @@ pauseMainMenu.id = 'pauseMainMenu';
 pauseMainMenu.style.position = 'absolute';
 pauseMainMenu.style.left = '50%';
 pauseMainMenu.style.top = '50%';
-pauseMainMenu.style.transform = 'translate(-50%, -50%)'; 
-pauseMainMenu.style.width = '30%'; 
-pauseMainMenu.style.height = '75%'; 
+pauseMainMenu.style.transform = 'translate(-50%, -50%)';
+pauseMainMenu.style.width = '30%';
+pauseMainMenu.style.height = '75%';
 pauseMainMenu.style.backgroundColor = 'lightblue';
 pauseMainMenu.style.borderRadius = '5%';
 pauseMainMenu.style.display = 'none'; // CHANGE TO NONE
@@ -173,26 +208,106 @@ pauseMainMenu.style.flexDirection = 'column';
 
 // LEADERBOARD DIV ======================================================
 const leaderboardDiv = document.createElement('div');
-leaderboardDiv.style.flex = '5'; 
+leaderboardDiv.style.flex = '5';
 leaderboardDiv.style.display = 'flex';
 leaderboardDiv.style.justifyContent = 'center';
 leaderboardDiv.style.alignItems = 'flex-start';
 
-const leaderBoardButton = document.createElement('button');
-leaderBoardButton.innerText = 'Leader Board';
-leaderBoardButton.classList.add('button-74');
-leaderBoardButton.style.margin = '4px 10px';
-leaderBoardButton.disabled = true;
+// function to create a container for each time entry in the leaderboard
+function createLeaderboardEntryContainer(username, time) {
+    const leaderboardEntry = document.createElement('div');
+    leaderboardEntry.classList.add('container');
 
-leaderboardDiv.appendChild(leaderBoardButton);
+    const usernameLabel = document.createElement('label');
+    usernameLabel.textContent = 'Username: ';
+    leaderboardEntry.appendChild(usernameLabel);
+
+    const usernameText = document.createElement('span');
+    usernameText.textContent = username;
+    leaderboardEntry.appendChild(usernameText);
+
+    const timeLabel = document.createElement('label');
+    timeLabel.textContent = 'Time: ';
+    leaderboardEntry.appendChild(timeLabel);
+
+    const timeText = document.createElement('span');
+    timeText.textContent = time;
+    leaderboardEntry.appendChild(timeText);
+
+    return leaderboardEntry
+}
+
+async function createLeaderboard() {
+
+    // remove all children for when switching between levels
+    while (leaderboardDiv.firstChild) {
+        leaderboardDiv.removeChild(leaderboardDiv.firstChild);
+    }
+
+    // grab usernames and times from database
+    let usernames = await fetchUsernames(levelCode);
+    let times = await fetchTimes(levelCode);
+
+    const userData = [
+        { username: usernames[0], time: times[0] },
+        { username: usernames[1], time: times[1] },
+        { username: usernames[2], time: times[2] },
+        { username: usernames[3], time: times[3] },
+        { username: usernames[4], time: times[4] },
+    ];
+
+    // Create and append containers for each user data
+    userData.forEach(data => {
+        console.log(data.username)
+        const userContainer = createLeaderboardEntryContainer(data.username, data.time);
+        leaderboardDiv.appendChild(userContainer);
+    }); 
+}
+
+
+//add the leaderboard to the pause menu
+// pauseMainMenu.appendChild(leaderboardDiv);
+
+// const leaderBoardButton = document.createElement('button');
+// leaderBoardButton.innerText = 'Leader Board';
+// leaderBoardButton.classList.add('button-74');
+// leaderBoardButton.style.margin = '4px 10px';
+// leaderBoardButton.disabled = true;
+
+// leaderboardDiv.appendChild(leaderBoardButton);
+
+//Leaderboard database functions
+
+// function createUserContainer(username, time) {
+//     const container = document.createElement('div');
+//     container.classList.add('user-data-container');
+
+//     const usernameLabel = document.createElement('label');
+//     usernameLabel.textContent = 'Username: ';
+//     container.appendChild(usernameLabel);
+
+//     const usernameText = document.createElement('span');
+//     usernameText.textContent = username;
+//     container.appendChild(usernameText);
+
+//     const timeLabel = document.createElement('label');
+//     timeLabel.textContent = 'Time: ';
+//     container.appendChild(timeLabel);
+
+//     const timeText = document.createElement('span');
+//     timeText.textContent = time;
+//     container.appendChild(timeText);
+
+//     return container;
+// }
 
 // BUTTON DIV ======================================================
 const buttonsDiv = document.createElement('div');
-buttonsDiv.style.flex = '1'; 
+buttonsDiv.style.flex = '1';
 buttonsDiv.style.display = 'flex';
-buttonsDiv.style.justifyContent = 'center'; 
-buttonsDiv.style.alignItems = 'center'; 
-buttonsDiv.style.padding = '0 10px'; 
+buttonsDiv.style.justifyContent = 'center';
+buttonsDiv.style.alignItems = 'center';
+buttonsDiv.style.padding = '0 10px';
 
 const nextLevelButton = document.createElement('button');
 nextLevelButton.innerText = 'Next Level';
@@ -229,16 +344,16 @@ document.getElementById('radar-canvas-container').appendChild(radarRenderer.domE
 // Radar Camera
 const radarCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 let radarOffset = {
-    x : 0,
-    y : 12,
-    z : 0,
+    x: 0,
+    y: 12,
+    z: 0,
 };
 
 // Makes the render scene bright
 const brightnessShader = {
     uniforms: {
-      "tDiffuse": { value: null },
-      "brightness": { value: 1.0 }
+        "tDiffuse": { value: null },
+        "brightness": { value: 1.0 }
     },
     vertexShader: `
       varying vec2 vUv;
@@ -329,7 +444,7 @@ function animate() {
         // Clear both renderers and hide the mini map renderer element
         mainRenderer.autoClear = false;
         mainRenderer.clear();
-        document.getElementById('radar-canvas-container').style.display="none";
+        document.getElementById('radar-canvas-container').style.display = "none";
         radarRenderer.clear();
 
         // Render the buttons and the menu scene
@@ -343,20 +458,20 @@ function animate() {
     } else {
 
         // show the renderer elemnt
-        document.getElementById('radar-canvas-container').style.display="flex";
+        document.getElementById('radar-canvas-container').style.display = "flex";
 
         // Call the function when the aircraft reaches the end of the Scene
         if (aircraftBody.position.z < levelEnd.y) {
             levelCompleted();
         }
 
-        if (currentLevel>=2){
+        if (currentLevel >= 2) {
             // If you pass the last ring, display the text and state level is complete
             if (aircraftBody.position.z < Rings[Rings.length - 1].ringBody.position.z && !levelComplete) {
                 levelComplete = true;
                 addEndLeveltext();
             }
-        }        
+        }
 
         // Animate the Aircraft Model
         if (AircraftMIXER) {
@@ -460,19 +575,19 @@ function animate() {
         // Setup the boarders depending on the either ceilings or walls
         if (currentLevel == 1) {
             // Ceiling
-            if (aircraftBody.position.y > MAX_HEIGHT/1.5) {
-                aircraftBody.position.y = MAX_HEIGHT/1.5;
+            if (aircraftBody.position.y > MAX_HEIGHT / 1.5) {
+                aircraftBody.position.y = MAX_HEIGHT / 1.5;
                 aircraftBody.velocity.y = 0;
             }
         } else {
             // Walls
-            if (aircraftBody.position.x > levelStart.x){
+            if (aircraftBody.position.x > levelStart.x) {
                 aircraftBody.position.x = levelStart.x;
             }
-            if (aircraftBody.position.x < levelEnd.x){
+            if (aircraftBody.position.x < levelEnd.x) {
                 aircraftBody.position.x = levelEnd.x;
-            }          
-        }       
+            }
+        }
 
         // Update the Physics world
         // physicsWorld.step(1 / 60);
@@ -482,20 +597,20 @@ function animate() {
         AircraftGLTF.position.x = aircraftBody.position.x;
         AircraftGLTF.position.y = aircraftBody.position.y - (1 / 5);
         AircraftGLTF.position.z = aircraftBody.position.z;
-        
+
         // Update the aircraft cameras location based on the aircraft
         aircraftCamera.position.set(aircraftBody.position.x, aircraftBody.position.y + 1 + thirdPersonOffset.y, aircraftBody.position.z - 3 + thirdPersonOffset.z);
 
         // Update the mini map cameras location based on the aircraft
-        radarCamera.position.set(aircraftBody.position.x, aircraftBody.position.y + radarOffset.y, aircraftBody.position.z); 
+        radarCamera.position.set(aircraftBody.position.x, aircraftBody.position.y + radarOffset.y, aircraftBody.position.z);
         radarCamera.lookAt(aircraftBody.position.x, aircraftBody.position.y, aircraftBody.position.z);
 
         // If the level is not the first one
-        if (currentLevel>=2){
+        if (currentLevel >= 2) {
             // Check for ring collison (aka flyingbthrough the ring)
-            Rings.forEach((ring) => {            
+            Rings.forEach((ring) => {
                 checkRingCollision(aircraftBody.position, ring)
-            });            
+            });
         }
 
         // If the aircaft has crashed render the scene with the death scene
@@ -520,7 +635,7 @@ function animate() {
             }
 
         } else {
-        // If the aircaft has not crashed render the scene without the death scene
+            // If the aircaft has not crashed render the scene without the death scene
             if (currentLevel === 1) {
                 mainRenderer.render(level1Scene, aircraftCamera);
                 composerLevel1.render();
@@ -534,7 +649,7 @@ function animate() {
                 composerLevel3.render();
             }
         }
-        
+
         // Animate
         animationId = requestAnimationFrame(animate);
     }
@@ -700,28 +815,9 @@ window.addEventListener('keyup', (event) => {
 function initializeLevel1Scene() {
     // timer logic
     resetTimer();
-    
-        // Reference to the Firestore database.
-        const db = getFirestore();
-      
-        // Name of the collection you want to create.
-        const collectionName = 'level1';
-      
-        // Add the "level1" collection to Firestore.
-        addDoc(collection(db, collectionName), {
-          // You can provide initial data for documents in this collection if needed.
-          // For example:
-          exampleField: 'exampleValue',
-        })
-          .then((docRef) => {
-            console.log(`Collection "${collectionName}" created with document ID: ${docRef.id}`);
-          })
-          .catch((error) => {
-            console.error('Error creating collection:', error);
-          });
-
-
     startTimer();
+    levelCode = 1;
+    createLeaderboard();
     // reset dead variable
     dead = false;
     // try remove the end level text if possible
@@ -747,14 +843,14 @@ function initializeLevel1Scene() {
 
     // reassign globals
     physicsWorld = level1PhysicsWorld;
-    physicsWorld.gravity.set(0,-0.5,0);
+    physicsWorld.gravity.set(0, -0.5, 0);
     aircraftBody = level1AircraftBody;
     levelEnd = level1End;
     // Add the model to the scene
     level1Scene.add(AircraftGLTF);
 
     // Update body to start of level
-    aircraftBody.position.set(startPos.x, MAX_HEIGHT/2, startPos.y+13);
+    aircraftBody.position.set(startPos.x, MAX_HEIGHT / 2, startPos.y + 13);
     aircraftBody.velocity.set(0, 0, 0);
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
@@ -771,6 +867,9 @@ async function initializeLevel2Scene() {
     // timer logic
     resetTimer();
     startTimer();
+    levelCode = 2;
+    createLeaderboard();
+ 
     // reset dead variable
     dead = false;
     // try remove the end level text if possible
@@ -796,10 +895,10 @@ async function initializeLevel2Scene() {
 
     // reassign globals
     physicsWorld = level2PhysicsWorld;
-    physicsWorld.gravity.set(0,-0.5,0);
+    physicsWorld.gravity.set(0, -0.5, 0);
     aircraftBody = level2AircraftBody;
     levelStart = level2Start;
-    levelEnd = level2End;  
+    levelEnd = level2End;
     // Add the model to the scene
     level2Scene.add(AircraftGLTF);
 
@@ -820,8 +919,8 @@ async function initializeLevel2Scene() {
     }
 
     // Update body to start of level
-    aircraftBody.position.set(0, maxHeight+8, levelStart.y);
-    aircraftBody.velocity.set(0, 0, 0); 
+    aircraftBody.position.set(0, maxHeight + 8, levelStart.y);
+    aircraftBody.velocity.set(0, 0, 0);
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     forwardSpeed = speedValue;
@@ -846,6 +945,9 @@ function initializeLevel3Scene() {
     // timer logic
     resetTimer();
     startTimer();
+    levelCode = 3;
+    createLeaderboard();
+ 
     // reset dead variable
     dead = false;
     // try remove the end level text if possible
@@ -871,10 +973,10 @@ function initializeLevel3Scene() {
 
     // reassign globals
     physicsWorld = level3PhysicsWorld;
-    physicsWorld.gravity.set(0,-0.5,0);
+    physicsWorld.gravity.set(0, -0.5, 0);
     aircraftBody = level3AircraftBody;
     levelStart = level3Start;
-    levelEnd = level3End;  
+    levelEnd = level3End;
     // Add the model to the scene
     level3Scene.add(AircraftGLTF);
 
@@ -895,7 +997,7 @@ function initializeLevel3Scene() {
     }
 
     // Update body to start of level
-    aircraftBody.position.set(0, maxHeight+8, levelStart.y);
+    aircraftBody.position.set(0, maxHeight + 8, levelStart.y);
     aircraftBody.velocity.set(0, 0, 0);
     aircraftBody.angularVelocity.set(0, 0, 0);
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
@@ -922,7 +1024,7 @@ function addEndLeveltext() {
         let textGeometry;
         let textMaterial;
 
-        if (numRingsGoneThrough === Rings.length){
+        if (numRingsGoneThrough === Rings.length) {
             textGeometry = new TextGeometry('!! Pass !!', {
                 font: font,
                 size: 5,
@@ -957,7 +1059,7 @@ function levelCompleted() {
     stopTimer();
     const elapsedSeconds = getElapsedSeconds();
     const username = "Mike";
-    updateAndSaveLevelTime(levelId,username,elapsedSeconds);
+
     if (currentLevel != 1) {
         if (numRingsGoneThrough != Rings.length) {
             console.log("level complete incorrectly");
@@ -968,9 +1070,9 @@ function levelCompleted() {
         }
     } else {
         console.log("level complete");
-        console.log(elapsedSeconds); 
+        console.log(elapsedSeconds);
     }
-    
+
     playSound();
     cancelAnimationFrame(animationId);
     pauseMainMenu.style.display = 'flex';
@@ -980,24 +1082,24 @@ function levelCompleted() {
     // requestAnimationFrame(animate);
 }
 
-nextLevelButton.addEventListener('click', function() {
-    if (pauseMainMenuShwoing){
+nextLevelButton.addEventListener('click', function () {
+    if (pauseMainMenuShwoing) {
         pauseSound();
         MainMenu = false;
-        if (currentLevel!=3){
-            currentLevel+=1;
-            if (currentLevel===1){
-                currentLevel=1;
+        if (currentLevel != 3) {
+            currentLevel += 1;
+            if (currentLevel === 1) {
+                currentLevel = 1;
                 initializeLevel1Scene();
-            } else if (currentLevel===1) {
-                currentLevel=2;
+            } else if (currentLevel === 1) {
+                currentLevel = 2;
                 initializeLevel2Scene();
-            } else if (currentLevel===2) {
-                currentLevel=2;
+            } else if (currentLevel === 2) {
+                currentLevel = 2;
                 initializeLevel3Scene();
             }
         } else {
-            currentLevel=1;
+            currentLevel = 1;
             initializeLevel1Scene();
         }
         requestAnimationFrame(animate);
@@ -1008,8 +1110,8 @@ nextLevelButton.addEventListener('click', function() {
     }
 });
 
-mainMenuButton.addEventListener('click', function() {
-    if (pauseMainMenuShwoing){
+mainMenuButton.addEventListener('click', function () {
+    if (pauseMainMenuShwoing) {
         playSound();
         MainMenu = true;
         currentLevel = 0;
@@ -1021,6 +1123,26 @@ mainMenuButton.addEventListener('click', function() {
         console.log("Do Nothing");
     }
 });
+
+// Function to update Leaderboard
+function updateLeaderboard() {
+    const leaderboardContainer = document.querySelector('.leaderboard-container');
+
+    onValue(leaderboardRef, (snapshot) => {
+        leaderboardContainer.innerHTML = ''; // Clear previous entries
+
+        snapshot.forEach((childSnapshot) => {
+            const entry = childSnapshot.val();
+            const entryElement = document.createElement('div');
+            entryElement.classList.add('leaderboard-entry');
+            entryElement.innerHTML = `
+          <span class="player-name">${entry.name}</span>
+          <span class="run-time">${entry.runTime}</span>
+        `;
+            leaderboardContainer.appendChild(entryElement);
+        });
+    });
+}
 
 // Check if the aircraft flies through the ring
 function checkRingCollision(planePosition, ring) {
@@ -1041,52 +1163,5 @@ function checkRingCollision(planePosition, ring) {
             }
         }
     }
-}
-
-function updateAndSaveLevelTime(levelId, username, elapsedSeconds) {
-    const xmlData = readXMLFile(); // Implement a function to read XML data from a file
-
-    // Parse the XML data
-    xml2js.parseString(xmlData, (err, result) => {
-        if (err) {
-            console.error(err);
-            return;
-        }
-
-        // Find the level node or create a new one
-        let levelNode = result.level;
-        if (!levelNode) {
-            levelNode = {
-                id: levelId,
-                times: {
-                    entry: [],
-                },
-            };
-            result.level = levelNode;
-        }
-
-        // Add the new time entry
-        const newTimeEntry = {
-            username: username,
-            time: elapsedSeconds,
-        };
-
-        levelNode.times.entry.push(newTimeEntry);
-
-        // Sort the times in ascending order
-        levelNode.times.entry.sort((a, b) => a.time - b.time);
-
-        // Keep only the top 5 times
-        if (levelNode.times.entry.length > 5) {
-            levelNode.times.entry.pop();
-        }
-
-        // Convert the updated data back to XML
-        const builder = new xml2js.Builder();
-        const updatedXML = builder.buildObject(result);
-
-        // Save the updated XML data back to the file
-        saveXMLFile(updatedXML); // Implement a function to save the XML data to a file
-    });
 }
 
