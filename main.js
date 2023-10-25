@@ -60,7 +60,6 @@ const initAudio = () => {
         // soundSource.play();
     });
 };
-
 initAudio();
 
 //imports from other levels
@@ -133,6 +132,72 @@ radarContainer.appendChild(radarCanvasContainer);
 
 // Append the radar container to the document body or a specific container
 document.body.appendChild(radarContainer);
+
+// ================================================================================================
+// =============================== PAUSE MAIN MENU ================================================
+// ================================================================================================
+let pauseMainMenuShwoing = false;
+
+// Create the main pauseMainMenu container
+const pauseMainMenu = document.createElement('div');
+pauseMainMenu.id = 'pauseMainMenu';
+pauseMainMenu.style.position = 'absolute';
+pauseMainMenu.style.left = '50%';
+pauseMainMenu.style.top = '50%';
+pauseMainMenu.style.transform = 'translate(-50%, -50%)'; 
+pauseMainMenu.style.width = '30%'; 
+pauseMainMenu.style.height = '75%'; 
+pauseMainMenu.style.backgroundColor = 'lightblue';
+pauseMainMenu.style.borderRadius = '5%';
+pauseMainMenu.style.display = 'none'; // CHANGE TO NONE
+pauseMainMenu.style.flexDirection = 'column';
+
+// LEADERBOARD DIV ======================================================
+const leaderboardDiv = document.createElement('div');
+leaderboardDiv.style.flex = '5'; 
+leaderboardDiv.style.display = 'flex';
+leaderboardDiv.style.justifyContent = 'center';
+leaderboardDiv.style.alignItems = 'flex-start';
+
+const leaderBoardButton = document.createElement('button');
+leaderBoardButton.innerText = 'Leader Board';
+leaderBoardButton.classList.add('button-74');
+leaderBoardButton.style.margin = '4px 10px';
+leaderBoardButton.disabled = true;
+
+leaderboardDiv.appendChild(leaderBoardButton);
+
+// BUTTON DIV ======================================================
+const buttonsDiv = document.createElement('div');
+buttonsDiv.style.flex = '1'; 
+buttonsDiv.style.display = 'flex';
+buttonsDiv.style.justifyContent = 'center'; 
+buttonsDiv.style.alignItems = 'center'; 
+buttonsDiv.style.padding = '0 10px'; 
+
+const nextLevelButton = document.createElement('button');
+nextLevelButton.innerText = 'Next Level';
+nextLevelButton.classList.add('button-74');
+nextLevelButton.style.margin = '4px 10px';
+
+const mainMenuButton = document.createElement('button');
+mainMenuButton.innerText = 'Main Menu';
+mainMenuButton.classList.add('button-74');
+mainMenuButton.style.margin = '4px 10px'; // Add horizontal margin to the button
+
+buttonsDiv.appendChild(nextLevelButton);
+buttonsDiv.appendChild(mainMenuButton);
+// ================================================================
+
+
+pauseMainMenu.appendChild(leaderboardDiv);
+pauseMainMenu.appendChild(buttonsDiv);
+
+document.body.appendChild(pauseMainMenu);
+
+// ================================================================================================
+// ================================================================================================
+// ================================================================================================
 
 
 // radarRenderer
@@ -226,6 +291,10 @@ const brightnessPassLevel3 = new ShaderPass(brightnessShader);
 brightnessPassLevel3.uniforms.brightness.value = 10.0;
 composerLevel3.addPass(brightnessPassLevel3);
 composerLevel3.renderToScreen = true;
+
+window.addEventListener("resize", () => {
+    mainRenderer.setSize(window.innerWidth, window.innerHeight);
+});
 
 // Used to animate the scenes
 function animate() {
@@ -859,12 +928,57 @@ function levelCompleted() {
         console.log("level complete");
         console.log(elapsedSeconds); 
     }
-    cancelAnimationFrame(animationId);
-    MainMenu = true;
-    currentLevel = 0;
-    requestAnimationFrame(animate);
+    
     playSound();
+    cancelAnimationFrame(animationId);
+    pauseMainMenu.style.display = 'flex';
+    pauseMainMenuShwoing = true;
+    // MainMenu = true;
+    // currentLevel = 0;
+    // requestAnimationFrame(animate);
 }
+
+nextLevelButton.addEventListener('click', function() {
+    if (pauseMainMenuShwoing){
+        pauseSound();
+        MainMenu = false;
+        if (currentLevel!=3){
+            currentLevel+=1;
+            if (currentLevel===1){
+                currentLevel=1;
+                initializeLevel1Scene();
+            } else if (currentLevel===1) {
+                currentLevel=2;
+                initializeLevel2Scene();
+            } else if (currentLevel===2) {
+                currentLevel=2;
+                initializeLevel3Scene();
+            }
+        } else {
+            currentLevel=1;
+            initializeLevel1Scene();
+        }
+        requestAnimationFrame(animate);
+        pauseMainMenu.style.display = 'none';
+        pauseMainMenuShwoing = false;
+    } else {
+        console.log("Do Nothing");
+    }
+});
+
+mainMenuButton.addEventListener('click', function() {
+    if (pauseMainMenuShwoing){
+        playSound();
+        MainMenu = true;
+        currentLevel = 0;
+        resetTimer();
+        requestAnimationFrame(animate);
+        pauseMainMenu.style.display = 'none';
+        pauseMainMenuShwoing = false;
+    } else {
+        console.log("Do Nothing");
+    }
+});
 
 // Check if the aircraft flies through the ring
 function checkRingCollision(planePosition, ring) {
