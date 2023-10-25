@@ -387,9 +387,15 @@ retryButton.innerText = 'Retry';
 retryButton.classList.add('button-74');
 retryButton.style.margin = '4px 10px';
 
+const controlsButton = document.createElement('button');
+controlsButton.innerText = 'Controls';
+controlsButton.classList.add('button-74');
+controlsButton.style.margin = '4px 10px';
+
 buttonsDiv.appendChild(retryButton);
 buttonsDiv.appendChild(nextLevelButton);
 buttonsDiv.appendChild(mainMenuButton);
+buttonsDiv.appendChild(controlsButton);
 // ================================================================
 
 
@@ -579,6 +585,8 @@ deathMainMenu.classList.add('button-74');
 deathMainMenu.style.margin = '10px 10px'; 
 deathMainMenu.style.fontSize = '24px'; 
 deathMainMenu.style.padding = '20px 30px';
+
+
 
 deathButtons.appendChild(deathDiv);
 deathButtons.appendChild(deathRestart);
