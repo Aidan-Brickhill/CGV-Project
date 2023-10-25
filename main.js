@@ -48,7 +48,7 @@ const initAudio = () => {
         audioLoader.load('../Assets/Sound/menuSong.mp3', function (buffer) {
             sound = new THREE.Audio(listener);
             sound.setBuffer(buffer);
-            sound.setVolume(0.3);
+            sound.setVolume(0.7);
             sound.setLoop(true);
             playSound();
         });
@@ -75,10 +75,13 @@ let physicsWorld,  aircraftBody,levelStart, levelEnd, Rings;
 // Main Renderer Setup
 let mainRenderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
 mainRenderer.setSize(innerWidth, innerHeight);
+// specific tone mapping method that simulates a more filmic and visually appealing rendering of high dynamic range (HDR) scenes
 mainRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+// represents the standard sRGB color space
 mainRenderer.outputColorSpac = THREE.sRGBEncoding;
 mainRenderer.useLegacyLights = true;
 mainRenderer.shadowMap.enabled = true;
+// provides smoother and softer shadows
 mainRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(mainRenderer.domElement);
 
@@ -226,6 +229,7 @@ composerLevel3.renderToScreen = true;
 
 // Used to animate the scenes
 function animate() {
+
     // Render the menu scene
     if (MainMenu) {
 
@@ -473,7 +477,6 @@ function onMouseDown(event) {
         if (MainMenu) {
             if (selectedObject.name === "level1") {
                 pauseSound();
-                currentLevel = 1;
                 cancelAnimationFrame(animationId);
                 initializeLevel1Scene();
                 MainMenu = false;
@@ -619,6 +622,16 @@ function initializeLevel1Scene() {
         } catch {
             console.log("wrong level");
         }
+        try {
+            level2Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level3Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
     }
     // Reset level complet variable
     levelComplete = false;
@@ -654,7 +667,17 @@ async function initializeLevel2Scene() {
     // try remove the end level text if possible
     if (levelComplete) {
         try {
+            level1Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
             level2Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level3Scene.remove(endLeveltext);
         } catch {
             console.log("wrong level");
         }
@@ -718,6 +741,16 @@ function initializeLevel3Scene() {
     dead = false;
     // try remove the end level text if possible
     if (levelComplete) {
+        try {
+            level1Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
+        try {
+            level2Scene.remove(endLeveltext);
+        } catch {
+            console.log("wrong level");
+        }
         try {
             level3Scene.remove(endLeveltext);
         } catch {
@@ -830,6 +863,7 @@ function levelCompleted() {
     MainMenu = true;
     currentLevel = 0;
     requestAnimationFrame(animate);
+    playSound();
 }
 
 // Check if the aircraft flies through the ring
