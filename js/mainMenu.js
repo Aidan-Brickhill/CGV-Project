@@ -42,13 +42,13 @@ deathScene.add(createButton("Wasted", "death", "#black", "#800000", 0, 10, -3));
 const mapWidth = 20;
 const maplength = 20;
 let textures = {
-    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
-    dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
-    grass: await new THREE.TextureLoader().loadAsync("./Assets/grass2.jpg"),
-    sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
-    water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
-    stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
-    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
+    dirt: await new THREE.TextureLoader().loadAsync("./Assets/river/dirt1.jpg"),
+    dirt2: await new THREE.TextureLoader().loadAsync("./Assets/river/dirt2.jpg"),
+    grass: await new THREE.TextureLoader().loadAsync("./Assets/river/grass.jpg"),
+    sand: await new THREE.TextureLoader().loadAsync("./Assets/river/sand.jpg"),
+    water: await new THREE.TextureLoader().loadAsync("./Assets/river/water.jpg"),
+    stone: await new THREE.TextureLoader().loadAsync("./Assets/river/stone.jpg"),
+    tree: await new THREE.TextureLoader().loadAsync("./Assets/river/tree.jpg"),
 };
 
 let stoneGeo = new THREE.BoxGeometry(0,0,0);
@@ -256,4 +256,4 @@ function createButton(text, name, backgroundColor, textColour, x, y, z) {
     return button;
 }
 
-export {menuScene, menuCamera,deathScene}
+export {menuScene, menuCamera}

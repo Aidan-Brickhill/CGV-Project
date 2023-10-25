@@ -6,8 +6,6 @@ import * as CANNON from 'cannon-es';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
 
@@ -145,13 +143,13 @@ initPlaneAudio('../Assets/Sound/planeAudio.mp3');
 initGameOverSound('../Assets/Sound/gameOver.mp3');
 
 //imports from other levels
-import { menuScene, menuCamera, deathScene } from "./js/mainMenu.js";
+import { menuScene, menuCamera } from "./js/mainMenu.js";
 import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End} from "./js/level1.js";
-import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings} from "./js/level2.js";
-import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings} from "./js/level3.js";
+import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings, level2RingLights, level2NumRingLights} from "./js/level2.js";
+import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings, level3RingLights, level3NumRingLights} from "./js/level3.js";
 
 // Variables Used for actual level being displayed (takes in the ones from the above imports)
-let physicsWorld, aircraftBody, levelStart, levelEnd, Rings;
+let physicsWorld,  aircraftBody,levelStart, levelEnd, Rings, RingLights, NumRingLights;
 
 // Main Renderer Setup
 let mainRenderer = new THREE.WebGLRenderer({ aplha: true, antialias: true });
@@ -366,36 +364,6 @@ async function createLeaderboard() {
     }); 
 }
 
-
-//add the leaderboard to the pause menu
-// pauseMainMenu.appendChild(leaderboardDiv);
-
-
-//Leaderboard database functions
-
-// function createUserContainer(username, time) {
-//     const container = document.createElement('div');
-//     container.classList.add('user-data-container');
-
-//     const usernameLabel = document.createElement('label');
-//     usernameLabel.textContent = 'Username: ';
-//     container.appendChild(usernameLabel);
-
-//     const usernameText = document.createElement('span');
-//     usernameText.textContent = username;
-//     container.appendChild(usernameText);
-
-//     const timeLabel = document.createElement('label');
-//     timeLabel.textContent = 'Time: ';
-//     container.appendChild(timeLabel);
-
-//     const timeText = document.createElement('span');
-//     timeText.textContent = time;
-//     container.appendChild(timeText);
-
-//     return container;
-// }
-
 // BUTTON DIV ======================================================
 const buttonsDiv = document.createElement('div');
 buttonsDiv.style.flex = '1';
@@ -414,6 +382,12 @@ mainMenuButton.innerText = 'Main Menu';
 mainMenuButton.classList.add('button-74');
 mainMenuButton.style.margin = '4px 10px'; // Add horizontal margin to the button
 
+const retryButton = document.createElement('button');
+retryButton.innerText = 'Retry';
+retryButton.classList.add('button-74');
+retryButton.style.margin = '4px 10px';
+
+buttonsDiv.appendChild(retryButton);
 buttonsDiv.appendChild(nextLevelButton);
 buttonsDiv.appendChild(mainMenuButton);
 // ================================================================
@@ -481,11 +455,19 @@ Level3Button.style.margin = '10px 10px';
 Level3Button.style.fontSize = '24px';
 Level3Button.style.padding = '20px 30px';
 
+const creditButton = document.createElement('button');
+creditButton.innerText = 'Credits';
+creditButton.classList.add('button-74');
+creditButton.style.margin = '10px 10px';
+creditButton.style.fontSize = '24px';
+creditButton.style.padding = '20px 30px';
+
 mainMenuButtons.appendChild(logoImg);
 mainMenuButtons.appendChild(headingDiv);
 mainMenuButtons.appendChild(Level1Button);
 mainMenuButtons.appendChild(Level2Button);
 mainMenuButtons.appendChild(Level3Button);
+mainMenuButtons.appendChild(creditButton);
 
 document.body.appendChild(mainMenuButtons);
 
@@ -495,6 +477,66 @@ document.body.appendChild(mainMenuButtons);
 // ================================================================================================
 // ================================================================================================
 
+// CREDITS
+// Create a div for the popup
+const popupDiv = document.createElement('div');
+popupDiv.id = 'popupDiv';
+popupDiv.style.position = 'absolute';
+popupDiv.style.left = '50%';
+popupDiv.style.top = '50%';
+popupDiv.style.transform = 'translate(-50%, -50%)';
+popupDiv.style.width = '60vw';
+popupDiv.style.height = '80vh';
+popupDiv.style.backgroundColor = '#fbeee0';
+popupDiv.style.border = '2px solid #422800';
+popupDiv.style.borderRadius = '5%';
+popupDiv.style.display = 'flex';
+popupDiv.style.flexDirection = 'column';
+popupDiv.style.justifyContent = 'center';
+popupDiv.style.alignItems = 'center';
+popupDiv.style.padding = '1rem';
+popupDiv.style.overflow = "auto";
+
+popupDiv.style.paddingBottom = "1vh";
+
+const credit1 = document.createElement('label');
+credit1.style.justifyContent = "center";
+credit1.style.display = "flex";
+credit1.style.flexDirection = "column";
+credit1.style.textAlign = "center";
+credit1.innerHTML = 'CREDITS<br>'+
+                    'Plane model retrieved from SketchFab<br>Model Creator: AntijnvanderGun<br><br>' +
+                   'World Creation Tutorial from Youtube by<br>Channel: Irradiance<br><br>' +
+                   'Audio Retrieved from Youtube<br>Main Menu Audio: Crossy Road OST: Blues Theme/Crossy Road Castle theme<br>Link: <a href="https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D">https://www.youtube.com/watch?v=TWU2dOMcvHo&pp=ygUWY3Jvc3N5IHJvYWQgdGhlbWUgc29uZw%3D%3D</a><br><br>' +
+                   'Audio Retrieved from Youtube<br>Game Over Sound: Game Over Sound Effect by PureL - 5th Root<br>Link: <a href="https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A">https://youtu.be/kZeO_vdwqI8?si=zNiZ6qM_Z_h6Z--A</a><br><br>' +
+                   'Audio Retrieved from Youtube<br>Plane Audio: Airplane Propeller sound 10 hours | White noise | Relaxing sound | Sleep, Study, Meditation by White Noise Tranquility<br>Link: <a href="https://www.youtube.com/watch?v=IQj6URITLgs">https://www.youtube.com/watch?v=IQj6URITLgs</a><br>'+
+                   'Textures Retrieved from<br><a href="https://stock.adobe.com/za/search?k=lava+texture">https://stock.adobe.com/za/search?k=lava+texture</a><br><br>' +
+                   'Textures Retrieved from<br><a href="https://www.freepik.com/free-photos-vectors/dirt-texture">https://www.freepik.com/free-photos-vectors/dirt-texture</a><br><br>';
+credit1.style.fontSize = '20px';
+
+popupDiv.appendChild(credit1);
+
+// Create an exit button
+const exitButton = document.createElement('button');
+exitButton.innerText = 'Return';
+exitButton.classList.add('button-74');
+exitButton.style.fontSize = '16px';
+exitButton.style.padding = '10px 20px';
+exitButton.style.cursor = 'pointer';
+exitButton.style.alignSelf = 'center';
+
+exitButton.style.marginTop = '20px';
+exitButton.addEventListener('click', function() {
+    document.body.removeChild(popupDiv); // Remove the popup on clicking the exit button
+});
+
+// Append the text input and exit button to the popup div
+popupDiv.appendChild(exitButton);
+
+// Add an event listener to the creditButton to show the popup
+creditButton.addEventListener('click', function() {
+    document.body.appendChild(popupDiv); // Add the popup to the document body on clicking the credit button
+});
 // ================================================================================================
 // =============================== DEATH BUTTONS ================================================
 // ================================================================================================
@@ -629,7 +671,7 @@ const composerLevel2 = new EffectComposer(radarRenderer);
 const radarRenderPassLevel2 = new RenderPass(level2Scene, radarCamera);
 composerLevel2.addPass(radarRenderPassLevel2);
 const brightnessPassLevel2 = new ShaderPass(brightnessShader);
-brightnessPassLevel2.uniforms.brightness.value = 10.0;
+brightnessPassLevel2.uniforms.brightness.value = 7.0;
 composerLevel2.addPass(brightnessPassLevel2);
 composerLevel2.renderToScreen = true;
 
@@ -644,6 +686,12 @@ composerLevel3.renderToScreen = true;
 window.addEventListener("resize", () => {
     mainRenderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+//  parameters for level3 Ring movement
+let level3RingMovementCounter = 0;
+let level3RingMovementDirection = 1;
+const level3RingMovementBound = 30;
+const level3RingMovementDelta = 0.15;
 
 // Used to animate the scenes
 function animate() {
@@ -794,7 +842,7 @@ function animate() {
         // Setup the boarders depending on the either ceilings or walls
         if (currentLevel === 1) {
             // Ceiling
-            if (aircraftBody.position.y > MAX_HEIGHT *10 / 1.5) {
+            if (aircraftBody.position.y > MAX_HEIGHT  / 1.5) {
                 aircraftBody.position.y = MAX_HEIGHT / 1.5;
                 aircraftBody.velocity.y = 0;
             }
@@ -827,9 +875,22 @@ function animate() {
         // If the level is not the first one
         if (currentLevel >= 2) {
             // Check for ring collison (aka flyingbthrough the ring)
-            Rings.forEach((ring) => {
-                checkRingCollision(aircraftBody.position, ring)
+            Rings.forEach((ring, index) => {            
+                checkRingCollision(aircraftBody.position, ring, RingLights, index, NumRingLights)
+            });            
+        }
+
+        if (currentLevel == 3) {
+            if (level3RingMovementCounter >= level3RingMovementBound) {
+                level3RingMovementCounter = 0;
+                level3RingMovementDirection *= -1;
+            }
+            // Move Rings
+            Rings.forEach((ring, index) => {            
+                moveRing(ring, RingLights, index, NumRingLights);
             });
+            
+            level3RingMovementCounter++;
         }
 
         // If the aircaft has crashed render the scene with the death scene
@@ -889,7 +950,6 @@ animate();
 
 deathMainMenu.addEventListener('click', function() {
     if (dead){
-        playSound();
         cancelAnimationFrame(animationId);
         MainMenu = true;
         currentLevel = 0;
@@ -903,79 +963,111 @@ deathMainMenu.addEventListener('click', function() {
     }  
 });
 
-deathRestart.addEventListener('click', function() {
+deathRestart.addEventListener('click', async function() {
     if (currentLevel === 1) {
-        pauseSound();
         cancelAnimationFrame(animationId);
-        initializeLevel1Scene();
+        await initializeLevel1Scene();
         MainMenu = false;
         pauseMainMenuShowing = false;
         currentLevel = 1;
         finishedLevel = currentLevel;
         deathButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 100);
     }
     if (currentLevel === 2) {
-        pauseSound();
         cancelAnimationFrame(animationId);
-        initializeLevel2Scene();
+        await initializeLevel2Scene();
         MainMenu = false;
         pauseMainMenuShowing = false;
         currentLevel = 2;
         finishedLevel = currentLevel;
         deathButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 100);
     }
     if (currentLevel === 3) {
-        pauseSound();
         cancelAnimationFrame(animationId);
-        initializeLevel3Scene();
+        await initializeLevel3Scene();
         MainMenu = false;
         pauseMainMenuShowing = false;
         currentLevel = 3;
         finishedLevel = currentLevel;
         deathButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 100);
     }
 
 });
 
-Level1Button.addEventListener('click', function() {
+
+const loadingScreen = document.getElementById('loading-screen');
+
+async function setLoading(){
+    loadingScreen.style.display = "flex";
+}
+
+async function doneLoading(){
+    loadingScreen.style.display = "none";
+}
+
+Level1Button.addEventListener('click', async function() {
     if (MainMenu) {
-        pauseSound();
         cancelAnimationFrame(animationId);
         initializeLevel1Scene();
         MainMenu = false;
         currentLevel = 1;
         finishedLevel = currentLevel;
         mainMenuButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 1000);
     }
 });
 
-Level2Button.addEventListener('click', function() {
+Level2Button.addEventListener('click', async function() {
     if (MainMenu) {
-        pauseSound();
         cancelAnimationFrame(animationId);
         initializeLevel2Scene();
         MainMenu = false;
         currentLevel = 2;
         finishedLevel = currentLevel;
         mainMenuButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 1000);
     }
 });
 
-Level3Button.addEventListener('click', function() {
+Level3Button.addEventListener('click', async function() {
     if (MainMenu) {
-        pauseSound();
         cancelAnimationFrame(animationId);
         initializeLevel3Scene();
         MainMenu = false;
         currentLevel = 3;
         finishedLevel = currentLevel;
         mainMenuButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 1000);
     }
 });
 
@@ -1038,13 +1130,17 @@ window.addEventListener('keydown', (event) => {
             console.log(pauseMainMenuShowing);
             if (!MainMenu && !dead){
                 if (pauseMainMenuShowing) {
-                    pauseSound();
+                    if (menuMusic && menuMusic.isPlaying) menuMusic.setVolume(0.2);
+                    if (planeAudio && !planeAudio.isPlaying) playSound(planeAudio);
+
                     resumeTimer();
                     pauseMainMenuShowing = false;
                     pauseMainMenu.style.display = 'none';
                     requestAnimationFrame(animate); 
                 } else {
-                    playSound();
+                    if (menuMusic && menuMusic.isPlaying) menuMusic.setVolume(0.7);
+                    if (planeAudio && planeAudio.isPlaying) pauseSound(planeAudio);
+
                     pauseTimer();
                     pauseMainMenu.style.display = 'flex';
                     pauseMainMenuShowing = true;                    
@@ -1088,7 +1184,8 @@ window.addEventListener('keyup', (event) => {
 
 
 
-function initializeLevel1Scene() {
+async function initializeLevel1Scene() {
+    await setLoading();
     // timer logic
     resetTimer();
     startTimer();
@@ -1122,6 +1219,7 @@ function initializeLevel1Scene() {
 }
 
 async function initializeLevel2Scene() {
+    await setLoading();
     // timer logic
     resetTimer();
     startTimer();
@@ -1166,12 +1264,21 @@ async function initializeLevel2Scene() {
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     forwardSpeed = speedValue;
 
+    const hexColour = 0xFFD700;
     // Reset Rings
     Rings = level2Rings;
     Rings.forEach((ring) => {
         ring.passed = false;
+        ring.ring.material.color.set(hexColour);
     });
     numRingsGoneThrough = 0;
+
+    RingLights = level2RingLights;
+    NumRingLights = level2NumRingLights
+
+    RingLights.forEach((ringLight) => {
+        ringLight.color.set(hexColour);
+    });
 
     // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
@@ -1180,7 +1287,8 @@ async function initializeLevel2Scene() {
     });
 }
 
-function initializeLevel3Scene() {
+async function initializeLevel3Scene() {
+    await setLoading();
     // timer logic
     resetTimer();
     startTimer();
@@ -1225,12 +1333,21 @@ function initializeLevel3Scene() {
     aircraftBody.quaternion.setFromEuler(0, 0, 0);
     forwardSpeed = speedValue;
 
+    const hexColour = 0xFFD700;
     // Reset Rings
     Rings = level3Rings;
     Rings.forEach((ring) => {
         ring.passed = false;
+        ring.ring.material.color.set(hexColour);
     });
     numRingsGoneThrough = 0;
+
+    RingLights = level3RingLights;
+    NumRingLights = level3NumRingLights
+
+    RingLights.forEach((ringLight) => {
+        ringLight.color.set(hexColour);
+    });
 
     // Collsion detection on aircraft
     aircraftBody.addEventListener("collide", function (e) {
@@ -1266,7 +1383,6 @@ function levelCompleted() {
             leaderBoardAddDiv.style.display = 'flex';
         }   
         
-        playSound();
         pauseMainMenu.style.display = 'flex';
         pauseMainMenuShowing = true;
         cancelAnimationFrame(animationId);
@@ -1302,7 +1418,6 @@ leaderBoardButton.addEventListener('click', function() {
     } 
 
     else {
-    alert("Invalid level.");
     return; // Exit the function if the level is invalid
     }
 
@@ -1314,7 +1429,6 @@ leaderBoardButton.addEventListener('click', function() {
 
     addDoc(currentLevelCollection, data)
         .then(() => {
-        alert("Data submitted to Firestore.");
         leaderBoardAddDiv.style.display = 'none';
         createLeaderboard();
         })
@@ -1323,44 +1437,67 @@ leaderBoardButton.addEventListener('click', function() {
         });
 });
 
-
-nextLevelButton.addEventListener('click', function() {
+retryButton.addEventListener('click', async function() {
     if (pauseMainMenuShowing){
         cancelAnimationFrame(animationId);
-        pauseSound();
+        MainMenu = false;
+        currentLevel = finishedLevel;
+        if (finishedLevel===1){
+            await initializeLevel1Scene();
+        } else if (finishedLevel===2) {
+            await initializeLevel2Scene();
+        } else if (finishedLevel===3) {
+            await initializeLevel3Scene();
+        }
+        pauseMainMenu.style.display = 'none';
+        leaderBoardAddDiv.style.display = 'none';
+        pauseMainMenuShowing = false;
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+            doneLoading();
+          }, 100);
+    } 
+});
+
+nextLevelButton.addEventListener('click', async function() {
+    if (pauseMainMenuShowing){
+        cancelAnimationFrame(animationId);
         MainMenu = false;
         if (finishedLevel !== 3){
             finishedLevel+=1;
             currentLevel = finishedLevel;
             if (finishedLevel===1){
-                initializeLevel1Scene();
+                await initializeLevel1Scene();
             } else if (finishedLevel===2) {
-                initializeLevel2Scene();
+                await initializeLevel2Scene();
             } else if (finishedLevel===3) {
-                initializeLevel3Scene();
+                await initializeLevel3Scene();
             }
         } else {
             currentLevel = 1;
             finishedLevel  = currentLevel;
-            initializeLevel1Scene();
+            await initializeLevel1Scene();
         }
         pauseMainMenu.style.display = 'none';
-        leaderBoardAddDiv.style.display = 'flex';
+        leaderBoardAddDiv.style.display = 'none';
         pauseMainMenuShowing = false;
-        requestAnimationFrame(animate);
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 100);
     } 
 });
 
 mainMenuButton.addEventListener('click', function() {
     if (pauseMainMenuShowing){
         cancelAnimationFrame(animationId);
-        playSound();
         MainMenu = true;
         currentLevel = 0;
         resetTimer();
         requestAnimationFrame(animate);
         pauseMainMenu.style.display = 'none';
-        leaderBoardAddDiv.style.display = 'flex';
+        leaderBoardAddDiv.style.display = 'none';
         mainMenuButtons.style.display = 'flex';
         pauseMainMenuShowing = false;
     }
@@ -1387,23 +1524,56 @@ function updateLeaderboard() {
 }
 
 // Check if the aircraft flies through the ring
-function checkRingCollision(planePosition, ring) {
+function checkRingCollision(planePosition, ring, RingLights,  index, numRingLights) {
     // Calculate the distance between the plane and the center of the ring
     const ringPosition = ring.ringBody.position;
     const ringRadius = 3;
     const distance = planePosition.distanceTo(ringPosition);
 
+    // NumRingLights is lights per ring
     if (!ring.passed) {
         if (Math.abs(planePosition.z - ringPosition.z) <= 1) {
             ring.passed = true;
+
+            if (index - 1 >= 0) {
+                for (let i = (index-1)*numRingLights; i < (index)*numRingLights; i++) {
+                    RingLights[i].intensity = 0;
+                }
+            }
+
+            if (numRingLights*(index + 1) < RingLights.length) {
+                for (let i = (index+1)*numRingLights; i < (index+2)*numRingLights; i++) {
+                    RingLights[i].intensity = 10;
+                }
+            }
+
             // If the distance is less than the sum of the plane's radius and the ring's radius, they overlap
             if (distance < ringRadius) {
                 numRingsGoneThrough += 1;
+                const successGreen = 0x39FF14;
+                ring.ring.material.color.set(successGreen);
+                for (let i = index*numRingLights; i < (index+1)*numRingLights; i++) {
+                    RingLights[i].color.set(successGreen);
+                }
                 console.log("Plane passed through the ring.");
             } else {
+                const failureRed = 0xE10027;
+                ring.ring.material.color.set(failureRed);
+                for (let i = index*numRingLights; i < (index+1)*numRingLights; i++) {
+                    RingLights[i].color.set(failureRed);
+                }
                 console.log("Plane DID NOT pass through the ring.");
             }
         }
     }
 }
 
+function moveRing(ring, RingLights, index, numRingLights) {
+    ring.updateXPosition(level3RingMovementDelta*level3RingMovementDirection);
+    // NumRingLights is lights per ring
+    for(let i = index*numRingLights; i < (index+1)*numRingLights; i++) {
+        const currentLightPosition = RingLights[i].position.clone();
+        currentLightPosition.x += level3RingMovementDelta*level3RingMovementDirection; // Update the x-component of the position
+        RingLights[i].position.copy(currentLightPosition);
+    }
+};

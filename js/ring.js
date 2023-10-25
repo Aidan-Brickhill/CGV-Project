@@ -40,4 +40,9 @@ export class Ring extends THREE.Mesh {
         this.passed = false;
 
     } 
+    // Add a method to update the ring's position
+    updateXPosition(deltaX) {
+        this.ringBody.position.x += deltaX; // Update Cannon.js body position
+        this.ring.position.x += deltaX; // Update ringmesh
+    }
 }
