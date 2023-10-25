@@ -82,7 +82,7 @@ const initAudio = () => {
 initAudio();
 
 //imports from other levels
-import { menuScene, menuCamera, buttonScene, deathScene } from "./js/mainMenu.js";
+import { menuScene, menuCamera, deathScene } from "./js/mainMenu.js";
 import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End} from "./js/level1.js";
 import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings} from "./js/level2.js";
 import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings} from "./js/level3.js";
@@ -155,7 +155,7 @@ document.body.appendChild(radarContainer);
 // ================================================================================================
 // =============================== PAUSE MAIN MENU ================================================
 // ================================================================================================
-let pauseMainMenuShwoing = false;
+let pauseMainMenuShowing = false;
 
 // Create the main pauseMainMenu container
 const pauseMainMenu = document.createElement('div');
@@ -213,6 +213,55 @@ pauseMainMenu.appendChild(leaderboardDiv);
 pauseMainMenu.appendChild(buttonsDiv);
 
 document.body.appendChild(pauseMainMenu);
+
+// ================================================================================================
+// ================================================================================================
+// ================================================================================================
+
+
+// ================================================================================================
+// =============================== MAIN MENU BUTTONS ================================================
+// ================================================================================================
+
+// Create the main pauseMainMenu container
+const mainMenuButtons = document.createElement('div');
+mainMenuButtons.id = 'pauseMainMenu';
+mainMenuButtons.style.position = 'absolute';
+mainMenuButtons.style.left = '50%';
+mainMenuButtons.style.top = '50%';
+mainMenuButtons.style.transform = 'translate(-50%, -50%)'; 
+mainMenuButtons.style.width = '20%'; 
+mainMenuButtons.style.height = '50%'; 
+mainMenuButtons.style.display = 'flex'; // CHANGE TO NONE
+mainMenuButtons.style.flexDirection = 'column';
+
+const Level1Button = document.createElement('button');
+Level1Button.innerText = 'Level 1';
+Level1Button.classList.add('button-74');
+Level1Button.style.margin = '50px 10px'; // Add both horizontal and vertical margins
+Level1Button.style.fontSize = '24px'; // Increase the font size
+Level1Button.style.padding = '20px 30px'; // Increase the padding
+
+const Level2Button = document.createElement('button');
+Level2Button.innerText = 'Level 2';
+Level2Button.classList.add('button-74');
+Level2Button.style.margin = '50px 10px'; // Add both horizontal and vertical margins
+Level2Button.style.fontSize = '24px'; // Increase the font size
+Level2Button.style.padding = '20px 30px'; // Increase the padding
+
+const Level3Button = document.createElement('button');
+Level3Button.innerText = 'Level 3';
+Level3Button.classList.add('button-74');
+Level3Button.style.margin = '50px 10px'; // Add both horizontal and vertical margins
+Level3Button.style.fontSize = '24px'; // Increase the font size
+Level3Button.style.padding = '20px 30px'; // Increase the padding
+
+
+mainMenuButtons.appendChild(Level1Button);
+mainMenuButtons.appendChild(Level2Button);
+mainMenuButtons.appendChild(Level3Button);
+
+document.body.appendChild(mainMenuButtons);
 
 // ================================================================================================
 // ================================================================================================
@@ -321,8 +370,6 @@ function animate() {
     // Render the menu scene
     if (MainMenu) {
 
-        // Set up raycaster
-        raycaster.setFromCamera(mouse, menuCamera);
         // Rotate the scene
         menuScene.rotateY(2 * Math.PI / 10000);
 
@@ -334,8 +381,6 @@ function animate() {
 
         // Render the buttons and the menu scene
         mainRenderer.render(menuScene, menuCamera);
-        mainRenderer.clearDepth();
-        mainRenderer.render(buttonScene, menuCamera);
 
         // Animate
         animationId = requestAnimationFrame(animate);
@@ -541,58 +586,43 @@ function animate() {
 }
 animate();
 
-//Event listeners
-//  Checks which button is presssed in main menu
-window.addEventListener('mousedown', onMouseDown, false);
 
-function onMouseDown(event) {
-
-    // Calculate normalized mouse coordinates
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-    // Update the raycaster with the mouse position
-    raycaster.setFromCamera(mouse, menuCamera);
-
-    // Perform the raycasting
-    const intersects = raycaster.intersectObjects(buttonScene.children, true);
-
-    // Check if any objects were intersected
-    if (intersects.length > 0) {
-        const selectedObject = intersects[0].object;
-
-        // Handles logic on main menu screen
-        if (MainMenu) {
-            if (selectedObject.name === "level1") {
-                pauseSound();
-                cancelAnimationFrame(animationId);
-                initializeLevel1Scene();
-                MainMenu = false;
-                currentLevel = 1;
-                requestAnimationFrame(animate);
-            }
-            if (selectedObject.name === "level2") {
-                pauseSound();
-                cancelAnimationFrame(animationId);
-                initializeLevel2Scene();
-                MainMenu = false;
-                currentLevel = 2;
-                requestAnimationFrame(animate);
-            }
-            if (selectedObject.name === "level3") {
-                pauseSound();
-                cancelAnimationFrame(animationId);
-                initializeLevel3Scene();
-                MainMenu = false;
-                currentLevel = 3;
-                requestAnimationFrame(animate);
-            }
-        } else {
-            currentLevel = 0;
-            playSound();
-        }
+Level1Button.addEventListener('click', function() {
+    if (MainMenu) {
+        pauseSound();
+        cancelAnimationFrame(animationId);
+        initializeLevel1Scene();
+        MainMenu = false;
+        currentLevel = 1;
+        mainMenuButtons.style.display = 'none';
+        requestAnimationFrame(animate);
     }
-}
+});
+
+Level2Button.addEventListener('click', function() {
+    if (MainMenu) {
+        pauseSound();
+        cancelAnimationFrame(animationId);
+        initializeLevel2Scene();
+        MainMenu = false;
+        currentLevel = 2;
+        mainMenuButtons.style.display = 'none';
+        requestAnimationFrame(animate);
+    }
+});
+
+Level3Button.addEventListener('click', function() {
+    if (MainMenu) {
+        pauseSound();
+        cancelAnimationFrame(animationId);
+        initializeLevel3Scene();
+        MainMenu = false;
+        currentLevel = 3;
+        mainMenuButtons.style.display = 'none';
+        requestAnimationFrame(animate);
+    }
+});
+
 
 // Struct to track key inputs
 const keys = {
@@ -649,18 +679,20 @@ window.addEventListener('keydown', (event) => {
             break;
         case 'Escape':
             // handles game pasuing and music playing
-            if (MainMenu) {
-                pauseSound();
-                resumeTimer();
-                cancelAnimationFrame(animationId);
-                MainMenu = false;
-                requestAnimationFrame(animate);
-            } else {
-                playSound();
-                pauseTimer();
-                cancelAnimationFrame(animationId);
-                MainMenu = true;
-                requestAnimationFrame(animate);
+            if (!MainMenu){
+                if (pauseMainMenuShowing) {
+                    pauseSound();
+                    resumeTimer();
+                    pauseMainMenuShowing = false;
+                    pauseMainMenu.style.display = 'none';
+                    requestAnimationFrame(animate);
+                } else {
+                    playSound();
+                    pauseTimer();
+                    pauseMainMenu.style.display = 'flex';
+                    pauseMainMenuShowing = true;
+                    cancelAnimationFrame(animationId);
+                }
             }
             break;
         case 'Space':
@@ -700,26 +732,6 @@ window.addEventListener('keyup', (event) => {
 function initializeLevel1Scene() {
     // timer logic
     resetTimer();
-    
-        // Reference to the Firestore database.
-        const db = getFirestore();
-      
-        // Name of the collection you want to create.
-        const collectionName = 'level1';
-      
-        // Add the "level1" collection to Firestore.
-        addDoc(collection(db, collectionName), {
-          // You can provide initial data for documents in this collection if needed.
-          // For example:
-          exampleField: 'exampleValue',
-        })
-          .then((docRef) => {
-            console.log(`Collection "${collectionName}" created with document ID: ${docRef.id}`);
-          })
-          .catch((error) => {
-            console.error('Error creating collection:', error);
-          });
-
 
     startTimer();
     // reset dead variable
@@ -954,69 +966,67 @@ function addEndLeveltext() {
 
 // Level Complete logic
 function levelCompleted() {
-    stopTimer();
-    const elapsedSeconds = getElapsedSeconds();
-    const username = "Mike";
-    updateAndSaveLevelTime(levelId,username,elapsedSeconds);
-    if (currentLevel != 1) {
-        if (numRingsGoneThrough != Rings.length) {
-            console.log("level complete incorrectly");
-            console.log(elapsedSeconds);
+    if (!pauseMainMenuShowing){
+        stopTimer();
+        const elapsedSeconds = getElapsedSeconds();
+        
+        if (currentLevel != 1) {
+            if (numRingsGoneThrough != Rings.length) {
+                console.log("level complete incorrectly");
+                console.log(elapsedSeconds);
+            } else {
+                console.log("level complete correctly");
+                console.log(elapsedSeconds);
+            }
         } else {
-            console.log("level complete correctly");
-            console.log(elapsedSeconds);
+            console.log("level complete");
+            console.log(elapsedSeconds); 
         }
-    } else {
-        console.log("level complete");
-        console.log(elapsedSeconds); 
+        
+        playSound();
+        pauseMainMenu.style.display = 'flex';
+        pauseMainMenuShowing = true;
+        cancelAnimationFrame(animationId);
+        currentLevel = 0;
     }
     
-    playSound();
-    cancelAnimationFrame(animationId);
-    pauseMainMenu.style.display = 'flex';
-    pauseMainMenuShwoing = true;
-    // MainMenu = true;
-    // currentLevel = 0;
-    // requestAnimationFrame(animate);
 }
 
 nextLevelButton.addEventListener('click', function() {
-    if (pauseMainMenuShwoing){
+    if (pauseMainMenuShowing){
         pauseSound();
         MainMenu = false;
-        if (currentLevel!=3){
+        if (currentLevel!==3){
             currentLevel+=1;
             if (currentLevel===1){
-                currentLevel=1;
                 initializeLevel1Scene();
-            } else if (currentLevel===1) {
-                currentLevel=2;
-                initializeLevel2Scene();
             } else if (currentLevel===2) {
-                currentLevel=2;
+                initializeLevel2Scene();
+            } else if (currentLevel===3) {
                 initializeLevel3Scene();
             }
         } else {
             currentLevel=1;
             initializeLevel1Scene();
         }
-        requestAnimationFrame(animate);
         pauseMainMenu.style.display = 'none';
-        pauseMainMenuShwoing = false;
+        pauseMainMenuShowing = false;
+        requestAnimationFrame(animate);
     } else {
         console.log("Do Nothing");
     }
 });
 
 mainMenuButton.addEventListener('click', function() {
-    if (pauseMainMenuShwoing){
+    if (pauseMainMenuShowing){
         playSound();
         MainMenu = true;
         currentLevel = 0;
         resetTimer();
         requestAnimationFrame(animate);
         pauseMainMenu.style.display = 'none';
-        pauseMainMenuShwoing = false;
+        mainMenuButtons.style.display = 'flex';
+        pauseMainMenuShowing = false;
     } else {
         console.log("Do Nothing");
     }
