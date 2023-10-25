@@ -466,18 +466,21 @@ deathButtons.style.left = '50%';
 deathButtons.style.top = '50%';
 deathButtons.style.transform = 'translate(-50%, -50%)'; 
 deathButtons.style.width = '30vw'; 
-deathButtons.style.height = '35vh'; 
+deathButtons.style.height = '45vh'; 
 deathButtons.style.display = 'none';
 deathButtons.style.flexDirection = 'column';
 deathButtons.style.backgroundColor = 'lightblue';
 deathButtons.style.borderRadius = '5%';
+deathButtons.style.textAlign = 'center';
 
 const deathDiv = document.createElement('div');
-deathDiv.style.fontFamily = 'Comic Sans MS'; 
-deathDiv.style.fontSize = '60px'; 
-deathDiv.style.textAlign = 'center'; 
-deathDiv.style.margin = '10px 10px 10px'; 
-deathDiv.innerText = 'WASTED'; 
+deathDiv.style.margin = '10px 0'; 
+
+const wastedImage = document.createElement('img');
+wastedImage.src = 'Assets/wasted.png';
+wastedImage.style.width = '200px'; 
+wastedImage.style.height = 'auto'; 
+deathDiv.appendChild(wastedImage); 
 
 const deathRestart = document.createElement('button');
 deathRestart.innerText = 'Restart';
