@@ -901,36 +901,48 @@ deathMainMenu.addEventListener('click', function() {
     }  
 });
 
-deathRestart.addEventListener('click', function() {
+deathRestart.addEventListener('click', async function() {
     if (currentLevel === 1) {
         cancelAnimationFrame(animationId);
-        initializeLevel1Scene();
+        await initializeLevel1Scene();
         MainMenu = false;
         pauseMainMenuShowing = false;
         currentLevel = 1;
         finishedLevel = currentLevel;
         deathButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 100);
     }
     if (currentLevel === 2) {
         cancelAnimationFrame(animationId);
-        initializeLevel2Scene();
+        await initializeLevel2Scene();
         MainMenu = false;
         pauseMainMenuShowing = false;
         currentLevel = 2;
         finishedLevel = currentLevel;
         deathButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 100);
     }
     if (currentLevel === 3) {
         cancelAnimationFrame(animationId);
-        initializeLevel3Scene();
+        await initializeLevel3Scene();
         MainMenu = false;
         pauseMainMenuShowing = false;
         currentLevel = 3;
         finishedLevel = currentLevel;
         deathButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 100);
     }
 
 });
