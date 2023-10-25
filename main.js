@@ -888,7 +888,6 @@ animate();
 
 deathMainMenu.addEventListener('click', function() {
     if (dead){
-        playSound();
         cancelAnimationFrame(animationId);
         MainMenu = true;
         currentLevel = 0;
@@ -904,7 +903,6 @@ deathMainMenu.addEventListener('click', function() {
 
 deathRestart.addEventListener('click', function() {
     if (currentLevel === 1) {
-        pauseSound();
         cancelAnimationFrame(animationId);
         initializeLevel1Scene();
         MainMenu = false;
@@ -915,7 +913,6 @@ deathRestart.addEventListener('click', function() {
         requestAnimationFrame(animate);
     }
     if (currentLevel === 2) {
-        pauseSound();
         cancelAnimationFrame(animationId);
         initializeLevel2Scene();
         MainMenu = false;
@@ -926,7 +923,6 @@ deathRestart.addEventListener('click', function() {
         requestAnimationFrame(animate);
     }
     if (currentLevel === 3) {
-        pauseSound();
         cancelAnimationFrame(animationId);
         initializeLevel3Scene();
         MainMenu = false;
@@ -939,42 +935,65 @@ deathRestart.addEventListener('click', function() {
 
 });
 
-Level1Button.addEventListener('click', function() {
+
+const loadingScreen = document.getElementById('loading-screen');
+
+async function setLoading(){
+    loadingScreen.style.display = "flex";
+}
+
+async function doneLoading(){
+    loadingScreen.style.display = "none";
+}
+
+Level1Button.addEventListener('click', async function() {
     if (MainMenu) {
-        pauseSound();
         cancelAnimationFrame(animationId);
         initializeLevel1Scene();
         MainMenu = false;
         currentLevel = 1;
         finishedLevel = currentLevel;
         mainMenuButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 1000);
     }
 });
 
-Level2Button.addEventListener('click', function() {
+Level2Button.addEventListener('click', async function() {
     if (MainMenu) {
-        pauseSound();
         cancelAnimationFrame(animationId);
         initializeLevel2Scene();
         MainMenu = false;
         currentLevel = 2;
         finishedLevel = currentLevel;
         mainMenuButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 1000);
     }
 });
 
-Level3Button.addEventListener('click', function() {
+Level3Button.addEventListener('click', async function() {
     if (MainMenu) {
-        pauseSound();
         cancelAnimationFrame(animationId);
         initializeLevel3Scene();
         MainMenu = false;
         currentLevel = 3;
         finishedLevel = currentLevel;
         mainMenuButtons.style.display = 'none';
-        requestAnimationFrame(animate);
+
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 1000);
     }
 });
 
@@ -1037,13 +1056,17 @@ window.addEventListener('keydown', (event) => {
             console.log(pauseMainMenuShowing);
             if (!MainMenu && !dead){
                 if (pauseMainMenuShowing) {
-                    pauseSound();
+                    if (menuMusic && menuMusic.isPlaying) menuMusic.setVolume(0.2);
+                    if (planeAudio && !planeAudio.isPlaying) playSound(planeAudio);
+
                     resumeTimer();
                     pauseMainMenuShowing = false;
                     pauseMainMenu.style.display = 'none';
                     requestAnimationFrame(animate); 
                 } else {
-                    playSound();
+                    if (menuMusic && menuMusic.isPlaying) menuMusic.setVolume(0.7);
+                    if (planeAudio && planeAudio.isPlaying) pauseSound(planeAudio);
+
                     pauseTimer();
                     pauseMainMenu.style.display = 'flex';
                     pauseMainMenuShowing = true;                    
@@ -1087,7 +1110,8 @@ window.addEventListener('keyup', (event) => {
 
 
 
-function initializeLevel1Scene() {
+async function initializeLevel1Scene() {
+    await setLoading();
     // timer logic
     resetTimer();
     startTimer();
@@ -1121,6 +1145,7 @@ function initializeLevel1Scene() {
 }
 
 async function initializeLevel2Scene() {
+    await setLoading();
     // timer logic
     resetTimer();
     startTimer();
@@ -1179,7 +1204,8 @@ async function initializeLevel2Scene() {
     });
 }
 
-function initializeLevel3Scene() {
+async function initializeLevel3Scene() {
+    await setLoading();
     // timer logic
     resetTimer();
     startTimer();
@@ -1265,7 +1291,6 @@ function levelCompleted() {
             leaderBoardAddDiv.style.display = 'flex';
         }   
         
-        playSound();
         pauseMainMenu.style.display = 'flex';
         pauseMainMenuShowing = true;
         cancelAnimationFrame(animationId);
@@ -1321,37 +1346,39 @@ leaderBoardButton.addEventListener('click', function() {
 });
 
 
-nextLevelButton.addEventListener('click', function() {
+nextLevelButton.addEventListener('click', async function() {
     if (pauseMainMenuShowing){
         cancelAnimationFrame(animationId);
-        pauseSound();
         MainMenu = false;
         if (finishedLevel !== 3){
             finishedLevel+=1;
             currentLevel = finishedLevel;
             if (finishedLevel===1){
-                initializeLevel1Scene();
+                await initializeLevel1Scene();
             } else if (finishedLevel===2) {
-                initializeLevel2Scene();
+                await initializeLevel2Scene();
             } else if (finishedLevel===3) {
-                initializeLevel3Scene();
+                await initializeLevel3Scene();
             }
         } else {
             currentLevel = 1;
             finishedLevel  = currentLevel;
-            initializeLevel1Scene();
+            await initializeLevel1Scene();
         }
         pauseMainMenu.style.display = 'none';
         leaderBoardAddDiv.style.display = 'none';
         pauseMainMenuShowing = false;
-        requestAnimationFrame(animate);
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+
+            doneLoading();
+          }, 100);
     } 
 });
 
 mainMenuButton.addEventListener('click', function() {
     if (pauseMainMenuShowing){
         cancelAnimationFrame(animationId);
-        playSound();
         MainMenu = true;
         currentLevel = 0;
         resetTimer();

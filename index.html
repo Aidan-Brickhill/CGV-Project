@@ -1,23 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
-		<link rel="stylesheet" type="text/css" href="main.css">
-		<style>
-			body
-			{
-				margin: 0; touch-action: none;
-				background-image: -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0, #877fa8), color-stop(100%, #f9ae91));
-				background-image: -webkit-linear-gradient(135deg, #877fa8, #f9ae91);
-				background-image: -moz-linear-gradient(45deg, #877fa8, #f9ae91);
-				background-image: -ms-linear-gradient(45deg, #877fa8 0, #f9ae91 100%);
-				background-image: -o-linear-gradient(45deg, #877fa8, #f9ae91);
-				background-image: linear-gradient(135deg, #877fa8, #f9ae91);
+
+<head>
+	<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+	<link rel="stylesheet" type="text/css" href="main.css">
+	<style>
+		body {
+			margin: 0;
+			touch-action: none;
+			background-image: -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0, #877fa8), color-stop(100%, #f9ae91));
+			background-image: -webkit-linear-gradient(135deg, #877fa8, #f9ae91);
+			background-image: -moz-linear-gradient(45deg, #877fa8, #f9ae91);
+			background-image: -ms-linear-gradient(45deg, #877fa8 0, #f9ae91 100%);
+			background-image: -o-linear-gradient(45deg, #877fa8, #f9ae91);
+			background-image: linear-gradient(135deg, #877fa8, #f9ae91);
+		}
+
+		canvas {
+			width: 100%;
+			height: 100%;
+			touch-action: none;
+		}
+
+		#loading-screen {
+			position: fixed;
+			width: 100%;
+			height: 100%;
+			background: #000;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			z-index: 10000000;
+		}
+
+		.loader {
+			border: 8px solid #f3f3f3;
+			border-top: 8px solid #db3434;
+			border-radius: 50%;
+			width: 50px;
+			height: 50px;
+			animation: spin 2s linear infinite;
+		}
+
+		@keyframes spin {
+			0% {
+				transform: rotate(0deg);
 			}
-			canvas { width: 100%; height: 100% ; touch-action: none;}
-		</style>
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-		<script type="importmap">
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+	</style>
+	<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+	<script type="importmap">
 		  {
 			"imports": {
 			  "three": "https://unpkg.com/three@<version>/build/three.module.js",
@@ -26,9 +63,16 @@
 		  }
 		</script>
 
-	</head>
-	<body>
-		<script  type="module" src="main.js"></script>
+</head>
 
-	</body>
+<body>
+	<div style="display: none" id="loading-screen">
+		<div class="loader"></div>
+		<p>Loading...</p>
+	  </div>
+
+	<script type="module" src="main.js"></script>
+
+</body>
+
 </html>
