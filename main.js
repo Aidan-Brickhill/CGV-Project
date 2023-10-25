@@ -1346,7 +1346,7 @@ leaderBoardButton.addEventListener('click', function() {
 });
 
 
-nextLevelButton.addEventListener('click', function() {
+nextLevelButton.addEventListener('click', async function() {
     if (pauseMainMenuShowing){
         cancelAnimationFrame(animationId);
         MainMenu = false;
