@@ -348,14 +348,22 @@ mainMenuButtons.style.width = '20%';
 mainMenuButtons.style.height = '50%'; 
 mainMenuButtons.style.display = 'flex';
 mainMenuButtons.style.flexDirection = 'column';
+mainMenuButtons.style.alignItems = 'center'; // Center align the content
+mainMenuButtons.style.justifyContent = 'center'; 
+mainMenuButtons.style.textAlign = 'center';
+
+// Create an img element for the logo
+const logoImg = document.createElement('img');
+logoImg.src = 'Assets/logo4.png'; // Replace 'logo.png' with the path to your logo image
+logoImg.alt = 'HexAirborne Logo';
+logoImg.style.width = '500px'; // Adjust the width as needed
+logoImg.style.height = 'auto'; // Maintain the aspect ratio
+logoImg.style.marginBottom = '20px';
+
+mainMenuButtons.appendChild(logoImg);
 
 // Create a div for the heading
 const headingDiv = document.createElement('div');
-headingDiv.style.fontFamily = 'Comic Sans MS'; 
-headingDiv.style.fontSize = '45px'; 
-headingDiv.style.textAlign = 'center'; 
-headingDiv.style.margin = '0 0 30px'; 
-headingDiv.innerText = 'HEXAIRBORNE'; 
 
 const Level1Button = document.createElement('button');
 Level1Button.innerText = 'Level 1';
@@ -378,6 +386,7 @@ Level3Button.style.margin = '10px 10px';
 Level3Button.style.fontSize = '24px';
 Level3Button.style.padding = '20px 30px';
 
+mainMenuButtons.appendChild(logoImg);
 mainMenuButtons.appendChild(headingDiv);
 mainMenuButtons.appendChild(Level1Button);
 mainMenuButtons.appendChild(Level2Button);
