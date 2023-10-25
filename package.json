@@ -5,6 +5,8 @@
     "cannon-es-debugger": "^1.0.0",
     "cannon-utils": "^0.1.4",
     "enable3d": "^0.25.3",
+    "firebase": "^10.5.0",
+    "firebase-tools": "^12.7.0",
     "three": "^0.156.1"
   },
   "devDependencies": {

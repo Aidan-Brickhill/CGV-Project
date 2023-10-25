@@ -8,6 +8,25 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'; 
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+
+
+//Firebase
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCpCOarVATTewDN3bF3YaLeVkPMp_UZZfo",
+    authDomain: "discordkittens-54224.firebaseapp.com", 
+    databaseURL: "https://discordkittens-54224-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "discordkittens-54224",
+    storageBucket: "discordkittens-54224.appspot.com",
+    messagingSenderId: "48267984231",
+    appId: "1:48267984231:web:800ccf6a2d0ccac55a43c2" 
+  };
+  
+  // Initialize Firebase
+  
+const app = initializeApp(firebaseConfig);
 
 // Audio Functionality
 let audioContext;
@@ -681,6 +700,27 @@ window.addEventListener('keyup', (event) => {
 function initializeLevel1Scene() {
     // timer logic
     resetTimer();
+    
+        // Reference to the Firestore database.
+        const db = getFirestore();
+      
+        // Name of the collection you want to create.
+        const collectionName = 'level1';
+      
+        // Add the "level1" collection to Firestore.
+        addDoc(collection(db, collectionName), {
+          // You can provide initial data for documents in this collection if needed.
+          // For example:
+          exampleField: 'exampleValue',
+        })
+          .then((docRef) => {
+            console.log(`Collection "${collectionName}" created with document ID: ${docRef.id}`);
+          })
+          .catch((error) => {
+            console.error('Error creating collection:', error);
+          });
+
+
     startTimer();
     // reset dead variable
     dead = false;
@@ -916,6 +956,8 @@ function addEndLeveltext() {
 function levelCompleted() {
     stopTimer();
     const elapsedSeconds = getElapsedSeconds();
+    const username = "Mike";
+    updateAndSaveLevelTime(levelId,username,elapsedSeconds);
     if (currentLevel != 1) {
         if (numRingsGoneThrough != Rings.length) {
             console.log("level complete incorrectly");
@@ -999,5 +1041,52 @@ function checkRingCollision(planePosition, ring) {
             }
         }
     }
+}
+
+function updateAndSaveLevelTime(levelId, username, elapsedSeconds) {
+    const xmlData = readXMLFile(); // Implement a function to read XML data from a file
+
+    // Parse the XML data
+    xml2js.parseString(xmlData, (err, result) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+
+        // Find the level node or create a new one
+        let levelNode = result.level;
+        if (!levelNode) {
+            levelNode = {
+                id: levelId,
+                times: {
+                    entry: [],
+                },
+            };
+            result.level = levelNode;
+        }
+
+        // Add the new time entry
+        const newTimeEntry = {
+            username: username,
+            time: elapsedSeconds,
+        };
+
+        levelNode.times.entry.push(newTimeEntry);
+
+        // Sort the times in ascending order
+        levelNode.times.entry.sort((a, b) => a.time - b.time);
+
+        // Keep only the top 5 times
+        if (levelNode.times.entry.length > 5) {
+            levelNode.times.entry.pop();
+        }
+
+        // Convert the updated data back to XML
+        const builder = new xml2js.Builder();
+        const updatedXML = builder.buildObject(result);
+
+        // Save the updated XML data back to the file
+        saveXMLFile(updatedXML); // Implement a function to save the XML data to a file
+    });
 }
 
