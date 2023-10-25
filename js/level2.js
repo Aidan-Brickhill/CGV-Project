@@ -49,14 +49,26 @@ const levelLength=60;
 let scalar = 2;
 //  loads image textures
 let textures = {
-    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
-    dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
-    grass: await new THREE.TextureLoader().loadAsync("./Assets/grass.jpg"),
-    sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
-    water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
-    stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
-    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
+    dirt: await new THREE.TextureLoader().loadAsync("./Assets/river/dirt1.jpg"),
+    dirt2: await new THREE.TextureLoader().loadAsync("./Assets/river/dirt2.jpg"),
+    grass: await new THREE.TextureLoader().loadAsync("./Assets/river/grass.jpg"),
+    sand: await new THREE.TextureLoader().loadAsync("./Assets/river/sand.jpg"),
+    water: await new THREE.TextureLoader().loadAsync("./Assets/river/water.jpg"),
+    stone: await new THREE.TextureLoader().loadAsync("./Assets/river/stone.jpg"),
+    tree: await new THREE.TextureLoader().loadAsync("./Assets/river/tree.jpg"),
 };
+
+const textureTypes = ["dirt2", "sand", "grass", "dirt", "stone"];
+const wraps = [2, 6, 8, 9, 10];
+for (let i = 0; i < textureTypes.length; i++) {
+    const texture = textures[textureTypes[i]];
+
+    // For example, change the repeat values of the texture
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, wraps[i]); // Adjust as needed
+}
+
 //  creates box gemeotries 
 let stoneGeo = new THREE.BoxGeometry(0,0,0);
 let dirtGeo = new THREE.BoxGeometry(0,0,0);
@@ -251,7 +263,8 @@ const radialSegments = 8;
 const tubeSegments = 50;
 let level2Rings = [];
 let level2RingLights = [];
-const level2NumRingLights = 3; // Number of lights
+const level2NumRingLights = 1; // Number of lights
+
 // Create Cannon.js bodies for the spheres and cylinders and position them accordingly
 for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
 
@@ -320,18 +333,18 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
     //     const y = centerY;
     //     const z = centerZ + Math.sin(angle) * radius;
 
-    //     const ringLight = new THREE.PointLight(hexColour, 10, 10); // Emissive color, intensity, and distance
+    //     const ringLight = new THREE.PointLight(hexColour, 0, 10); // Emissive color, intensity, and distance
+    //     if (ringNumber == 0) ringLight.intensity = 10;
     //     ringLight.position.set(x, y, z);
     //     level2Scene.add(ringLight);
     //     level2RingLights.push(ringLight);
     // }
 
-    const ringLight = new THREE.PointLight(hexColour, 10, 10); // Emissive color, intensity, and distance
+    const ringLight = new THREE.PointLight(hexColour, 0, 10); // Emissive color, intensity, and distance
+    if (ringNumber == 0) ringLight.intensity = 10;
     ringLight.position.set(ringX, ringY, ringZ);
     level2Scene.add(ringLight);
     level2RingLights.push(ringLight);
-
-
 }
 
 // Adds light to scene

@@ -880,6 +880,19 @@ function checkRingCollision(planePosition, ring, RingLights,  index, numRingLigh
     if (!ring.passed) {
         if (Math.abs(planePosition.z - ringPosition.z) <= 1) {
             ring.passed = true;
+
+            if (index - 1 >= 0) {
+                for (let i = (index-1)*numRingLights; i < (index)*numRingLights; i++) {
+                    RingLights[i].intensity = 0;
+                }
+            }
+
+            if (numRingLights*(index + 1) < RingLights.length) {
+                for (let i = (index+1)*numRingLights; i < (index+2)*numRingLights; i++) {
+                    RingLights[i].intensity = 10;
+                }
+            }
+
             // If the distance is less than the sum of the plane's radius and the ring's radius, they overlap
             if (distance < ringRadius) {
                 numRingsGoneThrough += 1;

@@ -39,15 +39,27 @@ const levelLength=75;
 let scalar = 1;
 //  loads image textures
 let textures = {
-    dirt: await new THREE.TextureLoader().loadAsync("./Assets/dirt1.jpg"),
-    dirt2: await new THREE.TextureLoader().loadAsync("./Assets/dirt2.jpg"),
-    grass: await new THREE.TextureLoader().loadAsync("./Assets/grass.jpg"),
-    sand: await new THREE.TextureLoader().loadAsync("./Assets/sand.jpg"),
-    water: await new THREE.TextureLoader().loadAsync("./Assets/water.jpg"),
-    stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
-    tree: await new THREE.TextureLoader().loadAsync("./Assets/tree.jpg"),
-};
-//  creates box gemeotries 
+    dirt2: await new THREE.TextureLoader().loadAsync("./Assets/river/dirt2.jpg"),
+    sand: await new THREE.TextureLoader().loadAsync("./Assets/river/sand.jpg"),
+    grass: await new THREE.TextureLoader().loadAsync("./Assets/river/grass.jpg"),
+    dirt: await new THREE.TextureLoader().loadAsync("./Assets/river/dirt1.jpg"),
+    stone: await new THREE.TextureLoader().loadAsync("./Assets/river/stone.jpg"),
+    tree: await new THREE.TextureLoader().loadAsync("./Assets/river/tree.jpg"),
+    water: await new THREE.TextureLoader().loadAsync("./Assets/river/water.jpg"),
+}
+
+const textureTypes = ["dirt2", "sand", "grass", "dirt", "stone"];
+const wraps = [2, 6, 8, 9, 10];
+for (let i = 0; i < textureTypes.length; i++) {
+    const texture = textures[textureTypes[i]];
+
+    // For example, change the repeat values of the texture
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, wraps[i]); // Adjust as needed
+}
+
+//  creates box gemeotries a
 let stoneGeo = new THREE.BoxGeometry(0,0,0);
 let dirtGeo = new THREE.BoxGeometry(0,0,0);
 let dirt2Geo = new THREE.BoxGeometry(0,0,0);
@@ -260,8 +272,10 @@ function tree(height, position) {
     return mergeBufferGeometries([geo, geo2, geo3]);
 }
 
+
+const lightColour = "#FFCB8E";
 // Adds light to scene
-const pointLightStart = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+const pointLightStart = new THREE.PointLight( new THREE.Color(lightColour).convertSRGBToLinear(), 5, 300 );
 pointLightStart.castShadow = true; 
 pointLightStart.shadow.mapSize.width = 512; 
 pointLightStart.shadow.mapSize.height = 512; 
@@ -270,7 +284,7 @@ pointLightStart.shadow.camera.far = 500;
 level1Scene.add(pointLightStart);
 pointLightStart.position.set(100, 150, startPos.y +50);
 
-const pointLightStart2 = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+const pointLightStart2 = new THREE.PointLight( new THREE.Color(lightColour).convertSRGBToLinear(), 5, 300 );
 pointLightStart2.castShadow = true; 
 pointLightStart2.shadow.mapSize.width = 512; 
 pointLightStart2.shadow.mapSize.height = 512; 
@@ -279,7 +293,7 @@ pointLightStart2.shadow.camera.far = 500;
 level1Scene.add(pointLightStart2);
 pointLightStart2.position.set(-100, 150, startPos.y +50);
 
-const pointLightEnd = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+const pointLightEnd = new THREE.PointLight( new THREE.Color(lightColour).convertSRGBToLinear(), 5, 300 );
 pointLightEnd.castShadow = true; 
 pointLightEnd.shadow.mapSize.width = 512; 
 pointLightEnd.shadow.mapSize.height = 512; 
@@ -288,7 +302,7 @@ pointLightEnd.shadow.camera.far = 500;
 level1Scene.add(pointLightEnd);
 pointLightEnd.position.set(100, 150, level1End.y + 150);
 
-const pointLightEnd2 = new THREE.PointLight( new THREE.Color("#FFCB8E").convertSRGBToLinear(), 5, 300 );
+const pointLightEnd2 = new THREE.PointLight( new THREE.Color(lightColour).convertSRGBToLinear(), 5, 300 );
 pointLightEnd2.castShadow = true; 
 pointLightEnd2.shadow.mapSize.width = 512; 
 pointLightEnd2.shadow.mapSize.height = 512; 

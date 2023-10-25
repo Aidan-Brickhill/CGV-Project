@@ -52,15 +52,25 @@ level3AircraftVehicle.addToWorld(level3PhysicsWorld); //add aircraft physics bod
 
 
 //============== Define All The Textures In Map =================//
-
 let textures = {
-    ashRock: await new THREE.TextureLoader().loadAsync("./Assets/ashRock.jpg"),
-    lavaRock: await new THREE.TextureLoader().loadAsync("./Assets/lavaRock.jpg"),
-    crackedGround: await new THREE.TextureLoader().loadAsync("./Assets/crackedGround.jpg"),
-    volcanicDirt: await new THREE.TextureLoader().loadAsync("./Assets/volcanicDirt.jpg"),
-    lava: await new THREE.TextureLoader().loadAsync("./Assets/lava.jpg"),
-    stone: await new THREE.TextureLoader().loadAsync("./Assets/stone.jpg"),
+    ashRock: await new THREE.TextureLoader().loadAsync("./Assets/lava/ashRock.jpg"),
+    lavaRock: await new THREE.TextureLoader().loadAsync("./Assets/lava/lavaRock.jpg"),
+    crackedGround: await new THREE.TextureLoader().loadAsync("./Assets/lava/crackedGround.jpg"),
+    volcanicDirt: await new THREE.TextureLoader().loadAsync("./Assets/lava/volcanicDirt.jpg"),
+    lava: await new THREE.TextureLoader().loadAsync("./Assets/lava/lava.jpg"),
+    stone: await new THREE.TextureLoader().loadAsync("./Assets/lava/stone.jpg"),
 };
+
+const textureTypes = ["lavaRock", "volcanicDirt", "crackedGround", "ashRock", "stone"];
+const wraps = [2, 6, 8, 9, 10];
+for (let i = 0; i < textureTypes.length; i++) {
+    const texture = textures[textureTypes[i]];
+
+    // For example, change the repeat values of the texture
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, wraps[i]); // Adjust as needed
+}
 
 //============== Initialise All Individual Objects =================//
 
@@ -281,7 +291,7 @@ const radialSegments = 8;
 const tubeSegments = 50;
 let level3Rings = [];
 let level3RingLights = [];
-const level3NumRingLights = 3; // Number of lights
+const level3NumRingLights = 1; // Number of lights
 
 // Create Cannon.js bodies for the spheres and cylinders and position them accordingly
 for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
@@ -338,7 +348,7 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
         console.log('Error loading Ring class:', error);
     });
 
-    // Calculate the center position of the torus based on its parameters
+    // // Calculate the center position of the torus based on its parameters
     // const centerX = ringX; // Use the x-coordinate of the ring's position
     // const centerY = ringY; // Use the y-coordinate of the ring's position
     // const centerZ = ringZ; // Use the z-coordinate of the ring's position
@@ -352,13 +362,15 @@ for (let ringNumber = 0; ringNumber < numRings; ringNumber++) {
     //     const y = centerY;
     //     const z = centerZ + Math.sin(angle) * radius;
 
-    //     const ringLight = new THREE.PointLight(hexColour, 10, 10); // Emissive color, intensity, and distance
+    //     const ringLight = new THREE.PointLight(hexColour, 0, 10); // Emissive color, intensity, and distance
+    //     if (ringNumber == 0) ringLight.intensity = 10;
     //     ringLight.position.set(x, y, z);
     //     level3Scene.add(ringLight);
     //     level3RingLights.push(ringLight);
     // }
 
-    const ringLight = new THREE.PointLight(hexColour, 10, 10); // Emissive color, intensity, and distance
+    const ringLight = new THREE.PointLight(hexColour, 0, 10); // Emissive color, intensity, and distance
+        if (ringNumber == 0) ringLight.intensity = 10;
         ringLight.position.set(ringX, ringY, ringZ);
         level3Scene.add(ringLight);
         level3RingLights.push(ringLight);
