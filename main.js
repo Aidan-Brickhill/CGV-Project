@@ -785,6 +785,8 @@ function animate() {
                 playSound(planeAudio);
             }
 
+            playGameOver = true;
+
             menuMusic.setVolume(0.2);
         // If the aircaft has not crashed render the scene without the death scene
             if (currentLevel === 1) {
