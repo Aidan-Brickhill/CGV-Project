@@ -11,7 +11,6 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
 
-
 //Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCpCOarVATTewDN3bF3YaLeVkPMp_UZZfo",
@@ -43,9 +42,7 @@ async function fetchUsernames(levelCode) {
         console.log(data.username);
     });
 
-
     return usernames;
-
 }
 
 async function fetchTimes(levelCode) {
@@ -74,6 +71,7 @@ let playGameOver = true;
 audioContext = new (window.AudioContext || window.webkitAudioContext)();
 audioLoader = new THREE.AudioLoader();
 listener = new THREE.AudioListener();
+let time;
 
 // Play the sound
 function playSound(sound) {
@@ -147,10 +145,10 @@ initPlaneAudio('../Assets/Sound/planeAudio.mp3');
 initGameOverSound('../Assets/Sound/gameOver.mp3');
 
 //imports from other levels
-import { menuScene, menuCamera, deathScene } from "./js/mainMenu.js";
-import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End} from "./js/level1.js";
-import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings} from "./js/level2.js";
-import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings} from "./js/level3.js";
+import { menuScene, menuCamera } from "./js/mainMenu.js";
+import { level1Scene, level1PhysicsWorld,  level1AircraftBody,   startPos, MAX_HEIGHT, level1End } from "./js/level1.js";
+import { level2Scene, level2PhysicsWorld,  level2AircraftBody,  level2Start, level2End, level2Rings } from "./js/level2.js";
+import { level3Scene, level3PhysicsWorld,  level3AircraftBody,  level3Start, level3End, level3Rings } from "./js/level3.js";
 
 // Variables Used for actual level being displayed (takes in the ones from the above imports)
 let physicsWorld, aircraftBody, levelStart, levelEnd, Rings;
@@ -229,9 +227,9 @@ pauseMainMenu.style.position = 'absolute';
 pauseMainMenu.style.left = '50%';
 pauseMainMenu.style.top = '50%';
 pauseMainMenu.style.transform = 'translate(-50%, -50%)';
-pauseMainMenu.style.width = '40vw';
-pauseMainMenu.style.height = '40vh';
-pauseMainMenu.style.backgroundColor = 'lightblue';
+pauseMainMenu.style.width = '60vw';
+pauseMainMenu.style.height = '60vh';
+pauseMainMenu.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
 pauseMainMenu.style.borderRadius = '5%';
 pauseMainMenu.style.display = 'none'; 
 pauseMainMenu.style.flexDirection = 'column';
@@ -254,31 +252,43 @@ function createLeaderboardEntryContainer(number,username, time) {
 
     const usernameLabel = document.createElement('label');
     usernameLabel.textContent = number + 1 +': ';
-    usernameLabel.style.fontSize = '20px';
+    usernameLabel.style.fontSize = '30px';
+    usernameLabel.style.color = '#fbeee0';
     leaderboardEntry.appendChild(usernameLabel);
 
     const usernameText = document.createElement('span');
     usernameText.textContent = username;
+    usernameText.style.fontSize = '30px';
     usernameText.style.marginRight = '20px';
-    usernameText.style.fontSize = '20px';
-    leaderboardEntry.appendChild(usernameText);
+    usernameText.style.color = '#fbeee0';
+    leaderboardEntry.appendChild(usernameText); 
 
-    const timeLabel = document.createElement('label');
-    timeLabel.textContent = 'Time: ';
-    timeLabel.style.fontSize = '20px';
-    leaderboardEntry.appendChild(timeLabel);
+    // const timeLabel = document.createElement('label');
+    // timeLabel.textContent = 'Time: ';
+    // timeLabel.style.fontSize = '30px';
+    // timeLabel.style.color = '#fbeee0';
+    // leaderboardEntry.appendChild(timeLabel);
 
     const timeText = document.createElement('span');
     timeText.textContent = time;
-    timeText.style.fontSize = '20px';
+    timeText.style.fontSize = '30px';
+    timeText.style.color = '#fbeee0';
     leaderboardEntry.appendChild(timeText);
 
     return leaderboardEntry
 }
+
 let leaderBoardText;
 let leaderBoardInput;
-let leaderBoardButton;
 let leaderBoardHeader;
+let leaderBoardButton;
+leaderBoardButton = document.createElement('button');
+leaderBoardButton.id ='leaderBoardButton';
+leaderBoardButton.innerText = 'Add time';
+leaderBoardButton.classList.add('button-74');
+leaderBoardButton.style.margin = '4px 10px'
+
+let leaderBoardAddDiv;
 
 async function createLeaderboard() {
 
@@ -288,43 +298,64 @@ async function createLeaderboard() {
     }
     
     leaderBoardText = document.createElement('text');
+    leaderBoardText.style.fontSize = '30px';
+    leaderBoardText.style.color = '#fbeee0';
     leaderBoardText.style.margin = '4px 4px 10px';
     leaderBoardText.style.display = 'none';
 
-    leaderBoardInput = document.createElement('input');
-    leaderBoardInput.innerText = "Enter Name Here";
-    leaderBoardInput.style.margin = '4px 4px 10px';
-    leaderBoardInput.style.display = 'none';
+    leaderBoardAddDiv = document.createElement('div');
+    leaderBoardAddDiv.style.justifyContent = 'center';
+    leaderBoardAddDiv.style.flexDirection = 'row';
+    leaderBoardAddDiv.style.alignItems = 'center';
+    leaderBoardAddDiv.style.display = 'none';
 
-    leaderBoardButton = document.createElement('button');
-    leaderBoardButton.innerText = 'Leaderboard';
-    leaderBoardButton.classList.add('button-74');
-    leaderBoardButton.style.margin = '4px 10px';
-    leaderBoardButton.disabled = true;
+
+    leaderBoardInput = document.createElement('input');
+    leaderBoardInput.style.fontSize = '30px';
+    leaderBoardInput.style.color = '#fbeee0';
+    leaderBoardInput.style.margin = '4px 4px 10px';
+        
+    leaderBoardAddDiv.appendChild(leaderBoardInput);
+    leaderBoardAddDiv.appendChild(leaderBoardButton);
 
     leaderBoardHeader = document.createElement('img');
     leaderBoardHeader.src = 'Assets/leaderboard.png';
     leaderBoardHeader.style.margin = '4px 4px 10px';
-    leaderBoardHeader.style.width = '200px'
+    leaderBoardHeader.style.width = '300px'
     leaderBoardHeader.style.height = 'auto';
-    
+
 
     leaderboardDiv.appendChild(leaderBoardHeader);
-    leaderboardDiv.appendChild(leaderBoardButton);
     leaderboardDiv.appendChild(leaderBoardText);
-    leaderboardDiv.appendChild(leaderBoardInput);
+    leaderboardDiv.appendChild(leaderBoardAddDiv);
+
+
+
 
 
     // grab usernames and times from database
     let usernames = await fetchUsernames(levelCode);
     let times = await fetchTimes(levelCode);
 
+    const combinedData = usernames.map((username, index) => {
+        return {
+            username: username,
+            time: times[index]
+        };
+    });
+    
+    // Sort the combined data by time (assuming time is numeric)
+    combinedData.sort((a, b) => a.time - b.time);
+    
+    // Now combinedData is sorted by time
+    console.log(combinedData);
+
     const userData = [
-        { username: usernames[0], time: times[0] },
-        { username: usernames[1], time: times[1] },
-        { username: usernames[2], time: times[2] },
-        { username: usernames[3], time: times[3] },
-        { username: usernames[4], time: times[4] },
+        { username: combinedData[0].username, time: combinedData[0].time },
+        { username: combinedData[1].username, time: combinedData[1].time },
+        { username: combinedData[2].username, time: combinedData[2].time },
+        { username: combinedData[3].username, time: combinedData[3].time },
+        { username: combinedData[4].username, time: combinedData[4].time },
     ];
 
     // Create and append containers for each user data
@@ -474,11 +505,11 @@ deathButtons.style.position = 'absolute';
 deathButtons.style.left = '50%';
 deathButtons.style.top = '50%';
 deathButtons.style.transform = 'translate(-50%, -50%)'; 
-deathButtons.style.width = '30vw'; 
-deathButtons.style.height = '45vh'; 
+deathButtons.style.width = '50vw'; 
+deathButtons.style.height = '35vh'; 
 deathButtons.style.display = 'none';
 deathButtons.style.flexDirection = 'column';
-deathButtons.style.backgroundColor = 'lightblue';
+deathButtons.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
 deathButtons.style.borderRadius = '5%';
 deathButtons.style.textAlign = 'center';
 
@@ -760,13 +791,13 @@ function animate() {
         aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
 
         // Setup the boarders depending on the either ceilings or walls
-        if (currentLevel == 1) {
+        if (currentLevel === 1) {
             // Ceiling
-            if (aircraftBody.position.y > MAX_HEIGHT / 1.5) {
+            if (aircraftBody.position.y > MAX_HEIGHT  / 1.5) {
                 aircraftBody.position.y = MAX_HEIGHT / 1.5;
                 aircraftBody.velocity.y = 0;
             }
-        } else {
+        } else if (currentLevel!==0) {
             // Walls
             if (aircraftBody.position.x > levelStart.x) {
                 aircraftBody.position.x = levelStart.x;
@@ -833,7 +864,7 @@ function animate() {
 
             playGameOver = true;
 
-            menuMusic.setVolume(0.2);
+            // menuMusic.setVolume(0.2);
         // If the aircaft has not crashed render the scene without the death scene
             if (currentLevel === 1) {
                 mainRenderer.render(level1Scene, aircraftCamera);
@@ -857,18 +888,17 @@ animate();
 
 deathMainMenu.addEventListener('click', function() {
     if (dead){
+        cancelAnimationFrame(animationId);
         MainMenu = true;
         currentLevel = 0;
-        finishedLevel = currentLevel;
         resetTimer();
         requestAnimationFrame(animate);
+        pauseMainMenu.style.display = 'none';
         deathButtons.style.display = 'none';
         mainMenuButtons.style.display = 'flex';
         pauseMainMenuShowing = false;
-    } else {
-        console.log('Do nothing')
-    }
-    
+        dead=false;
+    }  
 });
 
 deathRestart.addEventListener('click', function() {
@@ -1042,7 +1072,7 @@ window.addEventListener('keydown', (event) => {
                     pauseMainMenuShowing = true;                    
                     cancelAnimationFrame(animationId);
                     leaderBoardText.style.display = 'none';
-                    leaderBoardInput.style.display = 'none';
+                    leaderBoardAddDiv.style.display = 'none';
                 }
             }
             break;
@@ -1234,32 +1264,31 @@ async function initializeLevel3Scene() {
     });
 }
 
-
 // Level Complete logic
 function levelCompleted() {
     if (!pauseMainMenuShowing){
         stopTimer();
         const elapsedSeconds = getElapsedSeconds();
-        
+        time =elapsedSeconds;
         if (currentLevel != 1) {
             if (numRingsGoneThrough != Rings.length) {
-                leaderBoardText.innerText = 'Level Completed Incorrectly\n Your Invalid Time: ' + elapsedSeconds +'s';
+                leaderBoardText.innerText = 'Level Not Completed - Time: ' + elapsedSeconds +'s';
                 leaderBoardText.style.display = 'flex';
                 console.log("level complete incorrectly");
                 console.log(elapsedSeconds);
             } else {
-                leaderBoardText.innerText = 'Level Completed-Enter Your Name Below\n Your Time: ' + elapsedSeconds+ 's';
+                leaderBoardText.innerText = 'Level Completed - Time: ' + elapsedSeconds+ 's';
                 leaderBoardText.style.display = 'flex';
-                leaderBoardInput.style.display = 'flex';
+                leaderBoardAddDiv.style.display = 'flex';
                 console.log("level complete correctly");
                 console.log(elapsedSeconds);
             }
         } else {
             console.log("level complete");
             console.log(elapsedSeconds); 
-            leaderBoardText.innerText = 'Level Completed-Enter Your Name Below\n Your Time: ' + elapsedSeconds+ 's';
+            leaderBoardText.innerText = 'Level Completed - Time: ' + elapsedSeconds+ 's';
             leaderBoardText.style.display = 'flex';
-            leaderBoardInput.style.display = 'flex';
+            leaderBoardAddDiv.style.display = 'flex';
         }   
         
         pauseMainMenu.style.display = 'flex';
@@ -1270,8 +1299,56 @@ function levelCompleted() {
     
 }
 
-nextLevelButton.addEventListener('click', async function() {
+// SAVE TO LEADERBOARD
+leaderBoardButton.addEventListener('click', function() {
+    // Get the username from the input field
+    console.log(finishedLevel);
+    const username = leaderBoardInput.value;
+
+    // Check if the username is not empty
+    if (username.trim() === "") {
+        alert("Please enter a username.");
+        return; // Do not proceed if the username is empty
+    }
+    
+    let currentLevelCollection;
+
+    if (finishedLevel === 1) {
+    currentLevelCollection = collection(database, "level1"); // Replace with the actual collection name for level 1
+    } 
+
+    else if (finishedLevel === 2) {
+    currentLevelCollection = collection(database, "level2"); // Replace with the actual collection name for level 2
+    } 
+
+    else if (finishedLevel === 3) {
+    currentLevelCollection = collection(database, "level3"); // Replace with the actual collection name for level 3
+    } 
+
+    else {
+    return; // Exit the function if the level is invalid
+    }
+
+    // Create a data object to be added to Firestore
+    const data = {
+        username: username,
+        time: time,
+    };
+
+    addDoc(currentLevelCollection, data)
+        .then(() => {
+        leaderBoardAddDiv.style.display = 'none';
+        createLeaderboard();
+        })
+        .catch((error) => {
+        console.error("Error adding document: ", error);
+        });
+});
+
+
+nextLevelButton.addEventListener('click', function() {
     if (pauseMainMenuShowing){
+        cancelAnimationFrame(animationId);
         MainMenu = false;
         if (finishedLevel !== 3){
             finishedLevel+=1;
@@ -1289,6 +1366,7 @@ nextLevelButton.addEventListener('click', async function() {
             await initializeLevel1Scene();
         }
         pauseMainMenu.style.display = 'none';
+        leaderBoardAddDiv.style.display = 'flex';
         pauseMainMenuShowing = false;
         setTimeout(function() {
             requestAnimationFrame(animate);
@@ -1300,11 +1378,13 @@ nextLevelButton.addEventListener('click', async function() {
 
 mainMenuButton.addEventListener('click', function() {
     if (pauseMainMenuShowing){
+        cancelAnimationFrame(animationId);
         MainMenu = true;
         currentLevel = 0;
         resetTimer();
         requestAnimationFrame(animate);
         pauseMainMenu.style.display = 'none';
+        leaderBoardAddDiv.style.display = 'flex';
         mainMenuButtons.style.display = 'flex';
         pauseMainMenuShowing = false;
     }
