@@ -74,6 +74,7 @@ let playGameOver = true;
 audioContext = new (window.AudioContext || window.webkitAudioContext)();
 audioLoader = new THREE.AudioLoader();
 listener = new THREE.AudioListener();
+let time;
 
 // Play the sound
 function playSound(sound) {
@@ -275,9 +276,19 @@ function createLeaderboardEntryContainer(number,username, time) {
 
     return leaderboardEntry
 }
+
 let leaderBoardText;
 let leaderBoardInput;
+let leaderBoardHeader;
 let leaderBoardButton;
+leaderBoardButton = document.createElement('button');
+leaderBoardButton.id ='leaderBoardButton';
+leaderBoardButton.innerText = 'Add';
+leaderBoardButton.classList.add('button-74');
+leaderBoardButton.style.margin = '4px 10px'
+leaderBoardButton.style.display = 'none';
+
+
 
 async function createLeaderboard() {
 
@@ -295,15 +306,21 @@ async function createLeaderboard() {
     leaderBoardInput.style.margin = '4px 4px 10px';
     leaderBoardInput.style.display = 'none';
 
-    leaderBoardButton = document.createElement('button');
-    leaderBoardButton.innerText = 'Leaderboard';
-    leaderBoardButton.classList.add('button-74');
-    leaderBoardButton.style.margin = '4px 10px';
-    leaderBoardButton.disabled = true;
+    leaderBoardHeader = document.createElement('button');
+    leaderBoardHeader.innerText = 'Leaderboard';
+    leaderBoardHeader.classList.add('button-74');
+    leaderBoardHeader.style.margin = '4px 10px';
+    leaderBoardHeader.disabled = true;
 
-    leaderboardDiv.appendChild(leaderBoardButton);
+   
+    
+
+    leaderboardDiv.appendChild(leaderBoardHeader);
     leaderboardDiv.appendChild(leaderBoardText);
     leaderboardDiv.appendChild(leaderBoardInput);
+    leaderboardDiv.appendChild(leaderBoardButton);
+
+
 
 
     // grab usernames and times from database
@@ -747,13 +764,13 @@ function animate() {
         aircraftBody.applyLocalForce(force, new CANNON.Vec3(0, 0, 0));
 
         // Setup the boarders depending on the either ceilings or walls
-        if (currentLevel == 1) {
+        if (currentLevel === 1) {
             // Ceiling
-            if (aircraftBody.position.y > MAX_HEIGHT / 1.5) {
+            if (aircraftBody.position.y > MAX_HEIGHT *10 / 1.5) {
                 aircraftBody.position.y = MAX_HEIGHT / 1.5;
                 aircraftBody.velocity.y = 0;
             }
-        } else {
+        } else if (currentLevel!==0) {
             // Walls
             if (aircraftBody.position.x > levelStart.x) {
                 aircraftBody.position.x = levelStart.x;
@@ -820,7 +837,7 @@ function animate() {
 
             playGameOver = true;
 
-            menuMusic.setVolume(0.2);
+            // menuMusic.setVolume(0.2);
         // If the aircaft has not crashed render the scene without the death scene
             if (currentLevel === 1) {
                 mainRenderer.render(level1Scene, aircraftCamera);
@@ -845,18 +862,17 @@ animate();
 deathMainMenu.addEventListener('click', function() {
     if (dead){
         playSound();
+        cancelAnimationFrame(animationId);
         MainMenu = true;
         currentLevel = 0;
-        finishedLevel = currentLevel;
         resetTimer();
         requestAnimationFrame(animate);
+        pauseMainMenu.style.display = 'none';
         deathButtons.style.display = 'none';
         mainMenuButtons.style.display = 'flex';
         pauseMainMenuShowing = false;
-    } else {
-        console.log('Do nothing')
-    }
-    
+        dead=false;
+    }  
 });
 
 deathRestart.addEventListener('click', function() {
@@ -1007,6 +1023,7 @@ window.addEventListener('keydown', (event) => {
                     cancelAnimationFrame(animationId);
                     leaderBoardText.style.display = 'none';
                     leaderBoardInput.style.display = 'none';
+                    leaderBoardButton.style.display = 'node';
                 }
             }
             break;
@@ -1195,13 +1212,12 @@ function initializeLevel3Scene() {
     });
 }
 
-
 // Level Complete logic
 function levelCompleted() {
     if (!pauseMainMenuShowing){
         stopTimer();
         const elapsedSeconds = getElapsedSeconds();
-        
+        time =elapsedSeconds;
         if (currentLevel != 1) {
             if (numRingsGoneThrough != Rings.length) {
                 leaderBoardText.innerText = 'Level Completed Incorrectly\n Your Invalid Time: ' + elapsedSeconds +'s';
@@ -1212,6 +1228,7 @@ function levelCompleted() {
                 leaderBoardText.innerText = 'Level Completed-Enter Your Name Below\n Your Time: ' + elapsedSeconds+ 's';
                 leaderBoardText.style.display = 'flex';
                 leaderBoardInput.style.display = 'flex';
+                leaderBoardButton.style.display = 'flex';
                 console.log("level complete correctly");
                 console.log(elapsedSeconds);
             }
@@ -1221,6 +1238,7 @@ function levelCompleted() {
             leaderBoardText.innerText = 'Level Completed-Enter Your Name Below\n Your Time: ' + elapsedSeconds+ 's';
             leaderBoardText.style.display = 'flex';
             leaderBoardInput.style.display = 'flex';
+            leaderBoardButton.style.display = 'flex';
         }   
         
         playSound();
@@ -1231,6 +1249,53 @@ function levelCompleted() {
     }
     
 }
+
+// SAVE TO LEADERBOARD
+leaderBoardButton.addEventListener('click', function() {
+    // Get the username from the input field
+    console.log(finishedLevel);
+    const username = leaderBoardInput.value;
+
+    // Check if the username is not empty
+    if (username.trim() === "") {
+        alert("Please enter a username.");
+        return; // Do not proceed if the username is empty
+    }
+    
+    let currentLevelCollection;
+
+    if (finishedLevel === 1) {
+    currentLevelCollection = collection(database, "level1"); // Replace with the actual collection name for level 1
+    } 
+
+    else if (finishedLevel === 2) {
+    currentLevelCollection = collection(database, "level2"); // Replace with the actual collection name for level 2
+    } 
+
+    else if (finishedLevel === 3) {
+    currentLevelCollection = collection(database, "level3"); // Replace with the actual collection name for level 3
+    } 
+
+    else {
+    alert("Invalid level.");
+    return; // Exit the function if the level is invalid
+    }
+
+    // Create a data object to be added to Firestore
+    const data = {
+        username: username,
+        time: time,
+    };
+
+    addDoc(currentLevelCollection, data)
+        .then(() => {
+        alert("Data submitted to Firestore.");
+        })
+        .catch((error) => {
+        console.error("Error adding document: ", error);
+        });
+});
+
 
 nextLevelButton.addEventListener('click', function() {
     if (pauseMainMenuShowing){
