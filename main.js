@@ -11,7 +11,6 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
 
-
 //Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCpCOarVATTewDN3bF3YaLeVkPMp_UZZfo",
@@ -43,9 +42,7 @@ async function fetchUsernames(levelCode) {
         console.log(data.username);
     });
 
-
     return usernames;
-
 }
 
 async function fetchTimes(levelCode) {
@@ -230,9 +227,9 @@ pauseMainMenu.style.position = 'absolute';
 pauseMainMenu.style.left = '50%';
 pauseMainMenu.style.top = '50%';
 pauseMainMenu.style.transform = 'translate(-50%, -50%)';
-pauseMainMenu.style.width = '40vw';
-pauseMainMenu.style.height = '40vh';
-pauseMainMenu.style.backgroundColor = 'lightblue';
+pauseMainMenu.style.width = '60vw';
+pauseMainMenu.style.height = '60vh';
+pauseMainMenu.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
 pauseMainMenu.style.borderRadius = '5%';
 pauseMainMenu.style.display = 'none'; 
 pauseMainMenu.style.flexDirection = 'column';
@@ -255,23 +252,27 @@ function createLeaderboardEntryContainer(number,username, time) {
 
     const usernameLabel = document.createElement('label');
     usernameLabel.textContent = number + 1 +': ';
-    usernameLabel.style.fontSize = '20px';
+    usernameLabel.style.fontSize = '30px';
+    usernameLabel.style.color = '#fbeee0';
     leaderboardEntry.appendChild(usernameLabel);
 
     const usernameText = document.createElement('span');
     usernameText.textContent = username;
+    usernameText.style.fontSize = '30px';
     usernameText.style.marginRight = '20px';
-    usernameText.style.fontSize = '20px';
-    leaderboardEntry.appendChild(usernameText);
+    usernameText.style.color = '#fbeee0';
+    leaderboardEntry.appendChild(usernameText); 
 
-    const timeLabel = document.createElement('label');
-    timeLabel.textContent = 'Time: ';
-    timeLabel.style.fontSize = '20px';
-    leaderboardEntry.appendChild(timeLabel);
+    // const timeLabel = document.createElement('label');
+    // timeLabel.textContent = 'Time: ';
+    // timeLabel.style.fontSize = '30px';
+    // timeLabel.style.color = '#fbeee0';
+    // leaderboardEntry.appendChild(timeLabel);
 
     const timeText = document.createElement('span');
     timeText.textContent = time;
-    timeText.style.fontSize = '20px';
+    timeText.style.fontSize = '30px';
+    timeText.style.color = '#fbeee0';
     leaderboardEntry.appendChild(timeText);
 
     return leaderboardEntry
@@ -283,12 +284,11 @@ let leaderBoardHeader;
 let leaderBoardButton;
 leaderBoardButton = document.createElement('button');
 leaderBoardButton.id ='leaderBoardButton';
-leaderBoardButton.innerText = 'Add';
+leaderBoardButton.innerText = 'Add time';
 leaderBoardButton.classList.add('button-74');
 leaderBoardButton.style.margin = '4px 10px'
-leaderBoardButton.style.display = 'none';
 
-
+let leaderBoardAddDiv;
 
 async function createLeaderboard() {
 
@@ -298,32 +298,37 @@ async function createLeaderboard() {
     }
     
     leaderBoardText = document.createElement('text');
+    leaderBoardText.style.fontSize = '30px';
+    leaderBoardText.style.color = '#fbeee0';
     leaderBoardText.style.margin = '4px 4px 10px';
     leaderBoardText.style.display = 'none';
 
-    leaderBoardInput = document.createElement('input');
-    leaderBoardInput.innerText = "Enter Name Here";
-    leaderBoardInput.style.margin = '4px 4px 10px';
-    leaderBoardInput.style.display = 'none';
+    leaderBoardAddDiv = document.createElement('div');
+    leaderBoardAddDiv.style.justifyContent = 'center';
+    leaderBoardAddDiv.style.flexDirection = 'row';
+    leaderBoardAddDiv.style.alignItems = 'center';
+    leaderBoardAddDiv.style.display = 'none';
 
-    leaderBoardHeader = document.createElement('button');
-    leaderBoardHeader.innerText = 'Leaderboard';
-    leaderBoardHeader.classList.add('button-74');
-    leaderBoardHeader.style.margin = '4px 10px';
-    leaderBoardHeader.disabled = true;
+
+    leaderBoardInput = document.createElement('input');
+    leaderBoardInput.style.fontSize = '30px';
+    leaderBoardInput.style.color = '#fbeee0';
+    leaderBoardInput.style.margin = '4px 4px 10px';
+        
+    leaderBoardAddDiv.appendChild(leaderBoardInput);
+    leaderBoardAddDiv.appendChild(leaderBoardButton);
 
     leaderBoardHeader = document.createElement('img');
     leaderBoardHeader.src = 'Assets/leaderboard.png';
     leaderBoardHeader.style.margin = '4px 4px 10px';
-    leaderBoardHeader.style.width = '200px'
+    leaderBoardHeader.style.width = '300px'
     leaderBoardHeader.style.height = 'auto';
-    
+
 
     leaderboardDiv.appendChild(leaderBoardHeader);
-    leaderboardDiv.appendChild(leaderBoardButton);
     leaderboardDiv.appendChild(leaderBoardText);
-    leaderboardDiv.appendChild(leaderBoardInput);
-    leaderboardDiv.appendChild(leaderBoardButton);
+    leaderboardDiv.appendChild(leaderBoardAddDiv);
+
 
 
 
@@ -332,12 +337,25 @@ async function createLeaderboard() {
     let usernames = await fetchUsernames(levelCode);
     let times = await fetchTimes(levelCode);
 
+    const combinedData = usernames.map((username, index) => {
+        return {
+            username: username,
+            time: times[index]
+        };
+    });
+    
+    // Sort the combined data by time (assuming time is numeric)
+    combinedData.sort((a, b) => a.time - b.time);
+    
+    // Now combinedData is sorted by time
+    console.log(combinedData);
+
     const userData = [
-        { username: usernames[0], time: times[0] },
-        { username: usernames[1], time: times[1] },
-        { username: usernames[2], time: times[2] },
-        { username: usernames[3], time: times[3] },
-        { username: usernames[4], time: times[4] },
+        { username: combinedData[0].username, time: combinedData[0].time },
+        { username: combinedData[1].username, time: combinedData[1].time },
+        { username: combinedData[2].username, time: combinedData[2].time },
+        { username: combinedData[3].username, time: combinedData[3].time },
+        { username: combinedData[4].username, time: combinedData[4].time },
     ];
 
     // Create and append containers for each user data
@@ -487,11 +505,11 @@ deathButtons.style.position = 'absolute';
 deathButtons.style.left = '50%';
 deathButtons.style.top = '50%';
 deathButtons.style.transform = 'translate(-50%, -50%)'; 
-deathButtons.style.width = '30vw'; 
-deathButtons.style.height = '45vh'; 
+deathButtons.style.width = '50vw'; 
+deathButtons.style.height = '35vh'; 
 deathButtons.style.display = 'none';
 deathButtons.style.flexDirection = 'column';
-deathButtons.style.backgroundColor = 'lightblue';
+deathButtons.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
 deathButtons.style.borderRadius = '5%';
 deathButtons.style.textAlign = 'center';
 
@@ -1031,8 +1049,7 @@ window.addEventListener('keydown', (event) => {
                     pauseMainMenuShowing = true;                    
                     cancelAnimationFrame(animationId);
                     leaderBoardText.style.display = 'none';
-                    leaderBoardInput.style.display = 'none';
-                    leaderBoardButton.style.display = 'node';
+                    leaderBoardAddDiv.style.display = 'none';
                 }
             }
             break;
@@ -1229,25 +1246,23 @@ function levelCompleted() {
         time =elapsedSeconds;
         if (currentLevel != 1) {
             if (numRingsGoneThrough != Rings.length) {
-                leaderBoardText.innerText = 'Level Completed Incorrectly\n Your Invalid Time: ' + elapsedSeconds +'s';
+                leaderBoardText.innerText = 'Level Not Completed - Time: ' + elapsedSeconds +'s';
                 leaderBoardText.style.display = 'flex';
                 console.log("level complete incorrectly");
                 console.log(elapsedSeconds);
             } else {
-                leaderBoardText.innerText = 'Level Completed-Enter Your Name Below\n Your Time: ' + elapsedSeconds+ 's';
+                leaderBoardText.innerText = 'Level Completed - Time: ' + elapsedSeconds+ 's';
                 leaderBoardText.style.display = 'flex';
-                leaderBoardInput.style.display = 'flex';
-                leaderBoardButton.style.display = 'flex';
+                leaderBoardAddDiv.style.display = 'flex';
                 console.log("level complete correctly");
                 console.log(elapsedSeconds);
             }
         } else {
             console.log("level complete");
             console.log(elapsedSeconds); 
-            leaderBoardText.innerText = 'Level Completed-Enter Your Name Below\n Your Time: ' + elapsedSeconds+ 's';
+            leaderBoardText.innerText = 'Level Completed - Time: ' + elapsedSeconds+ 's';
             leaderBoardText.style.display = 'flex';
-            leaderBoardInput.style.display = 'flex';
-            leaderBoardButton.style.display = 'flex';
+            leaderBoardAddDiv.style.display = 'flex';
         }   
         
         playSound();
@@ -1299,6 +1314,8 @@ leaderBoardButton.addEventListener('click', function() {
     addDoc(currentLevelCollection, data)
         .then(() => {
         alert("Data submitted to Firestore.");
+        leaderBoardAddDiv.style.display = 'none';
+        createLeaderboard();
         })
         .catch((error) => {
         console.error("Error adding document: ", error);
@@ -1308,6 +1325,7 @@ leaderBoardButton.addEventListener('click', function() {
 
 nextLevelButton.addEventListener('click', function() {
     if (pauseMainMenuShowing){
+        cancelAnimationFrame(animationId);
         pauseSound();
         MainMenu = false;
         if (finishedLevel !== 3){
@@ -1326,6 +1344,7 @@ nextLevelButton.addEventListener('click', function() {
             initializeLevel1Scene();
         }
         pauseMainMenu.style.display = 'none';
+        leaderBoardAddDiv.style.display = 'flex';
         pauseMainMenuShowing = false;
         requestAnimationFrame(animate);
     } 
@@ -1333,12 +1352,14 @@ nextLevelButton.addEventListener('click', function() {
 
 mainMenuButton.addEventListener('click', function() {
     if (pauseMainMenuShowing){
+        cancelAnimationFrame(animationId);
         playSound();
         MainMenu = true;
         currentLevel = 0;
         resetTimer();
         requestAnimationFrame(animate);
         pauseMainMenu.style.display = 'none';
+        leaderBoardAddDiv.style.display = 'flex';
         mainMenuButtons.style.display = 'flex';
         pauseMainMenuShowing = false;
     }
