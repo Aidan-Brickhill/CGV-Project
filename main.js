@@ -199,43 +199,55 @@ pauseMainMenu.style.position = 'absolute';
 pauseMainMenu.style.left = '50%';
 pauseMainMenu.style.top = '50%';
 pauseMainMenu.style.transform = 'translate(-50%, -50%)';
-pauseMainMenu.style.width = '30%';
-pauseMainMenu.style.height = '75%';
+pauseMainMenu.style.width = '40vw';
+pauseMainMenu.style.height = '40vh';
 pauseMainMenu.style.backgroundColor = 'lightblue';
 pauseMainMenu.style.borderRadius = '5%';
 pauseMainMenu.style.display = 'none'; 
 pauseMainMenu.style.flexDirection = 'column';
+pauseMainMenu.style.justifyContent = 'flex-start';
+pauseMainMenu.style.paddingBottom = "1vh";
 
 // LEADERBOARD DIV ======================================================
 const leaderboardDiv = document.createElement('div');
 leaderboardDiv.style.flex = '5';
 leaderboardDiv.style.display = 'flex';
 leaderboardDiv.style.justifyContent = 'center';
-leaderboardDiv.style.alignItems = 'flex-start';
+leaderboardDiv.style.flexDirection = 'column';
+leaderboardDiv.style.alignItems = 'center';
+
 
 // function to create a container for each time entry in the leaderboard
-function createLeaderboardEntryContainer(username, time) {
+function createLeaderboardEntryContainer(number,username, time) {
     const leaderboardEntry = document.createElement('div');
     leaderboardEntry.classList.add('container');
 
     const usernameLabel = document.createElement('label');
-    usernameLabel.textContent = 'Username: ';
+    usernameLabel.textContent = number + 1 +': ';
+    usernameLabel.style.fontSize = '20px';
     leaderboardEntry.appendChild(usernameLabel);
 
     const usernameText = document.createElement('span');
     usernameText.textContent = username;
+    usernameText.style.marginRight = '20px';
+    usernameText.style.fontSize = '20px';
     leaderboardEntry.appendChild(usernameText);
 
     const timeLabel = document.createElement('label');
     timeLabel.textContent = 'Time: ';
+    timeLabel.style.fontSize = '20px';
     leaderboardEntry.appendChild(timeLabel);
 
     const timeText = document.createElement('span');
     timeText.textContent = time;
+    timeText.style.fontSize = '20px';
     leaderboardEntry.appendChild(timeText);
 
     return leaderboardEntry
 }
+let leaderBoardText;
+let leaderBoardInput;
+let leaderBoardButton;
 
 async function createLeaderboard() {
 
@@ -243,6 +255,26 @@ async function createLeaderboard() {
     while (leaderboardDiv.firstChild) {
         leaderboardDiv.removeChild(leaderboardDiv.firstChild);
     }
+    
+    leaderBoardText = document.createElement('text');
+    leaderBoardText.style.margin = '4px 4px 10px';
+    leaderBoardText.style.display = 'none';
+
+    leaderBoardInput = document.createElement('input');
+    leaderBoardInput.innerText = "Enter Name Here";
+    leaderBoardInput.style.margin = '4px 4px 10px';
+    leaderBoardInput.style.display = 'none';
+
+    leaderBoardButton = document.createElement('button');
+    leaderBoardButton.innerText = 'Leaderboard';
+    leaderBoardButton.classList.add('button-74');
+    leaderBoardButton.style.margin = '4px 10px';
+    leaderBoardButton.disabled = true;
+
+    leaderboardDiv.appendChild(leaderBoardButton);
+    leaderboardDiv.appendChild(leaderBoardText);
+    leaderboardDiv.appendChild(leaderBoardInput);
+
 
     // grab usernames and times from database
     let usernames = await fetchUsernames(levelCode);
@@ -257,9 +289,9 @@ async function createLeaderboard() {
     ];
 
     // Create and append containers for each user data
-    userData.forEach(data => {
+    userData.forEach((data,i)=> {
         console.log(data.username)
-        const userContainer = createLeaderboardEntryContainer(data.username, data.time);
+        const userContainer = createLeaderboardEntryContainer(i,data.username, data.time);
         leaderboardDiv.appendChild(userContainer);
     }); 
 }
@@ -268,13 +300,6 @@ async function createLeaderboard() {
 //add the leaderboard to the pause menu
 // pauseMainMenu.appendChild(leaderboardDiv);
 
-// const leaderBoardButton = document.createElement('button');
-// leaderBoardButton.innerText = 'Leader Board';
-// leaderBoardButton.classList.add('button-74');
-// leaderBoardButton.style.margin = '4px 10px';
-// leaderBoardButton.disabled = true;
-
-// leaderboardDiv.appendChild(leaderBoardButton);
 
 //Leaderboard database functions
 
@@ -401,8 +426,8 @@ deathButtons.style.position = 'absolute';
 deathButtons.style.left = '50%';
 deathButtons.style.top = '50%';
 deathButtons.style.transform = 'translate(-50%, -50%)'; 
-deathButtons.style.width = '20%'; 
-deathButtons.style.height = '35%'; 
+deathButtons.style.width = '30vw'; 
+deathButtons.style.height = '35vh'; 
 deathButtons.style.display = 'none';
 deathButtons.style.flexDirection = 'column';
 deathButtons.style.backgroundColor = 'lightblue';
@@ -571,7 +596,6 @@ function animate() {
             // If you pass the last ring, display the text and state level is complete
             if (aircraftBody.position.z < Rings[Rings.length - 1].ringBody.position.z && !levelComplete) {
                 levelComplete = true;
-                addEndLeveltext();
             }
         }
 
@@ -778,6 +802,7 @@ deathRestart.addEventListener('click', function() {
         cancelAnimationFrame(animationId);
         initializeLevel1Scene();
         MainMenu = false;
+        pauseMainMenuShowing = false;
         currentLevel = 1;
         finishedLevel = currentLevel;
         deathButtons.style.display = 'none';
@@ -788,6 +813,7 @@ deathRestart.addEventListener('click', function() {
         cancelAnimationFrame(animationId);
         initializeLevel2Scene();
         MainMenu = false;
+        pauseMainMenuShowing = false;
         currentLevel = 2;
         finishedLevel = currentLevel;
         deathButtons.style.display = 'none';
@@ -798,11 +824,13 @@ deathRestart.addEventListener('click', function() {
         cancelAnimationFrame(animationId);
         initializeLevel3Scene();
         MainMenu = false;
+        pauseMainMenuShowing = false;
         currentLevel = 3;
         finishedLevel = currentLevel;
         deathButtons.style.display = 'none';
         requestAnimationFrame(animate);
     }
+
 });
 
 Level1Button.addEventListener('click', function() {
@@ -900,19 +928,22 @@ window.addEventListener('keydown', (event) => {
             break;
         case 'Escape':
             // handles game pasuing and music playing
+            console.log(pauseMainMenuShowing);
             if (!MainMenu && !dead){
                 if (pauseMainMenuShowing) {
                     pauseSound();
                     resumeTimer();
                     pauseMainMenuShowing = false;
                     pauseMainMenu.style.display = 'none';
-                    requestAnimationFrame(animate);
+                    requestAnimationFrame(animate); 
                 } else {
                     playSound();
                     pauseTimer();
                     pauseMainMenu.style.display = 'flex';
-                    pauseMainMenuShowing = true;
+                    pauseMainMenuShowing = true;                    
                     cancelAnimationFrame(animationId);
+                    leaderBoardText.style.display = 'none';
+                    leaderBoardInput.style.display = 'none';
                 }
             }
             break;
@@ -958,24 +989,6 @@ function initializeLevel1Scene() {
     createLeaderboard();
     // reset dead variable
     dead = false;
-    // try remove the end level text if possible
-    if (levelComplete) {
-        try {
-            level1Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-        try {
-            level2Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-        try {
-            level3Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-    }
     // Reset level complet variable
     levelComplete = false;
 
@@ -1011,23 +1024,6 @@ async function initializeLevel2Scene() {
     // reset dead variable
     dead = false;
     // try remove the end level text if possible
-    if (levelComplete) {
-        try {
-            level1Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-        try {
-            level2Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-        try {
-            level3Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-    }
     // Reset level complet variable
     levelComplete = false;
 
@@ -1087,23 +1083,6 @@ function initializeLevel3Scene() {
     // reset dead variable
     dead = false;
     // try remove the end level text if possible
-    if (levelComplete) {
-        try {
-            level1Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-        try {
-            level2Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-        try {
-            level3Scene.remove(endLeveltext);
-        } catch {
-            console.log("wrong level");
-        }
-    }
     // Reset level complet variable
     levelComplete = false;
 
@@ -1153,42 +1132,6 @@ function initializeLevel3Scene() {
     });
 }
 
-// Adds the text to the scene at the end of the level
-function addEndLeveltext() {
-    const fontLoader = new FontLoader();
-    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-        let textGeometry;
-        let textMaterial;
-
-        if (numRingsGoneThrough === Rings.length) {
-            textGeometry = new TextGeometry('!! Pass !!', {
-                font: font,
-                size: 5,
-                height: 0.5,
-            });
-            textMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        } else {
-            textGeometry = new TextGeometry('!! Fail !!', {
-                font: font,
-                size: 5,
-                height: 0.5,
-            });
-            textMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        }
-        endLeveltext = new THREE.Mesh(textGeometry, textMaterial);
-
-        endLeveltext.position.set(-10, 40, levelEnd.y);
-        if (currentLevel === 1) {
-            level1Scene.add(endLeveltext);
-        }
-        if (currentLevel === 2) {
-            level2Scene.add(endLeveltext);
-        }
-        if (currentLevel === 3) {
-            level3Scene.add(endLeveltext);
-        }
-    });
-}
 
 // Level Complete logic
 function levelCompleted() {
@@ -1198,16 +1141,24 @@ function levelCompleted() {
         
         if (currentLevel != 1) {
             if (numRingsGoneThrough != Rings.length) {
+                leaderBoardText.innerText = 'Level Completed Incorrectly\n Your Invalid Time: ' + elapsedSeconds +'s';
+                leaderBoardText.style.display = 'flex';
                 console.log("level complete incorrectly");
                 console.log(elapsedSeconds);
             } else {
+                leaderBoardText.innerText = 'Level Completed-Enter Your Name Below\n Your Time: ' + elapsedSeconds+ 's';
+                leaderBoardText.style.display = 'flex';
+                leaderBoardInput.style.display = 'flex';
                 console.log("level complete correctly");
                 console.log(elapsedSeconds);
             }
         } else {
             console.log("level complete");
             console.log(elapsedSeconds); 
-        }
+            leaderBoardText.innerText = 'Level Completed-Enter Your Name Below\n Your Time: ' + elapsedSeconds+ 's';
+            leaderBoardText.style.display = 'flex';
+            leaderBoardInput.style.display = 'flex';
+        }   
         
         playSound();
         pauseMainMenu.style.display = 'flex';
