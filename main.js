@@ -1342,7 +1342,7 @@ nextLevelButton.addEventListener('click', function() {
             initializeLevel1Scene();
         }
         pauseMainMenu.style.display = 'none';
-        leaderBoardAddDiv.style.display = 'flex';
+        leaderBoardAddDiv.style.display = 'none';
         pauseMainMenuShowing = false;
         requestAnimationFrame(animate);
     } 
@@ -1357,7 +1357,7 @@ mainMenuButton.addEventListener('click', function() {
         resetTimer();
         requestAnimationFrame(animate);
         pauseMainMenu.style.display = 'none';
-        leaderBoardAddDiv.style.display = 'flex';
+        leaderBoardAddDiv.style.display = 'none';
         mainMenuButtons.style.display = 'flex';
         pauseMainMenuShowing = false;
     }
