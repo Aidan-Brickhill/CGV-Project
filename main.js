@@ -813,7 +813,7 @@ window.addEventListener("resize", () => {
 //  parameters for level3 Ring movement
 let level3RingMovementCounter = 0;
 let level3RingMovementDirection = 1;
-const level3RingMovementBound = 30;
+const level3RingMovementBound = 50;
 const level3RingMovementDelta = 0.15;
 
 // Used to animate the scenes
@@ -1252,7 +1252,7 @@ window.addEventListener('keydown', (event) => {
         case 'Escape':
             // handles game pasuing and music playing
             console.log(pauseMainMenuShowing);
-            if (!MainMenu && !dead){
+            if (!MainMenu && !dead && !levelComplete){
                 if (pauseMainMenuShowing) {
                     if (menuMusic && menuMusic.isPlaying) menuMusic.setVolume(0.2);
                     if (planeAudio && !planeAudio.isPlaying) playSound(planeAudio);
@@ -1284,7 +1284,7 @@ window.addEventListener('keydown', (event) => {
 });
 
 ExitButtonLevel.addEventListener('click', function() {
-    if (!MainMenu && !dead){
+    if (!MainMenu && !dead && !levelComplete){
         if (pauseMainMenuShowing) {
             if (menuMusic && menuMusic.isPlaying) menuMusic.setVolume(0.2);
             if (planeAudio && !planeAudio.isPlaying) playSound(planeAudio);
@@ -1517,7 +1517,7 @@ async function initializeLevel3Scene() {
 
 // Level Complete logic
 function levelCompleted() {
-    if (!pauseMainMenuShowing){
+    if (!pauseMainMenuShowing && !dead){
         stopTimer();
         const elapsedSeconds = getElapsedSeconds();
         time =elapsedSeconds;
