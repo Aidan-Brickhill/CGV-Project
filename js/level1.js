@@ -2,7 +2,6 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
-import { randFloat } from 'three/src/math/MathUtils';
 
 // SCENE + PHYSICS INITIALISATION
 const level1Scene = new THREE.Scene();

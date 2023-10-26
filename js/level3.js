@@ -1,6 +1,5 @@
 //imports
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { BoxGeometry } from 'three';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
